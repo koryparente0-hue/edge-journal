@@ -3394,22 +3394,13 @@ function updateProUI() {
   const manageBtn = document.getElementById('manage-sub-btn');
   if (manageBtn) manageBtn.style.display = pro ? '' : 'none';
 
-  // More menu items — dim if free, and intercept click to show upgrade modal
+  // More menu pro items — all unlocked now
   const moreProItems = document.querySelectorAll('.more-pro-item');
   moreProItems.forEach(item => {
+    item.classList.add('nav-item');
     const lockIcon = item.querySelector('.nav-pro-lock');
-    if (pro) {
-      item.classList.remove('nav-item');
-      if (lockIcon) lockIcon.style.display = 'none';
-      // Remove any existing intercept
-      item.onclick = item._origClick || item.onclick;
-    } else {
-      item.classList.add('nav-item');
-      if (lockIcon) lockIcon.style.display = '';
-      // Save original click and replace with upgrade modal
-      if (!item._origClick) item._origClick = item.onclick;
-      item.onclick = (e) => { e.stopPropagation(); openUpgradeModal(); };
-    }
+    if (lockIcon) lockIcon.style.display = 'none';
+    if (item._origClick) item.onclick = item._origClick;
   });
 }
 
