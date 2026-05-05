@@ -900,7 +900,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
         <div class="qe-field"><label>Ticker</label><input id="q-ticker" placeholder="NQ" value="NQ"></div>
         <div class="qe-field"><label>P&amp;L ($)</label><input id="q-quick-pnl" type="number" placeholder="+500 or -250"></div>
         <div class="qe-field"><label>R:R</label><input id="q-quick-rr" type="number" step="0.1" placeholder="e.g. 2.0" min="-5"></div>
-        <div class="qe-field"><label>Date &amp; Time</label><input id="q-datetime" type="datetime-local"></div>
+        <div class="qe-field"><label>Date &amp; Time <span style="color:var(--dim);font-weight:400;font-size:10px">(CST)</span></label><input id="q-datetime" type="datetime-local"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
         <div class="qe-field"><label>Setup</label><select id="q-setup"><option value="">— setup —</option></select></div>
@@ -947,7 +947,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div class="qe-field"><label>Date &amp; Time</label><input id="q-datetime-d" type="datetime-local"></div>
+        <div class="qe-field"><label>Date &amp; Time <span style="color:var(--dim);font-weight:400;font-size:10px">(CST)</span></label><input id="q-datetime-d" type="datetime-local"></div>
       </div>
     </div>
 
@@ -960,8 +960,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <div class="modal-field" style="margin-bottom:0">
         <label>Chart screenshots <span style="color:var(--dim);font-weight:400;font-size:11px">— optional, up to 4</span></label>
         <div class="photo-upload-area" style="margin-top:6px" onclick="document.getElementById('photo-input').click()">
-          <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotoUpload(event)">
-          <div class="photo-upload-label">Drop charts here or <span>click to upload</span><br><span style="font-size:10px;color:var(--dim)">PNG, JPG, WEBP</span></div>
+          <input type="file" id="photo-input" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(event)">
+          <div class="photo-upload-label">Drop charts here or <span style="color:var(--green);text-decoration:underline;cursor:pointer">click to upload</span><br><span style="font-size:10px;color:var(--dim)">PNG, JPG, WEBP</span></div>
         </div>
         <div class="photo-preview-grid" id="photo-preview-grid"></div>
       </div>
@@ -2064,6 +2064,12 @@ function fullLog(){
   const qrr=document.getElementById('q-quick-rr'); if(qrr) qrr.value='';
   const qod=document.getElementById('q-outcome-d'); if(qod) qod.value='';
   renderTagSelectors();
+  // Success toast
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--green-border);border-radius:var(--r2);padding:14px 18px;z-index:3000;display:flex;align-items:center;gap:12px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.4)';
+  toast.innerHTML = `<span style="color:var(--green);font-size:18px">✓</span><div><strong style="color:var(--green)">Trade logged!</strong> AI review running...</div><button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px" onclick="this.parentElement.remove()">✕</button>`;
+  document.body.appendChild(toast);
+  setTimeout(() => { if(toast.parentElement) toast.remove(); }, 5000);
   reviewTrade(state.trades.length-1);
 }
 
@@ -3405,31 +3411,6 @@ function updateProUI() {
 }
 
 function fullLogGated() {
-  if (!isPro()) {
-    const t = buildTrade(true);
-    if (!t) return;
-    t.photos = [...pendingPhotos];
-    state.trades.push(t);
-    save();
-    document.getElementById('full-notes').value = '';
-    state.selectedSetups = [];
-    state.selectedMistakes = [];
-    pendingPhotos = [];
-    renderPhotoPreviews();
-    document.getElementById('q-entry').value = '';
-    document.getElementById('q-exit').value = '';
-    document.getElementById('q-outcome').value = '';
-    renderTagSelectors();
-    go('history');
-    setTimeout(() => {
-      const banner = document.createElement('div');
-      banner.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--green-border);border-radius:var(--r2);padding:14px 18px;z-index:3000;display:flex;align-items:center;gap:12px;font-size:13px;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,.4)';
-      banner.innerHTML = `<div style="flex:1"><strong style="color:var(--green)">Trade logged!</strong> Upgrade to Pro for AI reviews, insights, and your full coaching dashboard.</div><button class="btn btn-green btn-sm" onclick="openUpgradeModal();this.parentElement.remove()">⚡ Upgrade</button><button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;flex-shrink:0" onclick="this.parentElement.remove()">✕</button>`;
-      document.body.appendChild(banner);
-      setTimeout(() => { if (banner.parentElement) banner.remove(); }, 7000);
-    }, 400);
-    return;
-  }
   fullLog();
 }
 
