@@ -1972,7 +1972,7 @@ function renderRecent() {
       <span class="side-pill ${t.side==='long'?'long-pill':'short-pill'}">${t.side.toUpperCase()}</span>
       <span style="font-size:13px;font-weight:700">${t.ticker}</span>
       <span style="font-size:11px;color:var(--muted);flex:1">${t.datetime?t.datetime.slice(0,10):''}</span>
-      ${t.grade?`<span class="grade-badge grade-${t.grade}" style="font-size:20px">${t.grade}</span>`:''}
+      ${t.grade?`<span class="grade-badge grade-${t.grade?.replace(/[^A-F]/g,'')[0]||''}" style="font-size:20px">${t.grade}</span>`:''}
       <span style="font-size:13px;font-weight:700;font-family:var(--mono)" class="${pnl>=0?'pnl-pos':'pnl-neg'}">${pf(pnl)}</span>
     </div>`;
   }).join('');
@@ -2224,8 +2224,9 @@ For flags add specific warnings like: "Risked 2.3x your average", "Traded outsid
 
 function buildReviewCard(d, idx) {
   const grade=d.grade||'?';
+  const baseLetter = grade.replace(/[^A-F]/g,'')[0] || 'C'; // strip +/- for CSS
   const gradeColors={A:'#00d084',B:'#4a9eff',C:'#f5a623',D:'#ff6432',F:'#ff4d4d'};
-  const col=gradeColors[grade]||'#888';
+  const col=gradeColors[baseLetter]||'#888';
   const autoTags=[
     ...(d.auto_setups||[]).map(s=>`<span class="auto-tag auto-tag-setup">${s}</span>`),
     ...(d.auto_mistakes||[]).map(m=>`<span class="auto-tag auto-tag-mistake">${m}</span>`),
@@ -2234,7 +2235,7 @@ function buildReviewCard(d, idx) {
   const flags=(d.flags||[]).map(f=>`<div style="font-size:11px;color:var(--amber);padding:3px 0;border-bottom:1px solid var(--border)">⚠ ${f}</div>`).join('');
   return `<div class="review-card">
     <div class="review-grade-bar">
-      <div class="grade-circle grade-${grade}-bg">${grade}</div>
+      <div class="grade-circle grade-${baseLetter}-bg">${grade}</div>
       <div>
         <div style="font-size:14px;font-weight:700;line-height:1.3">${d.headline||'Trade reviewed'}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:3px">${d.why||''}</div>
@@ -2263,7 +2264,7 @@ function openTradeModal(idx,loading) {
       <div class="stat-card"><div class="stat-card-val ${pnl>=0?'pnl-pos':'pnl-neg'}">${pf(pnl)}</div><div class="stat-card-label">P&L</div></div>
       <div class="stat-card"><div class="stat-card-val">${t.plannedRR ? t.plannedRR+'R' : (rr?rr+'R':'—')}</div><div class="stat-card-label">Planned R:R</div></div>
       <div class="stat-card"><div class="stat-card-val" style="${t.plannedRR && rr && parseFloat(rr) < parseFloat(t.plannedRR) ? 'color:var(--amber)' : ''}">${rr?rr+'R':'—'}</div><div class="stat-card-label">Realized R:R</div></div>
-      <div class="stat-card"><div class="stat-card-val grade-badge ${t.grade?'grade-'+t.grade:''}" style="font-size:48px;letter-spacing:-2px;line-height:1">${t.grade||'—'}</div><div class="stat-card-label">AI Grade</div></div>
+      <div class="stat-card"><div class="stat-card-val grade-badge ${t.grade?'grade-'+(t.grade.replace(/[^A-F]/g,'')[0]||''):''}" style="font-size:48px;letter-spacing:-2px;line-height:1">${t.grade||'—'}</div><div class="stat-card-label">AI Grade</div></div>
     </div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Execution</div>
     <div style="font-size:13px;font-family:var(--mono);background:var(--bg3);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;line-height:1.8">
@@ -2336,7 +2337,7 @@ function renderHistory() {
       <td style="color:var(--muted);font-size:11px">${t.propFirm?`<span style="color:var(--text);font-size:11px">${t.propFirm}</span>${t.propAccount?`<br><span style="color:var(--dim)">${t.propAccount}</span>`:''}` : '<span style="color:var(--dim)">—</span>'}</td>
       <td>${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
       <td>${(t.mistakes||[]).map(m=>`<span class="tag-pill mistake-pill">${m}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
-      <td style="text-align:center">${t.grade?`<span class="grade-badge grade-${t.grade}">${t.grade}</span>`:'<span style="color:var(--dim);font-size:18px;font-weight:700">—</span>'}</td>
+      <td style="text-align:center">${t.grade?`<span class="grade-badge grade-${t.grade?.replace(/[^A-F]/g,'')[0]||''}">${t.grade}</span>`:'<span style="color:var(--dim);font-size:18px;font-weight:700">—</span>'}</td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" onclick="openTradeModal(${idx})">Review</button> <button class="btn btn-sm btn-red" style="padding:5px 8px" onclick="event.stopPropagation();deleteTrade(${idx})" title="Delete trade">✕</button></td>
     </tr>`;
   }).join('');
@@ -4317,13 +4318,19 @@ function renderSetupsPage() {
   const gradeGroups = {};
   T.forEach(t => {
     const g = t.grade || '—';
+    // Normalize grade — strip + from B/C/D (only A+ is valid), keep as-is
     if (!gradeGroups[g]) gradeGroups[g] = [];
     gradeGroups[g].push(t);
   });
-  const gradeOrder = ['A+','A','B','C','D','F','—'];
+  const gradeOrder = ['A+','A','A-','B+','B','B-','C+','C','C-','D','F','—'];
   const gradeBody = document.getElementById('grade-stats-body');
   if (gradeBody) {
-    const gradeColor = {A:'var(--green)','A+':'var(--green)',B:'var(--blue)',C:'var(--amber)',D:'var(--amber)',F:'var(--red)','—':'var(--dim)'};
+    const gradeColor = {
+      'A+':'var(--green)','A':'var(--green)','A-':'var(--green)',
+      'B+':'var(--blue)','B':'var(--blue)','B-':'var(--blue)',
+      'C+':'var(--amber)','C':'var(--amber)','C-':'var(--amber)',
+      'D':'var(--red)','F':'var(--red)','—':'var(--dim)'
+    };
     const rows = gradeOrder.filter(g => gradeGroups[g]).map(g => {
       const s = groupStats(gradeGroups[g]);
       return `<tr>
@@ -4515,7 +4522,7 @@ function renderGallery() {
         <div class="gallery-meta">
           <span class="side-pill ${t.side==='long'?'long-pill':'short-pill'}">${t.side.toUpperCase()}</span>
           <strong style="font-size:13px">${t.ticker}</strong>
-          ${t.grade ? `<span class="grade-badge grade-${t.grade}" style="font-size:20px">${t.grade}</span>` : ''}
+          ${t.grade ? `<span class="grade-badge grade-${t.grade?.replace(/[^A-F]/g,'')[0]||''}" style="font-size:20px">${t.grade}</span>` : ''}
           ${outcomeLabel ? `<span class="tag-pill ${outcomeClass}">${outcomeLabel}</span>` : ''}
           <span style="font-size:11px;color:var(--muted);margin-left:auto">${t.datetime?t.datetime.slice(0,10):''}</span>
         </div>
