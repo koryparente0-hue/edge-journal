@@ -710,8 +710,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   <div class="nav-divider"></div>
 
   <!-- ANALYTICS QUICK LINKS -->
-  <div class="nav-item" onclick="goPro('setups')">
-    <svg viewBox="0 0 16 16" fill="none"><path d="M1 12l4-5 4 3 5-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Setups
+  <div class="nav-item" onclick="goPro('setups')" style="background:rgba(0,208,132,0.08);border:1px solid rgba(0,208,132,0.2);border-radius:var(--r);color:var(--green);font-weight:600;margin-bottom:2px">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M1 12l4-5 4 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Stats
   </div>
   <div class="nav-item" onclick="goPro('mistakes')">
     <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L1 14h14L8 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 7v3M8 12v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Mistakes
@@ -1003,8 +1003,9 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
           <option value="">— none / personal —</option>
         </select>
       </div>
-      <div class="qe-field" id="q-prop-account-wrap" style="display:none"><label>Account</label>
-        <select id="q-prop-account"><option value="">— select account —</option></select>
+      <div class="qe-field" id="q-prop-account-wrap" style="display:none">
+        <label>Accounts <span style="color:var(--dim);font-weight:400;font-size:11px">— select all that apply</span></label>
+        <div id="q-prop-account-checkboxes" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;max-height:110px;overflow-y:auto;display:flex;flex-direction:column;gap:5px"></div>
       </div>
     </div>
 
@@ -2061,9 +2062,10 @@ function buildTrade(withNotes) {
     const mistakes = withNotes ? [...state.selectedMistakes] : [];
     const notes = withNotes ? (document.getElementById('full-notes').value||'') : '';
     const propFirm = document.getElementById('q-prop-firm')?.value||'';
-    const propAccount = document.getElementById('q-prop-account')?.value||'';
+    const propAccounts = propFirm ? Array.from(document.querySelectorAll('#q-prop-account-checkboxes input:checked')).map(cb=>cb.value) : [];
+    const propAccount = propAccounts.join(', ');
     const entryTF = document.getElementById('q-entry-tf')?.value || '';
-    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, setups, mistakes, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF};
+    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF};
   } else {
     // Detailed mode
     entry = parseFloat(document.getElementById('q-entry').value);
@@ -2080,8 +2082,9 @@ function buildTrade(withNotes) {
     const mistakes = withNotes ? [...state.selectedMistakes] : [];
     const notes = withNotes ? (document.getElementById('full-notes').value||'') : '';
     const propFirm = document.getElementById('q-prop-firm')?.value||'';
-    const propAccount = document.getElementById('q-prop-account')?.value||'';
-    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, setups, mistakes, notes, grade:null, review:null};
+    const propAccounts = propFirm ? Array.from(document.querySelectorAll('#q-prop-account-checkboxes input:checked')).map(cb=>cb.value) : [];
+    const propAccount = propAccounts.join(', ');
+    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null};
   }
 }
 
@@ -2091,6 +2094,16 @@ function fullLog(){
   if(!t)return;
   t.photos = [...pendingPhotos];
   state.trades.push(t);
+  // Auto-update prop account P&L for all selected accounts
+  if (t.propFirm && t.propAccounts?.length) {
+    const tradePnL = calcPnL(t);
+    t.propAccounts.forEach(acctName => {
+      const acctIdx = (state.propAccounts||[]).findIndex(a => a.name === acctName && a.firm === t.propFirm);
+      if (acctIdx >= 0) {
+        state.propAccounts[acctIdx].pnl = (parseFloat(state.propAccounts[acctIdx].pnl)||0) + tradePnL;
+      }
+    });
+  }
   save();
   document.getElementById('full-notes').value='';
   state.selectedSetups=[];
@@ -4140,13 +4153,17 @@ function updateLogPropOptions() {
 function updateLogAccountOptions() {
   const firm = document.getElementById('q-prop-firm').value;
   const wrap = document.getElementById('q-prop-account-wrap');
-  const sel = document.getElementById('q-prop-account');
+  const box  = document.getElementById('q-prop-account-checkboxes');
   if (!firm) { wrap.style.display='none'; return; }
   const accounts = (state.propAccounts||[]).filter(a=>a.firm===firm);
-  sel.innerHTML = '<option value="">— all accounts —</option>';
-  accounts.forEach(a => sel.innerHTML += `<option value="${a.name}">${a.name}</option>`);
-  wrap.style.display = accounts.length>1 ? '' : 'none';
-  if (accounts.length===1) sel.value = accounts[0].name;
+  if (!accounts.length) { wrap.style.display='none'; return; }
+  wrap.style.display = '';
+  box.innerHTML = accounts.map((a,i) => `
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text)">
+      <input type="checkbox" id="pac-${i}" value="${a.name}" ${accounts.length===1?'checked':''} style="accent-color:var(--green);width:14px;height:14px">
+      <span>${a.name}</span>
+      <span style="font-size:10px;color:var(--muted);margin-left:auto">${a.status||''}</span>
+    </label>`).join('');
 }
 
 // ─── DASHBOARD PROP SUMMARY ───────────────────────────────────────────────────
