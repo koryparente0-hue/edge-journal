@@ -2111,9 +2111,8 @@ function fullLog(){
   toast.innerHTML = `<span style="color:var(--green);font-size:18px">✓</span><div><strong style="color:var(--green)">Trade logged!</strong> AI grading now...</div><button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px" onclick="this.parentElement.remove()">✕</button>`;
   document.body.appendChild(toast);
   setTimeout(() => { if(toast.parentElement) toast.remove(); }, 4000);
-  // Open the trade modal immediately so user sees the review come in live
   const newIdx = state.trades.length - 1;
-  setTimeout(() => openTradeModal(newIdx), 300);
+  openTradeModal(newIdx, true);
   reviewTrade(newIdx);
 }
 
@@ -2140,8 +2139,12 @@ async function reviewTrade(idx) {
   const prevLoss=prevTrades.length&&calcPnL(prevTrades[prevTrades.length-1])<0;
   const timeDiffMin=prevTrades.length&&prevTrades[prevTrades.length-1].datetime?Math.round((new Date(t.datetime)-new Date(prevTrades[prevTrades.length-1].datetime))/60000):null;
 
-  go('history');
-  setTimeout(()=>openTradeModal(idx,true),150);
+  // Only navigate to history if the modal isn't already open
+  const modalAlreadyOpen = document.getElementById('modal-review-'+idx)?.isConnected;
+  if (!modalAlreadyOpen) {
+    go('history');
+    setTimeout(()=>openTradeModal(idx,true),150);
+  }
 
   const histContext=`
 TRADER HISTORY CONTEXT (${prevTrades.length} prior trades):
