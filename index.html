@@ -2526,9 +2526,32 @@ function renderSetupAnalytics() {
 function renderMistakeAnalytics() {
   const stats={};
   state.trades.forEach(t=>{
+    const pnl = calcPnL(t);
     (t.mistakes||[]).forEach(m=>{
       if(!stats[m])stats[m]={cost:0,count:0};
-      stats[m].cost+=calcPnL(t); stats[m].count++;
+      let mistakeCost = pnl; // default: full trade P&L
+
+      // Early Exit: cost = money left on table (planned R - realized R) * dollar per R
+      if (m === 'Early Exit' && t.plannedRR && t.quickRR) {
+        const planned = parseFloat(t.plannedRR);
+        const realized = parseFloat(t.quickRR);
+        const lostR = planned - realized;
+        if (lostR > 0 && realized !== 0) {
+          // Dollar value per 1R = realized P&L / realized R
+          const dollarPerR = Math.abs(pnl) / Math.abs(realized);
+          mistakeCost = -(lostR * dollarPerR); // negative = money lost
+        } else {
+          mistakeCost = 0;
+        }
+      }
+      // For winning trades tagged with other mistakes, cost = 0 (mistake didn't cause a loss)
+      // Only count cost on losing trades for non-early-exit mistakes
+      else if (pnl > 0 && m !== 'Early Exit') {
+        mistakeCost = 0;
+      }
+
+      stats[m].cost += mistakeCost;
+      stats[m].count++;
     });
   });
   const active=Object.entries(stats).filter(([,v])=>v.count>0).sort((a,b)=>a[1].cost-b[1].cost);
@@ -2771,7 +2794,21 @@ function refreshPatternFeed() {
 
   // Mistake costs
   const mistakeCost={};
-  T.forEach(t=>(t.mistakes||[]).forEach(m=>{if(!mistakeCost[m])mistakeCost[m]={cost:0,n:0};mistakeCost[m].cost+=calcPnL(t);mistakeCost[m].n++;}));
+  T.forEach(t=>{
+    const pnl = calcPnL(t);
+    (t.mistakes||[]).forEach(m=>{
+      if(!mistakeCost[m])mistakeCost[m]={cost:0,n:0};
+      let cost = pnl < 0 ? pnl : 0; // default: only count losses
+      if (m === 'Early Exit' && t.plannedRR && t.quickRR) {
+        const lostR = parseFloat(t.plannedRR) - parseFloat(t.quickRR);
+        if (lostR > 0 && parseFloat(t.quickRR) !== 0) {
+          cost = -(lostR * (Math.abs(pnl) / Math.abs(parseFloat(t.quickRR))));
+        } else { cost = 0; }
+      }
+      mistakeCost[m].cost += cost;
+      mistakeCost[m].n++;
+    });
+  });
   const topMistake=Object.entries(mistakeCost).sort((a,b)=>a[1].cost-b[1].cost)[0];
   if(topMistake)patterns.push({color:'#ff4d4d',text:`<strong>${topMistake[0]}</strong> has cost you <strong>$${Math.abs(Math.round(topMistake[1].cost))}</strong> across ${topMistake[1].n} trades — your single most expensive behavior.`,badge:'-$'+Math.abs(Math.round(topMistake[1].cost))});
 
