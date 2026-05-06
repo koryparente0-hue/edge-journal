@@ -2159,40 +2159,49 @@ TRADER HISTORY CONTEXT (${prevTrades.length} prior trades):
 - Time since last trade: ${timeDiffMin!=null?timeDiffMin+' minutes':'unknown'}
 - Setup performance: ${Object.entries(setupStats).map(([s,v])=>`${s}: ${Math.round(v.wins/v.n*100)}% win (${v.n} trades)`).join(', ')||'no prior setup data'}`;
 
-  const prompt=`You are an expert ICT futures trading coach with access to this trader's full history. The trader scalps NQ/MNQ, NY session 9:30-11:00 EST only.
+  const prompt=`You are an expert ICT futures trading coach reviewing a trader's journal entry. The trader scalps NQ/MNQ, NY session 9:30-11:00 EST only.
 
-CRITICAL TIMEZONE NOTE: The trader lives in CST (UTC-6) but trade times are logged in EST. 9:34 EST IS within the valid 9:30-11:00 EST session. Do NOT flag trades as outside hours if the time is between 9:30-11:00 EST.
+CRITICAL TIMEZONE NOTE: Trade times are logged in EST. 9:30-11:00 EST is the valid session window.
 
-STRATEGY: Mech Model (HTF sweep → inversion FVG entry → LRLR/eq highs/session HL targets) or Continuation (post-sweep pullback into FVG → inversion).
-Rules: Only 9:30–11:00 EST. Always wait for inversion FVG. Targets = low-resistance liquidity only.
+STRATEGY:
+- Mech Model: HTF liquidity sweep → 5m/15m FVG filled → inversion FVG entry → targets: LRLR, eq highs/lows, session H/L, unfilled HTF FVGs
+- Continuation: LRLR builds → pullback into rejection block or FVG → inversion FVG on highest TF of the leg → entry → same targets
 ${buildGradingContext()}
+
+CRITICAL GRADING RULES:
+1. The trader has pre-tagged their own setup. TRUST THEIR TAGS — do not override them with a different setup name unless the notes clearly contradict it.
+2. Read the trader's notes carefully. The notes describe what actually happened. Grade based on what they wrote, not on assumptions.
+3. If the trader tagged "Continuation" it IS a continuation setup. Do not call it a Mech Model.
+4. If the trader wrote a detailed description, use it — it's the ground truth for what happened in the trade.
 
 THIS TRADE:
 ${t.ticker} ${t.side.toUpperCase()} | ${t.datetime||'unknown'} | Entry:${t.entry} Exit:${t.exit} Qty:${t.qty}
 Stop:${t.sl||'none'} Target:${t.tp||'none'} P&L:$${Math.round(pnl)} Planned R:R:${t.plannedRR||'?'} Realized R:R:${rr||'?'}
 ${t.plannedRR && rr && parseFloat(rr) < parseFloat(t.plannedRR) ? `EARLY EXIT DETECTED: Planned ${t.plannedRR}R but only took ${rr}R — left ${(parseFloat(t.plannedRR)-parseFloat(rr)).toFixed(2)}R on the table. Grade this accordingly — early exits are a discipline issue even on winning trades.` : ''}
-Pre-tagged setups: ${t.setups?.join(',')||'none'} | Pre-tagged mistakes: ${t.mistakes?.join(',')||'none'} | Outcome: ${t.outcome?{win:'Win',loss:'Loss',be_win:'BE → Win',be_loss:'BE → Loss'}[t.outcome]:'not specified'}
-Notes: ${t.notes||'none'}
-${t.notes?.includes('Imported from Tradovate') || t.quickMode ? 'DATA NOTE: This trade was imported automatically from Tradovate — stop loss and target data are not available because they were not in the export. Do NOT penalize for missing SL/TP. Focus grading on what is known: the entry, exit, outcome, setup type, and timing. A loss without a visible SL does not mean the SL was ignored — it simply was not exported.' : ''}
+Trader-tagged setups: ${t.setups?.join(', ')||'none'} ← USE THESE, do not change them unless clearly wrong
+Trader-tagged mistakes: ${t.mistakes?.join(', ')||'none'} ← ADD to these, do not remove them
+Outcome: ${t.outcome?{win:'Win',loss:'Loss',be_win:'BE → Win',be_loss:'BE → Loss'}[t.outcome]:'not specified'}
+Trader notes: "${t.notes||'none'}" ← READ THIS CAREFULLY — this is what actually happened
+${t.notes?.includes('Imported from Tradovate') || t.quickMode ? 'DATA NOTE: Imported from Tradovate — SL/TP not available. Do not penalize for missing SL/TP.' : ''}
 ${histContext}
 
 Respond in this EXACT JSON format only, no other text:
 {
-  "grade": "A",
-  "headline": "Clean mech model execution — waited for the inversion",
-  "worked": "Waited for 1h FVG sweep and confirmed 5m inversion before entry. Targeted LRLR precisely.",
-  "wrong": "Nothing obvious — textbook execution.",
-  "lesson": "This is exactly what A+ setups look like. Screenshot and add to playbook.",
-  "why": "Followed all rules, positive R:R, no rule violations.",
-  "auto_setups": ["Mech Model"],
+  "grade": "B+",
+  "headline": "One sentence summary of this specific trade",
+  "worked": "What went right based on the trader's actual notes and setup",
+  "wrong": "What went wrong — be specific to what they described",
+  "lesson": "The single most important takeaway",
+  "why": "Why you gave this grade",
+  "auto_setups": ["Continuation"],
   "auto_mistakes": [],
-  "auto_behaviors": ["Clean execution"],
+  "auto_behaviors": [],
   "flags": []
 }
 
-For auto_mistakes use only from: FOMO, Overtraded, Ignored SL, Early Exit, Revenge Trade, No Setup, Sized Too Big, Chased Entry, Traded Outside Hours, Risk Spike.
-For auto_behaviors describe what you detect: Clean execution, Revenge trade suspected, Size spike, Overtrade session, etc.
-For flags add specific warnings like: "Risked 2.3x your average", "Traded outside 9:30-11:00 window", "Entry 8 min after a loss".`;
+For auto_setups: match what the trader tagged. Only add a different setup if the notes clearly show a different pattern.
+For auto_mistakes use only from: FOMO, Overtraded, Ignored SL, Early Exit, Revenge Trade, No Setup, Sized Too Big, Chased Entry, Traded Outside Hours, Risk Spike, P&L fixation, Re-entry behavior.
+For flags add specific warnings relevant to this trade only.`;
 
   try {
     const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
