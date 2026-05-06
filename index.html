@@ -1253,15 +1253,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     <div id="be-analysis-content"><div class="empty"><strong>No BE data yet</strong>Tag trades with Win, Loss, BE → Win, or BE → Loss outcomes to see this analysis.</div></div>
   </div>
 
-  <!-- BE ANALYSIS -->
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Breakeven analysis</span>
-      <span class="card-sub" id="be-headline"></span>
-    </div>
-    <div id="be-analysis-content"><div class="empty"><strong>No BE data yet</strong>Tag trades with Win, Loss, BE → Win, or BE → Loss outcomes to see this analysis.</div></div>
-  </div>
-
   <!-- TRADE GALLERY -->
   <div class="card">
     <div class="card-header">
@@ -5261,27 +5252,21 @@ function calClickDay(day, trades) {
 let statsEqChartObj = null;
 
 function renderStatsExtras(T) {
-  // trRR: get realized R from trade, fall back to plannedRR
-  function trRR(t) {
-    const r = parseFloat(t.quickRR) || parseFloat(calcRR(t));
-    if (r && !isNaN(r)) return r;
-    return parseFloat(t.plannedRR) || null;
-  }
-  const allWithRR = T.filter(t => trRR(t) !== null);
-  const winRRs  = allWithRR.filter(t=>calcPnL(t)>0).map(trRR);
-  const lossRRs = allWithRR.filter(t=>calcPnL(t)<0).map(trRR);
+  // Expectancy — use a local helper to avoid name collision
+  function trRR(t) { return parseFloat(calcRR(t)) || (t.quickRR ? parseFloat(t.quickRR) : null); }
+  const winRRs  = T.filter(t=>calcPnL(t)>0).map(trRR).filter(v=>v!==null&&!isNaN(v));
+  const lossRRs = T.filter(t=>calcPnL(t)<0).map(trRR).filter(v=>v!==null&&!isNaN(v));
   const wrFrac  = T.length ? T.filter(t=>calcPnL(t)>0).length/T.length : 0;
   const avgW    = winRRs.length  ? winRRs.reduce((a,b)=>a+b,0)/winRRs.length  : null;
-  // If no losses yet, assume avg loss = 1R (full stop)
-  const avgL    = lossRRs.length ? Math.abs(lossRRs.reduce((a,b)=>a+b,0)/lossRRs.length) : (allWithRR.length ? 1.0 : null);
-  const E       = avgW!==null && avgL!==null && allWithRR.length>0 ? wrFrac*avgW-(1-wrFrac)*avgL : null;
+  const avgL    = lossRRs.length ? Math.abs(lossRRs.reduce((a,b)=>a+b,0)/lossRRs.length) : null;
+  const E       = avgW!==null&&avgL!==null ? wrFrac*avgW-(1-wrFrac)*avgL : null;
 
   const eMain = document.getElementById('exp-main');
   if (eMain) {
     if (E !== null) {
       eMain.textContent  = (E>=0?'+':'')+E.toFixed(2)+'R';
       eMain.style.color  = E>0?'var(--green)':E<0?'var(--red)':'var(--muted)';
-      document.getElementById('exp-lbl').textContent = lossRRs.length === 0 ? 'per trade (assuming 1R avg loss)' : 'expected per trade';
+      document.getElementById('exp-lbl').textContent = 'expected per trade';
       document.getElementById('exp-proj').innerHTML = E>0
         ? `50 trades ≈ <strong style="color:var(--green)">+${(E*50).toFixed(1)}R</strong> &nbsp;·&nbsp; 100 trades ≈ <strong style="color:var(--green)">+${(E*100).toFixed(1)}R</strong>`
         : `<span style="color:var(--red)">Negative expectancy — this system loses long-term.</span>`;
