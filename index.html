@@ -1280,10 +1280,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <div class="card-header" style="margin-bottom:6px"><span class="card-title">Win rate over time</span><span class="card-sub">Rolling 10-trade trend</span></div>
       <div style="position:relative;height:148px"><canvas id="wrTrendChart"></canvas></div>
     </div>
-    <div class="card">
-      <div class="card-header" style="margin-bottom:6px"><span class="card-title">P&amp;L distribution</span><span class="card-sub">Trade outcome sizes</span></div>
-      <div style="position:relative;height:148px"><canvas id="pnlDistChart"></canvas></div>
-    </div>
+
   </div>
   <div class="card" style="margin-bottom:12px">
     <div class="card-header" style="margin-bottom:6px"><span class="card-title">Setup radar</span><span class="card-sub">Win rate per setup — needs 2+ setups tagged</span></div>
@@ -4446,7 +4443,6 @@ function renderSetupsPage() {
   const T = periodFilter(state.trades, period);
   renderStatsExtras(T);
   renderWRTrendChart(T);
-  renderPnLDistChart(T);
   renderSetupRadar(T);
   if (!T.length) return;
 
@@ -5252,35 +5248,6 @@ function renderWRTrendChart(T) {
     type:'line',
     data:{ labels, datasets:[{ data, borderColor:'#63b3ed', borderWidth:2, pointRadius:data.length>20?0:3, pointBackgroundColor:'#63b3ed', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,148); g.addColorStop(0,'rgba(99,179,237,0.2)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4 }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.y+'% WR' } } }, scales:{ x:{grid:{display:false},ticks:{color:'#555',font:{size:9},maxTicksLimit:8}}, y:{min:0,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},callback:v=>v+'%'},border:{display:false}} } }
-  });
-}
-
-// ─── P&L DISTRIBUTION HISTOGRAM ──────────────────────────────────────────────
-let pnlDistChartObj = null;
-function renderPnLDistChart(T) {
-  const ctx = document.getElementById('pnlDistChart')?.getContext('2d');
-  if (!ctx) return;
-  if (pnlDistChartObj) { pnlDistChartObj.destroy(); pnlDistChartObj = null; }
-  const BUCKETS = [
-    { label:'<-$500', min:-Infinity, max:-500 },
-    { label:'-$500', min:-500, max:-250 },
-    { label:'-$250', min:-250, max:-100 },
-    { label:'-$100', min:-100, max:0 },
-    { label:'+$100', min:0, max:100 },
-    { label:'+$250', min:100, max:250 },
-    { label:'+$500', min:250, max:500 },
-    { label:'>$500', min:500, max:Infinity },
-  ];
-  const allCounts = BUCKETS.map(b => T.filter(t=>{ const p=calcPnL(t); return p>=b.min&&p<b.max; }).length);
-  // Only show buckets that have data
-  const activeBuckets = BUCKETS.filter((_,i) => allCounts[i] > 0);
-  const counts = activeBuckets.map(b => T.filter(t=>{ const p=calcPnL(t); return p>=b.min&&p<b.max; }).length);
-  const colors = activeBuckets.map(b => b.min >= 0 ? 'rgba(0,208,132,0.75)' : 'rgba(255,77,77,0.75)');
-  if (!counts.length) { ctx.canvas.parentElement.innerHTML = '<div class="empty" style="height:148px;display:flex;align-items:center;justify-content:center">No trade data yet</div>'; return; }
-  pnlDistChartObj = new Chart(ctx, {
-    type:'bar',
-    data:{ labels: activeBuckets.map(b=>b.label), datasets:[{ data:counts, backgroundColor:colors, borderRadius:3, borderSkipped:false }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.y+' trade'+(c.parsed.y!==1?'s':'') } } }, scales:{ x:{grid:{display:false},ticks:{color:'#666',font:{size:9}}}, y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},stepSize:1},border:{display:false}} } }
   });
 }
 
