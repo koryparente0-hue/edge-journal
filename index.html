@@ -716,9 +716,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   <div class="nav-item" id="nav-setups" onclick="go('setups')" style="background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);border-radius:var(--r);color:#ff8c00;font-weight:700;margin-bottom:2px">
     <svg viewBox="0 0 16 16" fill="none"><path d="M1 12l4-5 4 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Stats
   </div>
-  <div class="nav-item" id="nav-mistakes" onclick="go('mistakes')">
-    <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L1 14h14L8 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 7v3M8 12v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Mistakes
-  </div>
+
   <div class="nav-item" id="nav-insights" onclick="go('insights')">
     <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" fill="currentColor" opacity=".5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>AI Insights
   </div>
@@ -738,18 +736,14 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     <div class="nav-item" id="nav-streaks" onclick="go('streaks')">
       <svg viewBox="0 0 16 16" fill="none"><path d="M9 2c0 3-3 4-3 7a4 4 0 008 0c0-4-5-7-5-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Streaks
     </div>
-    <div class="nav-item" id="nav-tilt" onclick="go('tilt')">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6 2.7-6 6-6z" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v4l2.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Tilt Detection
-    </div>
+
     <div class="nav-item" id="nav-risk" onclick="go('risk')">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14V6l4-4h6l2 2v10" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 14v-4h4v4" stroke="currentColor" stroke-width="1.3"/></svg>Risk Consistency
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14V6l4-4h6l2 2v10" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 14v-4h4v4" stroke="currentColor" stroke-width="1.3"/></svg>Risk &amp; Mistakes
     </div>
     <div class="nav-item" id="nav-setuplibrary" onclick="go('setuplibrary')">
       <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Setup Library
     </div>
-    <div class="nav-item" id="nav-playbook" onclick="go('playbook')">
-      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 5h6M5 8h4M5 11h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Playbook
-    </div>
+
     <div class="nav-divider"></div>
     <div class="nav-item" id="nav-grading" onclick="openGradingSettings()" style="color:#a78bfa;font-weight:600">
       <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M11.1 4.9l-1.4 1.4M4.9 11.1l-1.4 1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Grading Criteria
@@ -833,6 +827,19 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       </div>
     </div>
     <div id="pattern-feed"><div class="empty">Log 5+ trades to see your live pattern feed.</div></div>
+  </div>
+
+  <!-- WEEKLY REPORT -->
+  <div class="card" id="weekly-report-card">
+    <div class="card-header">
+      <span class="card-title">Weekly Report</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <select id="weekly-report-week" class="btn btn-sm" style="font-size:11px" onchange="renderWeeklyReport()">
+        </select>
+        <button class="btn btn-sm btn-green" onclick="runWeeklyAI()">AI Analysis ↗</button>
+      </div>
+    </div>
+    <div id="weekly-report-body"><div class="empty">Log trades to see your weekly report.</div></div>
   </div>
 </div>
 
@@ -1363,19 +1370,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 </div>
 
 <!-- MISTAKES -->
-<div class="page" id="page-mistakes">
-  <div class="page-header"><div><div class="page-title">Mistake Tracker</div><div class="page-sub">What's actually costing you money</div></div></div>
-  <div class="grid2">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Cost per mistake (total $)</span></div>
-      <div id="mistake-cost-list"><div class="empty"><strong>No data yet</strong>Tag trades with mistakes to track their cost.</div></div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Mistake frequency</span></div>
-      <div id="mistake-freq-list"><div class="empty"><strong>No data yet</strong>Start tagging bad trades.</div></div>
-    </div>
-  </div>
-</div>
+
 
 <!-- AI INSIGHTS -->
 <div class="page" id="page-insights">
@@ -1450,14 +1445,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 </div>
 
-<!-- PLAYBOOK -->
-<div class="page" id="page-playbook">
-  <div class="page-header">
-    <div><div class="page-title">Playbook</div><div class="page-sub">Your best setups, documented</div></div>
-    <button class="btn btn-green" onclick="openPlaybookModal()">+ Add setup</button>
-  </div>
-  <div id="playbook-list"><div class="empty"><strong>Your playbook is empty</strong>Document your best setups with rules and notes so you always know what you're trading.</div></div>
-</div>
+
 
 <!-- DAILY ROUTINE -->
 <div class="page" id="page-routine">
@@ -1530,39 +1518,42 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 </div>
 
 <!-- TILT DETECTION -->
-<div class="page" id="page-tilt">
-  <div class="page-header">
-    <div><div class="page-title">Tilt Detection</div><div class="page-sub">Revenge trading, overtrading, and emotional patterns</div></div>
-    <button class="btn btn-green" onclick="runTiltAnalysis()">Run analysis ↗</button>
-  </div>
-  <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-    <div class="metric"><div class="metric-label">Tilt Events Detected</div><div class="metric-val neg" id="tilt-count">—</div><div class="metric-sub">sessions with tilt</div></div>
-    <div class="metric"><div class="metric-label">Revenge Trade Cost</div><div class="metric-val neg" id="tilt-revenge-cost">—</div><div class="metric-sub">avg PnL after loss</div></div>
-    <div class="metric"><div class="metric-label">Overtrade Sessions</div><div class="metric-val amber" id="tilt-overtrade">—</div><div class="metric-sub">days with 4+ trades</div></div>
-    <div class="metric"><div class="metric-label">Size Spike Events</div><div class="metric-val amber" id="tilt-spike">—</div><div class="metric-sub">2x size after loss</div></div>
-  </div>
-  <div id="tilt-output"><div class="empty"><strong>Run analysis to detect tilt patterns</strong>Requires at least 5 trades.</div></div>
-</div>
 
-<!-- RISK CONSISTENCY -->
+
+<!-- RISK CONSISTENCY + MISTAKES -->
 <div class="page" id="page-risk">
   <div class="page-header">
-    <div><div class="page-title">Risk Consistency</div><div class="page-sub">Are you sizing consistently, or emotionally?</div></div>
+    <div><div class="page-title">Risk &amp; Mistakes</div><div class="page-sub">Sizing consistency and what's actually costing you money</div></div>
   </div>
-  <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+
+  <!-- RISK METRICS -->
+  <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px">
     <div class="metric"><div class="metric-label">Avg Risk / Trade</div><div class="metric-val" id="risk-avg">—</div><div class="metric-sub">dollar value of 1R</div></div>
     <div class="metric"><div class="metric-label">Risk Std Dev</div><div class="metric-val amber" id="risk-stddev">—</div><div class="metric-sub">consistency score</div></div>
     <div class="metric"><div class="metric-label">Largest Risk Taken</div><div class="metric-val neg" id="risk-max">—</div><div class="metric-sub">single trade</div></div>
     <div class="metric"><div class="metric-label">Risk After Loss</div><div class="metric-val" id="risk-after-loss">—</div><div class="metric-sub">vs avg risk</div></div>
   </div>
-  <div class="grid2">
+  <div class="grid2" style="margin-bottom:16px">
     <div class="card">
       <div class="card-header"><span class="card-title">Risk per trade over time</span></div>
       <div id="risk-chart-wrap" style="position:relative;height:180px"><canvas id="riskChart"></canvas></div>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Risk consistency breakdown</span></div>
-      <div id="risk-breakdown"><div class="empty">Log trades with stop losses to see risk analysis.</div></div>
+      <div id="risk-breakdown"><div class="empty">Log trades with Planned R:R to see risk analysis.</div></div>
+    </div>
+  </div>
+
+  <!-- MISTAKE ANALYTICS -->
+  <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">Mistake Tracker</div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cost per mistake (total $)</span></div>
+      <div id="mistake-cost-list"><div class="empty"><strong>No data yet</strong>Tag trades with mistakes to track their cost.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Mistake frequency</span></div>
+      <div id="mistake-freq-list"><div class="empty"><strong>No data yet</strong>Start tagging bad trades.</div></div>
     </div>
   </div>
 </div>
@@ -1788,20 +1779,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 </div>
 
-<!-- PLAYBOOK MODAL -->
-<div class="modal-overlay" id="playbook-modal" onclick="if(event.target===this)closePlaybookModal()">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div class="modal-title">Add Playbook Entry</div>
-      <button class="btn btn-sm" onclick="closePlaybookModal()">✕</button>
-    </div>
-    <div class="modal-field"><label>Setup name</label><input id="pb-name" placeholder="e.g. Mech Model, VWAP Bounce"></div>
-    <div class="modal-field"><label>Entry rules</label><textarea id="pb-rules" placeholder="When do you enter? What confirms the trade?"></textarea></div>
-    <div class="modal-field"><label>Exit rules</label><textarea id="pb-exit" placeholder="Where's your target? Where's your stop?"></textarea></div>
-    <div class="modal-field"><label>Notes / examples</label><textarea id="pb-notes" placeholder="Any extra context, examples of the setup, conditions to avoid..."></textarea></div>
-    <button class="btn btn-green" onclick="savePlaybook()" style="width:100%;justify-content:center">Save to playbook</button>
-  </div>
-</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script type="module">
@@ -1984,7 +1962,7 @@ window._mergeCloudData = function(cloudData) {
 };
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
-const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','mistakes','insights','routine','rules','tilt','risk','streaks','playbook'];
+const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','insights','routine','rules','risk','streaks','setuplibrary'];
 function go(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1997,14 +1975,11 @@ function go(page) {
   if (page==='propfirms') renderPropFirmsPage();
   if (page==='dashboard') renderDashboard();
   if (page==='history')   renderHistory();
-  if (page==='mistakes')  renderMistakeAnalytics();
   if (page==='log')       renderLogPage();
   if (page==='setuplibrary') renderSetupLibrary();
-  if (page==='playbook')  renderPlaybook();
   if (page==='routine')   renderRoutinePage();
   if (page==='rules')     renderRules();
-  if (page==='tilt')      renderTilt();
-  if (page==='risk')      renderRisk();
+  if (page==='risk')      { renderRisk(); renderMistakeAnalytics(); }
   if (page==='streaks')   renderStreaks();
   if (page==='copilot')   renderCopilotPage();
 }
@@ -2078,6 +2053,7 @@ function renderDashboard() {
   renderRecent();
   refreshPatternFeed();
   renderDashPropSummary();
+  renderWeeklyReport();
   setTimeout(()=>{ }, 100);
 }
 
@@ -2758,24 +2734,6 @@ Be specific with numbers and use ICT terminology (FVG, sweep, inversion, LRLR). 
 }
 
 // ─── PLAYBOOK ─────────────────────────────────────────────────────────────────
-function renderPlaybook(){
-  const el=document.getElementById('playbook-list');
-  if(!state.playbook.length){el.innerHTML='<div class="empty"><strong>Your playbook is empty</strong>Document your best setups so you always know what you\'re trading and why.</div>';return;}
-  el.innerHTML=state.playbook.map((p,i)=>`
-    <div class="playbook-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-        <div class="playbook-name">${p.name}</div>
-        <button class="btn btn-sm btn-red" onclick="removePlaybook(${i})">Remove</button>
-      </div>
-      ${p.rules?`<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Entry rules</div><div class="playbook-rules">${p.rules}</div>`:''}
-      ${p.exit?`<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;margin-top:8px">Exit rules</div><div class="playbook-rules">${p.exit}</div>`:''}
-      ${p.notes?`<div style="font-size:12px;color:var(--dim);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">${p.notes}</div>`:''}
-    </div>`).join('');
-}
-function openPlaybookModal(){document.getElementById('pb-name').value='';document.getElementById('pb-rules').value='';document.getElementById('pb-exit').value='';document.getElementById('pb-notes').value='';document.getElementById('playbook-modal').classList.add('open');}
-function closePlaybookModal(){document.getElementById('playbook-modal').classList.remove('open');}
-function savePlaybook(){const n=document.getElementById('pb-name').value.trim();if(!n){alert('Name required');return;}state.playbook.push({name:n,rules:document.getElementById('pb-rules').value,exit:document.getElementById('pb-exit').value,notes:document.getElementById('pb-notes').value});save();closePlaybookModal();renderPlaybook();}
-function removePlaybook(i){if(!confirm('Remove this playbook entry?'))return;state.playbook.splice(i,1);save();renderPlaybook();}
 
 // ─── CSV IMPORT ───────────────────────────────────────────────────────────────
 function loadCSVFile(e) {
@@ -3261,169 +3219,65 @@ function renderRules() {
 function removeRule(i){if(!confirm('Remove this rule?'))return;state.rules.splice(i,1);save();renderRules();}
 
 // ─── TILT DETECTION ───────────────────────────────────────────────────────────
-function renderTilt() {
-  const T=state.trades;
-  if(T.length<3){document.getElementById('tilt-output').innerHTML='<div class="empty"><strong>Not enough data</strong>Log at least 5 trades to detect tilt patterns.</div>';['tilt-count','tilt-revenge-cost','tilt-overtrade','tilt-spike'].forEach(id=>document.getElementById(id).textContent='—');return;}
-
-  // Revenge trades: trade taken within 10 min of a losing trade
-  const revengeTradesIdx=[];
-  T.forEach((t,i)=>{
-    if(i===0)return;
-    const prev=T[i-1];
-    if(calcPnL(prev)<0&&prev.datetime&&t.datetime){
-      const diff=(new Date(t.datetime)-new Date(prev.datetime))/60000;
-      if(diff>=0&&diff<=10) revengeTradesIdx.push(i);
-    }
-  });
-
-  // Overtrade days (4+ trades)
-  const byDay={};
-  T.forEach(t=>{const d=t.datetime?.slice(0,10)||'unknown';byDay[d]=(byDay[d]||0)+1;});
-  const overDays=Object.values(byDay).filter(v=>v>=4).length;
-
-  // Size spikes after loss
-  let spikeCount=0;
-  T.forEach((t,i)=>{if(i===0)return;const prev=T[i-1];if(calcPnL(prev)<0&&t.qty>prev.qty*1.5)spikeCount++;});
-
-  const revengeAvgPnL=revengeTradesIdx.length?revengeTradesIdx.reduce((a,i)=>a+calcPnL(T[i]),0)/revengeTradesIdx.length:null;
-  const normalAvgPnL=T.filter((_,i)=>!revengeTradesIdx.includes(i)).reduce((a,t,_,arr)=>a+calcPnL(t)/arr.length,0);
-
-  document.getElementById('tilt-count').textContent=revengeTradesIdx.length+overDays;
-  document.getElementById('tilt-revenge-cost').textContent=revengeAvgPnL!=null?pf(revengeAvgPnL):'—';
-  document.getElementById('tilt-overtrade').textContent=overDays;
-  document.getElementById('tilt-spike').textContent=spikeCount;
-
-  const alerts=[];
-  if(revengeTradesIdx.length>0){
-    const pct=Math.abs(((revengeAvgPnL||0)-normalAvgPnL)/Math.abs(normalAvgPnL||1)*100);
-    alerts.push({type:'danger',title:'Revenge trading detected',body:`You have ${revengeTradesIdx.length} trade(s) taken within 10 minutes of a losing trade. Average P&L on revenge trades: ${revengeAvgPnL!=null?pf(revengeAvgPnL):'?'} vs ${pf(normalAvgPnL)} on normal trades. That's ${Math.round(pct)}% worse performance.`});
-  }
-  if(overDays>0) alerts.push({type:'warn',title:'Overtrading sessions',body:`You've had ${overDays} session(s) with 4 or more trades. Your best sessions likely have 1–3 high-quality setups. More trades ≠ more profit.`});
-  if(spikeCount>0) alerts.push({type:'warn',title:'Size spikes after losses',body:`${spikeCount} time(s) you've increased position size after a losing trade — a classic revenge/recovery behavior. This compounds losses.`});
-
-  const dayEntries=Object.entries(byDay).filter(([,v])=>v>=2);
-  if(dayEntries.length===0) alerts.push({type:'safe',title:'No major tilt patterns detected',body:'Your trading looks emotionally consistent so far. Keep logging to detect future patterns early.'});
-
-  if(!alerts.length) alerts.push({type:'safe',title:'No tilt detected yet',body:'Keep logging trades. Patterns will emerge over time.'});
-
-  document.getElementById('tilt-output').innerHTML=alerts.map(a=>`
-    <div class="${a.type==='danger'?'tilt-alert':a.type==='safe'?'tilt-safe':'tilt-alert'}" style="${a.type==='warn'?'border-color:var(--amber-dim);background:var(--amber-dim);':''}">
-      <div style="font-weight:700;margin-bottom:5px;font-size:14px">${a.title}</div>
-      <div style="font-size:13px;line-height:1.65">${a.body}</div>
-    </div>`).join('');
-
-  if(T.length>=5&&!document.getElementById('tilt-output').querySelector('.ai-review-box'))
-    document.getElementById('tilt-output').innerHTML+=`<div style="margin-top:12px"><button class="btn btn-green" onclick="runTiltAnalysis()">Get AI coaching on tilt ↗</button></div>`;
-}
-
-async function runTiltAnalysis() {
-  if (!isPro()) { openUpgradeModal(); return; }
-  const T=state.trades;if(T.length<5)return;
-  document.getElementById('tilt-output').innerHTML='<div class="insight-box loading">Analyzing emotional trading patterns...</div>';
-  const summary=T.map((t,i)=>{const pnl=calcPnL(t);const prev=T[i-1];const prevPnl=prev?calcPnL(prev):null;return `${t.datetime?.slice(0,16)||'?'} | ${t.ticker} ${t.side} | PnL:$${Math.round(pnl)} | qty:${t.qty} | prevPnL:${prevPnl!=null?'$'+Math.round(prevPnl):'n/a'} | mistakes:${(t.mistakes||[]).join('+')||'none'}`;}).join('\n');
-  const prompt=`You are a trading psychology coach. Analyze this trader's journal for revenge trading, tilt, and emotional patterns. The trader scalps NQ/MNQ, NY 9:30-11:00 EST.
-
-TRADES:\n${summary}
-
-Look for: revenge trades (rapid entries after losses), overtrading, size spikes after losses, FOMO patterns, time-based deterioration (getting worse as session goes on).
-
-Give 3-4 specific findings with exact numbers. Start each with [TILT], [RISK], or [STRENGTH]. Be direct and specific. Under 50 words each.`;
-  try {
-    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:prompt}]})});
-    const data=await res.json();
-    if(data.error){document.getElementById('tilt-output').innerHTML=`<div class="empty"><strong>API Error</strong> ${data.error.message}</div>`;return;}
-    const text=data.content?.map(b=>b.text||'').join('')||'';
-    const lines=text.split('\n').filter(l=>l.trim()&&l.includes('['));
-    const colorMap={TILT:'#ff4d4d',RISK:'#f5a623',STRENGTH:'#00d084'};
-    document.getElementById('tilt-output').innerHTML=lines.map(l=>{const tag=l.match(/\[(\w+)\]/)?.[1]||'';const col=colorMap[tag]||'var(--muted)';return `<div class="insight-box" style="border-left-color:${col}"><span class="insight-dot" style="background:${col}"></span>${l}</div>`;}).join('')||'<div class="empty">No patterns found. Log more trades.</div>';
-  } catch(e){document.getElementById('tilt-output').innerHTML=`<div class="empty"><strong>Failed:</strong> ${e.message}</div>`;}
-}
 
 // ─── RISK CONSISTENCY ─────────────────────────────────────────────────────────
-let riskChartObj=null;
-
-// Get the dollar risk for a trade — works for both quick mode and detailed mode
 function getTradeRisk(t) {
-  // Detailed mode: pts × contracts
   if (!t.quickMode && t.sl && t.entry && t.sl !== t.entry) {
     const mult = {NQ:20,MNQ:2,ES:50,MES:5}[t.ticker?.toUpperCase()] || 1;
     return Math.abs(t.entry - t.sl) * (t.qty||1) * mult;
   }
-  // Quick mode: 1R = |P&L| / |realizedRR|  (or plannedRR as fallback)
   const pnl = Math.abs(t.quickPnL !== undefined ? t.quickPnL : calcPnL(t));
   const rr = Math.abs(parseFloat(t.quickRR) || parseFloat(t.plannedRR) || 0);
   if (pnl && rr) return pnl / rr;
   return null;
 }
 
+let riskChartObj=null;
 function renderRisk() {
-  // Include ALL trades that have computable risk
-  const allTrades = state.trades;
-  const riskData = allTrades.map(t => ({ t, risk: getTradeRisk(t) })).filter(x => x.risk !== null && x.risk > 0);
-
+  const riskData = state.trades.map(t => ({ t, risk: getTradeRisk(t) })).filter(x => x.risk !== null && x.risk > 0);
   if (!riskData.length) {
     ['risk-avg','risk-stddev','risk-max','risk-after-loss'].forEach(id => document.getElementById(id).textContent = '—');
     document.getElementById('risk-breakdown').innerHTML = '<div class="empty">Log trades with Planned R:R to see risk consistency analysis.</div>';
     return;
   }
-
   const risks = riskData.map(x => x.risk);
   const avg = risks.reduce((a,b) => a+b, 0) / risks.length;
   const stddev = Math.sqrt(risks.reduce((a,r) => a + Math.pow(r-avg,2), 0) / risks.length);
   const maxR = Math.max(...risks);
-
-  // Risk after a losing trade
   const afterLoss = [];
-  allTrades.forEach((t,i) => {
+  state.trades.forEach((t,i) => {
     if (i === 0) return;
-    const prev = allTrades[i-1];
-    if (calcPnL(prev) < 0) {
-      const r = getTradeRisk(t);
-      if (r) afterLoss.push(r);
-    }
+    if (calcPnL(state.trades[i-1]) < 0) { const r = getTradeRisk(t); if (r) afterLoss.push(r); }
   });
-  const avgAfterLoss = afterLoss.length ? afterLoss.reduce((a,b) => a+b, 0) / afterLoss.length : null;
-
-  // Decide label unit — dollar for quick mode dominant, pts for detailed dominant
-  const quickCount = riskData.filter(x => x.t.quickMode).length;
-  const unit = quickCount > riskData.length / 2 ? '$' : '$';
-
-  document.getElementById('risk-avg').textContent = unit + Math.round(avg);
-  document.getElementById('risk-sub') && (document.getElementById('risk-sub').textContent = 'per trade (1R)');
+  const avgAfterLoss = afterLoss.length ? afterLoss.reduce((a,b)=>a+b,0)/afterLoss.length : null;
+  document.getElementById('risk-avg').textContent = '$' + Math.round(avg);
   const sdEl = document.getElementById('risk-stddev');
-  sdEl.textContent = unit + Math.round(stddev);
+  sdEl.textContent = '$' + Math.round(stddev);
   sdEl.className = 'metric-val ' + (stddev/avg < 0.3 ? 'pos' : stddev/avg < 0.6 ? 'amber' : 'neg');
-  document.getElementById('risk-max').textContent = unit + Math.round(maxR);
+  document.getElementById('risk-max').textContent = '$' + Math.round(maxR);
   const alEl = document.getElementById('risk-after-loss');
-  alEl.textContent = avgAfterLoss != null ? (avgAfterLoss/avg > 1.3 ? '▲ ' : '') + unit + Math.round(avgAfterLoss) : '—';
+  alEl.textContent = avgAfterLoss != null ? (avgAfterLoss/avg > 1.3 ? '▲ ' : '') + '$' + Math.round(avgAfterLoss) : '—';
   alEl.className = 'metric-val ' + (avgAfterLoss == null || avgAfterLoss <= avg*1.3 ? 'pos' : 'neg');
-
-  // Chart
   const ctx = document.getElementById('riskChart').getContext('2d');
   if (riskChartObj) { riskChartObj.destroy(); riskChartObj = null; }
   const labels = riskData.map((x,i) => x.t.datetime ? x.t.datetime.slice(5,10) : '#'+i);
-  const avgLine = Array(risks.length).fill(parseFloat(avg.toFixed(0)));
-  riskChartObj = new Chart(ctx, {
-    type:'bar',
-    data:{ labels, datasets:[
-      { label:'Risk ($)', data:risks.map(r => parseFloat(r.toFixed(0))), backgroundColor:risks.map(r => r>avg*1.5?'rgba(255,77,77,0.7)':r>avg*1.2?'rgba(245,166,35,0.7)':'rgba(0,208,132,0.6)'), borderRadius:3 },
-      { label:'Avg', data:avgLine, type:'line', borderColor:'rgba(255,255,255,0.3)', borderWidth:1.5, borderDash:[4,4], pointRadius:0 }
-    ]},
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:9},maxTicksLimit:10} }, y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:10,family:'DM Mono'},callback:v=>'$'+v} } } }
-  });
-
-  const consistency = stddev / avg;
+  const avgLine = Array(risks.length).fill(Math.round(avg));
+  riskChartObj = new Chart(ctx, { type:'bar', data:{ labels, datasets:[
+    { label:'Risk ($)', data:risks.map(r=>Math.round(r)), backgroundColor:risks.map(r=>r>avg*1.5?'rgba(255,77,77,0.7)':r>avg*1.2?'rgba(245,166,35,0.7)':'rgba(0,208,132,0.6)'), borderRadius:3 },
+    { label:'Avg', data:avgLine, type:'line', borderColor:'rgba(255,255,255,0.3)', borderWidth:1.5, borderDash:[4,4], pointRadius:0 }
+  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:9},maxTicksLimit:10} }, y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:10},callback:v=>'$'+v} } } } });
+  const consistency = stddev/avg;
   document.getElementById('risk-breakdown').innerHTML = `
     <div style="margin-bottom:12px">
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Consistency rating</div>
       <div style="font-size:15px;font-weight:700;color:${consistency<0.3?'var(--green)':consistency<0.6?'var(--amber)':'var(--red)'}">${consistency<0.3?'Excellent — very consistent sizing':consistency<0.6?'Moderate — some variability':'Inconsistent — emotional sizing detected'}</div>
     </div>
     <div class="risk-meter"><div class="risk-meter-fill" style="width:${Math.min(consistency*100,100)}%;background:${consistency<0.3?'var(--green)':consistency<0.6?'var(--amber)':'var(--red)'}"></div></div>
-    ${avgAfterLoss!=null&&avgAfterLoss>avg*1.3?`<div class="tilt-alert" style="margin-top:12px;font-size:12px"><strong>⚠ Risk spike after losses</strong><br>You risk ${((avgAfterLoss/avg-1)*100).toFixed(0)}% more after a losing trade ($${Math.round(avgAfterLoss)} vs $${Math.round(avg)} avg). Classic revenge behavior.</div>`:''}
+    ${avgAfterLoss!=null&&avgAfterLoss>avg*1.3?`<div class="tilt-alert" style="margin-top:12px;font-size:12px"><strong>⚠ Risk spike after losses</strong><br>You risk ${((avgAfterLoss/avg-1)*100).toFixed(0)}% more after a loss ($${Math.round(avgAfterLoss)} vs $${Math.round(avg)} avg).</div>`:''}
     <div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.7">
       Avg 1R: <strong>$${Math.round(avg)}</strong> &nbsp;·&nbsp; Std dev: <strong>$${Math.round(stddev)}</strong> &nbsp;·&nbsp; CV: <strong>${(consistency*100).toFixed(0)}%</strong><br>
       ${afterLoss.length?`Avg risk after loss: <strong>$${Math.round(avgAfterLoss)}</strong>`:'Not enough data for post-loss analysis'}<br>
-      <span style="color:var(--dim);font-size:11px">Risk calculated from your Planned R:R and P&L (quick mode) or stop distance (detailed mode)</span>
+      <span style="color:var(--dim);font-size:11px">Calculated from Planned R:R + P&L (quick mode) or stop distance (detailed mode)</span>
     </div>`;
 }
 
@@ -5139,8 +4993,249 @@ function renderGallery() {
   }
 })();
 
+// ─── WEEKLY REPORT ────────────────────────────────────────────────────────────
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+  d.setDate(diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function getWeekLabel(weekStart) {
+  const end = new Date(weekStart);
+  end.setDate(end.getDate() + 4); // Friday
+  const opts = { month:'short', day:'numeric' };
+  return `${weekStart.toLocaleDateString('en-US', opts)} – ${end.toLocaleDateString('en-US', opts)}`;
+}
+
+function buildWeekOptions() {
+  const sel = document.getElementById('weekly-report-week');
+  if (!sel) return;
+  // Find all unique weeks with trades
+  const weeks = new Map();
+  state.trades.forEach(t => {
+    if (!t.datetime) return;
+    const ws = getWeekStart(new Date(t.datetime));
+    const key = ws.toISOString().slice(0,10);
+    if (!weeks.has(key)) weeks.set(key, ws);
+  });
+  // Also add current week
+  const thisWeek = getWeekStart(new Date());
+  const thisKey = thisWeek.toISOString().slice(0,10);
+  if (!weeks.has(thisKey)) weeks.set(thisKey, thisWeek);
+
+  const sorted = [...weeks.entries()].sort((a,b) => b[0].localeCompare(a[0]));
+  const cur = sel.value;
+  sel.innerHTML = sorted.map(([key, ws], i) =>
+    `<option value="${key}">${i===0?'This week':getWeekLabel(ws)}</option>`
+  ).join('');
+  if (cur && sel.querySelector(`[value="${cur}"]`)) sel.value = cur;
+}
+
+function renderWeeklyReport() {
+  buildWeekOptions();
+  const sel = document.getElementById('weekly-report-week');
+  const body = document.getElementById('weekly-report-body');
+  if (!sel || !body) return;
+
+  const weekKey = sel.value;
+  if (!weekKey) { body.innerHTML = '<div class="empty">No week selected</div>'; return; }
+
+  const weekStart = new Date(weekKey + 'T00:00:00');
+  const weekEnd   = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 7);
+
+  const weekTrades = state.trades.filter(t => {
+    if (!t.datetime) return false;
+    const d = new Date(t.datetime);
+    return d >= weekStart && d < weekEnd;
+  });
+
+  if (!weekTrades.length) {
+    body.innerHTML = '<div class="empty">No trades logged this week.</div>';
+    return;
+  }
+
+  const pnls = weekTrades.map(t => calcPnL(t));
+  const totalPnL = pnls.reduce((a,b) => a+b, 0);
+  const wins = weekTrades.filter((_,i) => pnls[i] > 0);
+  const losses = weekTrades.filter((_,i) => pnls[i] < 0);
+  const wr = Math.round(wins.length / weekTrades.length * 100);
+  const avgW = wins.length ? wins.reduce((a,t) => a+calcPnL(t),0)/wins.length : 0;
+  const avgL = losses.length ? Math.abs(losses.reduce((a,t) => a+calcPnL(t),0)/losses.length) : 0;
+  const rrs = weekTrades.map(t => parseFloat(calcRR(t)||t.quickRR||0)).filter(r => r && !isNaN(r));
+  const avgRR = rrs.length ? (rrs.reduce((a,b)=>a+b,0)/rrs.length).toFixed(2) : null;
+
+  // Graded trades
+  const graded = weekTrades.filter(t => t.grade);
+  const gradeScore = { 'A+':5,'A':4.5,'A-':4,'B+':3.5,'B':3,'B-':2.5,'C+':2,'C':1.5,'C-':1,'D':0.5,'F':0 };
+  const avgGrade = graded.length
+    ? graded.reduce((a,t) => a + (gradeScore[t.grade]||2), 0) / graded.length
+    : null;
+  const gradeLabel = avgGrade === null ? '—'
+    : avgGrade >= 4.5 ? 'A' : avgGrade >= 3.5 ? 'B' : avgGrade >= 2.5 ? 'C' : avgGrade >= 1 ? 'D' : 'F';
+  const gradeColor = { A:'var(--green)', B:'var(--blue)', C:'var(--amber)', D:'var(--red)', F:'var(--red)' }[gradeLabel] || 'var(--muted)';
+
+  // Setup breakdown this week
+  const setupCounts = {};
+  weekTrades.forEach(t => (t.setups||[]).forEach(s => {
+    if (!setupCounts[s]) setupCounts[s] = { wins:0, n:0 };
+    setupCounts[s].n++;
+    if (calcPnL(t) > 0) setupCounts[s].wins++;
+  }));
+
+  // Mistake breakdown this week
+  const mistakeCounts = {};
+  weekTrades.forEach(t => (t.mistakes||[]).forEach(m => {
+    mistakeCounts[m] = (mistakeCounts[m]||0) + 1;
+  }));
+  const topMistakes = Object.entries(mistakeCounts).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  // Compare to previous week
+  const prevStart = new Date(weekStart); prevStart.setDate(prevStart.getDate() - 7);
+  const prevEnd   = new Date(weekStart);
+  const prevTrades = state.trades.filter(t => {
+    if (!t.datetime) return false;
+    const d = new Date(t.datetime);
+    return d >= prevStart && d < prevEnd;
+  });
+  const prevPnL = prevTrades.reduce((a,t) => a+calcPnL(t), 0);
+  const prevWR  = prevTrades.length ? Math.round(prevTrades.filter(t=>calcPnL(t)>0).length/prevTrades.length*100) : null;
+  const hasPrev = prevTrades.length > 0;
+
+  body.innerHTML = `
+    <!-- METRICS ROW -->
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:16px">
+      <div class="stat-card">
+        <div class="stat-card-val ${totalPnL>=0?'pnl-pos':'pnl-neg'}">${totalPnL>=0?'+':''}$${Math.abs(Math.round(totalPnL)).toLocaleString()}</div>
+        <div class="stat-card-label">Total P&L</div>
+        ${hasPrev?`<div style="font-size:10px;color:${totalPnL>=prevPnL?'var(--green)':'var(--red)'};margin-top:3px">${totalPnL>=prevPnL?'▲':'▼'} vs last week</div>`:''}
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val ${wr>=50?'pnl-pos':'pnl-neg'}">${wr}%</div>
+        <div class="stat-card-label">Win Rate</div>
+        ${hasPrev&&prevWR!==null?`<div style="font-size:10px;color:${wr>=prevWR?'var(--green)':'var(--red)'};margin-top:3px">${wr>=prevWR?'▲':'▼'} vs ${prevWR}% last wk</div>`:''}
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${weekTrades.length}</div>
+        <div class="stat-card-label">Trades</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:3px">${wins.length}W / ${losses.length}L</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${avgRR ? avgRR+'R' : '—'}</div>
+        <div class="stat-card-label">Avg R:R</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:3px">realized</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val" style="color:${gradeColor};font-size:28px;letter-spacing:-1px">${gradeLabel}</div>
+        <div class="stat-card-label">Avg Grade</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:3px">${graded.length} graded</div>
+      </div>
+    </div>
+
+    <!-- SETUPS + MISTAKES -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="background:var(--bg3);border-radius:var(--r);padding:12px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Setups this week</div>
+        ${Object.keys(setupCounts).length ? Object.entries(setupCounts).map(([s,v]) => {
+          const wr2 = Math.round(v.wins/v.n*100);
+          return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+            <span class="tag-pill setup-pill">${s}</span>
+            <span style="font-size:12px;color:${wr2>=50?'var(--green)':'var(--red)'};font-weight:600;margin-left:auto">${wr2}% WR</span>
+            <span style="font-size:11px;color:var(--dim)">${v.n}x</span>
+          </div>`;
+        }).join('') : '<div style="font-size:12px;color:var(--dim)">No setup tags this week</div>'}
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--r);padding:12px">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Top mistakes this week</div>
+        ${topMistakes.length ? topMistakes.map(([m,n]) =>
+          `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+            <span class="tag-pill mistake-pill">${m}</span>
+            <span style="font-size:11px;color:var(--dim);margin-left:auto">${n}×</span>
+          </div>`
+        ).join('') : '<div style="font-size:12px;color:var(--green)">No mistakes tagged — clean week 🎯</div>'}
+      </div>
+    </div>
+
+    <!-- AI ANALYSIS AREA -->
+    <div id="weekly-ai-output"></div>
+  `;
+}
+
+async function runWeeklyAI() {
+  const sel = document.getElementById('weekly-report-week');
+  const out = document.getElementById('weekly-ai-output');
+  if (!sel || !out) return;
+
+  const weekKey = sel.value;
+  if (!weekKey) return;
+
+  const weekStart = new Date(weekKey + 'T00:00:00');
+  const weekEnd   = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 7);
+  const prevStart = new Date(weekStart); prevStart.setDate(prevStart.getDate() - 7);
+
+  const weekTrades  = state.trades.filter(t => t.datetime && new Date(t.datetime) >= weekStart && new Date(t.datetime) < weekEnd);
+  const prevTrades  = state.trades.filter(t => t.datetime && new Date(t.datetime) >= prevStart  && new Date(t.datetime) < weekStart);
+
+  if (weekTrades.length < 2) {
+    out.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:10px 0">Need at least 2 trades this week for AI analysis.</div>';
+    return;
+  }
+
+  out.innerHTML = '<div class="insight-box loading" style="margin-top:8px">Generating weekly coaching report...</div>';
+
+  function weekSummary(trades) {
+    if (!trades.length) return 'No trades';
+    const pnls = trades.map(t => calcPnL(t));
+    const total = pnls.reduce((a,b)=>a+b,0);
+    const wr = Math.round(trades.filter((_,i)=>pnls[i]>0).length/trades.length*100);
+    const setups = {};
+    trades.forEach(t=>(t.setups||[]).forEach(s=>{if(!setups[s])setups[s]={n:0,wins:0};setups[s].n++;if(calcPnL(t)>0)setups[s].wins++;}));
+    const mistakes = {};
+    trades.forEach(t=>(t.mistakes||[]).forEach(m=>{mistakes[m]=(mistakes[m]||0)+1;}));
+    const grades = trades.filter(t=>t.grade).map(t=>`${t.ticker} ${t.side} ${t.grade}`).join(', ');
+    return `${trades.length} trades | P&L: $${Math.round(total)} | WR: ${wr}% | Setups: ${Object.entries(setups).map(([s,v])=>`${s} ${Math.round(v.wins/v.n*100)}%WR`).join(', ')||'none'} | Mistakes: ${Object.entries(mistakes).map(([m,n])=>`${m}×${n}`).join(', ')||'none'} | Grades: ${grades||'none'}`;
+  }
+
+  const prompt = `You are EDGE AI, a sharp trading coach. Give a weekly performance report for this NQ/MNQ scalp trader (ICT strategy, NY session 9:30-11:00 EST only).
+${buildGradingContext()}
+
+THIS WEEK: ${weekSummary(weekTrades)}
+LAST WEEK: ${weekSummary(prevTrades)}
+
+Write a concise weekly coaching report with exactly these 4 sections, each starting with the tag on its own line:
+[PERFORMANCE] — 2-3 sentences on P&L, win rate, and trade count vs last week. Be specific with numbers.
+[WHAT IMPROVED] — 1-2 things that got better this week vs last (or vs their baseline). Be specific.
+[WHAT GOT WORSE] — 1-2 honest things that deteriorated or need attention. No sugarcoating.
+[FOCUS FOR NEXT WEEK] — One single concrete action to take next week. Not vague — tell them exactly what to do.
+
+Under 200 words total. Use their terminology (FVG, sweep, inversion, LRLR, Continuation, Mech Model). Be direct.`;
+
+  try {
+    const res = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:400, messages:[{role:'user',content:prompt}] }) });
+    const data = await res.json();
+    if (data.error) { out.innerHTML = `<div style="color:var(--red);font-size:12px">Error: ${data.error.message}</div>`; return; }
+    const text = data.content?.map(b=>b.text||'').join('') || '';
+    const sectionColors = { PERFORMANCE:'var(--blue)', 'WHAT IMPROVED':'var(--green)', 'WHAT GOT WORSE':'var(--red)', 'FOCUS FOR NEXT WEEK':'var(--amber)' };
+    const lines = text.split('\n').filter(l => l.trim());
+    let html = '';
+    lines.forEach(line => {
+      const tag = line.match(/\[([^\]]+)\]/)?.[1];
+      if (tag && sectionColors[tag]) {
+        html += `<div class="insight-box" style="border-left-color:${sectionColors[tag]};margin-top:8px"><span class="insight-dot" style="background:${sectionColors[tag]}"></span>${line}</div>`;
+      } else if (html) {
+        // append to last box
+        html = html.replace(/<\/div>$/, ' ' + line + '</div>');
+      }
+    });
+    out.innerHTML = html || `<div class="insight-box" style="margin-top:8px">${text}</div>`;
+  } catch(e) {
+    out.innerHTML = `<div style="color:var(--muted);font-size:12px;padding:8px 0">Analysis failed: ${e.message}</div>`;
+  }
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-// Set datetime to local time (not UTC)
 const _now = new Date();
 const _pad = n => String(n).padStart(2,'0');
 const _localDT = `${_now.getFullYear()}-${_pad(_now.getMonth()+1)}-${_pad(_now.getDate())}T${_pad(_now.getHours())}:${_pad(_now.getMinutes())}`;
