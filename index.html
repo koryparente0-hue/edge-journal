@@ -8,13 +8,13 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0B0F14;--bg2:#111827;--bg3:#1a2236;--bg4:#1f2b42;
-  --border:#ffffff10;--border2:#ffffff1a;--border3:#ffffff30;
-  --text:#f0f0f0;--muted:#8896a5;--dim:#3d4f65;
-  --green:#22C55E;--green-dim:#22C55E20;--green-border:#22C55E40;
-  --red:#EF4444;--red-dim:#EF444420;--red-border:#EF444440;
-  --amber:#F59E0B;--amber-dim:#F59E0B20;
-  --blue:#3B82F6;--blue-dim:#3B82F618;
+  --bg:#0a0a0b;--bg2:#111113;--bg3:#18181c;--bg4:#1e1e24;
+  --border:#ffffff12;--border2:#ffffff20;--border3:#ffffff35;
+  --text:#f0f0f0;--muted:#888;--dim:#444;
+  --green:#00d084;--green-dim:#00d08420;--green-border:#00d08440;
+  --red:#ff4d4d;--red-dim:#ff4d4d20;--red-border:#ff4d4d40;
+  --amber:#f5a623;--amber-dim:#f5a62320;
+  --blue:#4a9eff;--blue-dim:#4a9eff18;
   --r:8px;--r2:12px;--r3:16px;
   --mono:'Geist Mono',monospace;--display:'Geist',sans-serif;
 }
@@ -44,8 +44,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .btn:hover{border-color:var(--border3);background:var(--bg4)}
 .btn:active{transform:scale(.98)}
 .btn-green{background:var(--green);color:#000;border-color:transparent}
-.btn-primary{background:var(--blue);color:#fff;border-color:transparent}
-.btn-primary:hover{background:#2563EB;border-color:transparent}
 .btn-green:hover{background:#00bc74;border-color:transparent}
 .btn-sm{padding:5px 12px;font-size:11px}
 .btn-red{background:var(--red-dim);color:var(--red);border-color:var(--red-border)}
@@ -216,11 +214,11 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .review-card{background:var(--bg3);border-radius:var(--r2);overflow:hidden;margin-top:12px}
 .review-grade-bar{padding:14px 16px;display:flex;align-items:center;gap:14px}
 .grade-circle{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;font-family:'Geist Mono',monospace;flex-shrink:0}
-.grade-A-bg{background:rgba(34,197,94,.15);border:2px solid #00d084;color:#00d084}
+.grade-A-bg{background:rgba(0,208,132,.15);border:2px solid #00d084;color:#00d084}
 .grade-B-bg{background:rgba(74,158,255,.15);border:2px solid #4a9eff;color:#4a9eff}
 .grade-C-bg{background:rgba(245,166,35,.15);border:2px solid #f5a623;color:#f5a623}
 .grade-D-bg{background:rgba(255,100,50,.15);border:2px solid #ff6432;color:#ff6432}
-.grade-F-bg{background:rgba(239,68,68,.15);border:2px solid #ff4d4d;color:#ff4d4d}
+.grade-F-bg{background:rgba(255,77,77,.15);border:2px solid #ff4d4d;color:#ff4d4d}
 .review-sections{padding:0 16px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .review-section{background:var(--bg2);border-radius:var(--r);padding:10px 12px}
 .review-section-title{font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:6px}
@@ -1694,7 +1692,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
         <li class="locked">Dashboard stats — always free</li>
       </ul>
       <button class="btn btn-green" id="upgrade-btn" onclick="handleUpgrade()" style="width:100%;justify-content:center;font-size:14px;padding:13px;font-weight:700">Upgrade to Pro — $9/month</button>
-      <div style="font-size:11px;color:var(--green);text-align:center;margin-top:8px;font-weight:600">Use code <span style="background:rgba(34,197,94,0.15);padding:1px 8px;border-radius:4px;font-family:'Geist Mono',monospace;letter-spacing:.05em">KP</span> at checkout for your first month free</div>
+      <div style="font-size:11px;color:var(--green);text-align:center;margin-top:8px;font-weight:600">Use code <span style="background:rgba(0,208,132,0.15);padding:1px 8px;border-radius:4px;font-family:'Geist Mono',monospace;letter-spacing:.05em">KP</span> at checkout for your first month free</div>
       <div style="font-size:11px;color:var(--dim);text-align:center;margin-top:6px">Secure payment via Stripe · Cancel anytime</div>
       <button class="btn btn-sm" onclick="closeUpgradeModal()" style="width:100%;justify-content:center;margin-top:8px;color:var(--muted)">Maybe later</button>
     </div>
@@ -2123,12 +2121,12 @@ function renderEquity(T, pnls) {
   equityChartObj = new Chart(ctx, {
     type:'line',
     data:{ labels, datasets:[
-      { label:'P&L ($)', data, borderColor:isPos?'#22C55E':'#EF4444', borderWidth:2, pointRadius:data.length>30?0:3, pointBackgroundColor:isPos?'#22C55E':'#EF4444', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,190); g.addColorStop(0,isPos?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4, yAxisID:'y' },
-      ...(hasRR ? [{ label:'Cumulative R', data:rData, borderColor:'rgba(59,130,246,0.8)', borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false, tension:0.4, yAxisID:'y2' }] : [])
+      { label:'P&L ($)', data, borderColor:isPos?'#00d084':'#ff4d4d', borderWidth:2, pointRadius:data.length>30?0:3, pointBackgroundColor:isPos?'#00d084':'#ff4d4d', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,190); g.addColorStop(0,isPos?'rgba(0,208,132,0.2)':'rgba(255,77,77,0.2)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4, yAxisID:'y' },
+      ...(hasRR ? [{ label:'Cumulative R', data:rData, borderColor:'rgba(99,179,237,0.8)', borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false, tension:0.4, yAxisID:'y2' }] : [])
     ]},
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{ display:hasRR, labels:{color:'#888',font:{size:10},boxWidth:16} }, tooltip:{ callbacks:{ label:c=>c.datasetIndex===0?'$'+c.parsed.y.toLocaleString():c.parsed.y.toFixed(1)+'R' } } },
-      scales:{ x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10},maxTicksLimit:10}}, y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10,family:'DM Mono'},callback:v=>'$'+v.toLocaleString()}}, ...(hasRR?{y2:{position:'right',grid:{display:false},ticks:{color:'rgba(59,130,246,0.6)',font:{size:10},callback:v=>v+'R'}}}:{}) }
+      scales:{ x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10},maxTicksLimit:10}}, y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10,family:'DM Mono'},callback:v=>'$'+v.toLocaleString()}}, ...(hasRR?{y2:{position:'right',grid:{display:false},ticks:{color:'rgba(99,179,237,0.6)',font:{size:10},callback:v=>v+'R'}}}:{}) }
     }
   });
 }
@@ -2143,8 +2141,8 @@ function renderHourHeat(T) {
   el.innerHTML=`<div style="font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase">P&L by hour (EST)</div><div style="display:grid;grid-template-columns:repeat(8,1fr);gap:4px">`+
     hoursToShow.map(h=>{
       const v=hours[h]||0, a=Math.min(Math.abs(v)/maxAbs,1);
-      const bg=v>=0?`rgba(34,197,94,${.08+a*.45})`:`rgba(239,68,68,${.08+a*.45})`;
-      const col=v>=0?'#22C55E':'#EF4444';
+      const bg=v>=0?`rgba(0,208,132,${.08+a*.45})`:`rgba(255,77,77,${.08+a*.45})`;
+      const col=v>=0?'#00d084':'#ff4d4d';
       return `<div style="background:${bg};border-radius:5px;padding:8px 4px;text-align:center"><div style="font-size:9px;color:#555;margin-bottom:3px">${h}:00</div><div style="font-size:10px;font-weight:700;color:${col};font-family:var(--mono)">${v?'$'+Math.round(Math.abs(v)):''}</div></div>`;
     }).join('')+'</div>';
 }
@@ -2427,7 +2425,7 @@ For flags add specific warnings relevant to this trade only.`;
 function buildReviewCard(d, idx) {
   const grade=d.grade||'?';
   const baseLetter = grade.replace(/[^A-F]/g,'')[0] || 'C'; // strip +/- for CSS
-  const gradeColors={A:'#22C55E',B:'#4a9eff',C:'#f5a623',D:'#ff6432',F:'#EF4444'};
+  const gradeColors={A:'#00d084',B:'#4a9eff',C:'#f5a623',D:'#ff6432',F:'#ff4d4d'};
   const col=gradeColors[baseLetter]||'#888';
   const autoTags=[
     ...(d.auto_setups||[]).map(s=>`<span class="auto-tag auto-tag-setup">${s}</span>`),
@@ -2789,7 +2787,7 @@ Be specific with numbers and use ICT terminology (FVG, sweep, inversion, LRLR). 
     if(data.error){document.getElementById('insights-output').innerHTML=`<div class="empty"><strong>API Error</strong>${data.error.message}</div>`;return;}
     const text=data.content?.map(b=>b.text||'').join('')||'';
     const lines=text.split('\n').filter(l=>l.trim()&&(l.includes('[')));
-    const colorMap={STRENGTH:'#22C55E',WEAKNESS:'#EF4444',PATTERN:'#4a9eff',COST:'#EF4444',ACTION:'#f5a623'};
+    const colorMap={STRENGTH:'#00d084',WEAKNESS:'#ff4d4d',PATTERN:'#4a9eff',COST:'#ff4d4d',ACTION:'#f5a623'};
     document.getElementById('insights-output').innerHTML=lines.map(l=>{
       const tag=l.match(/\[(\w+)\]/)?.[1]||'';
       const col=colorMap[tag]||'var(--muted)';
@@ -2977,14 +2975,14 @@ function refreshPatternFeed() {
   T.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(calcPnL(t)>0)hourPnL[h].wins++;});
   const bestHour=Object.entries(hourPnL).sort((a,b)=>b[1].pnl-a[1].pnl)[0];
   const worstHour=Object.entries(hourPnL).sort((a,b)=>a[1].pnl-b[1].pnl)[0];
-  if(bestHour&&bestHour[1].n>=2)patterns.push({color:'#22C55E',text:`Your best hour is <strong>${bestHour[0]}:00 EST</strong> — ${Math.round(bestHour[1].wins/bestHour[1].n*100)}% win rate, avg +$${Math.round(bestHour[1].pnl/bestHour[1].n)} per trade.`,badge:'+$'+Math.round(bestHour[1].pnl/bestHour[1].n)});
-  if(worstHour&&worstHour[1].n>=2&&worstHour[0]!==bestHour[0])patterns.push({color:'#EF4444',text:`You lose most at <strong>${worstHour[0]}:00 EST</strong> — avg $${Math.round(worstHour[1].pnl/worstHour[1].n)} per trade (${worstHour[1].n} trades). Consider skipping this hour.`,badge:'$'+Math.round(worstHour[1].pnl/worstHour[1].n)});
+  if(bestHour&&bestHour[1].n>=2)patterns.push({color:'#00d084',text:`Your best hour is <strong>${bestHour[0]}:00 EST</strong> — ${Math.round(bestHour[1].wins/bestHour[1].n*100)}% win rate, avg +$${Math.round(bestHour[1].pnl/bestHour[1].n)} per trade.`,badge:'+$'+Math.round(bestHour[1].pnl/bestHour[1].n)});
+  if(worstHour&&worstHour[1].n>=2&&worstHour[0]!==bestHour[0])patterns.push({color:'#ff4d4d',text:`You lose most at <strong>${worstHour[0]}:00 EST</strong> — avg $${Math.round(worstHour[1].pnl/worstHour[1].n)} per trade (${worstHour[1].n} trades). Consider skipping this hour.`,badge:'$'+Math.round(worstHour[1].pnl/worstHour[1].n)});
 
   // Setup win rates
   const setupStats={};
   T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(calcPnL(t)>0)setupStats[s].wins++;}));
   const setups=Object.entries(setupStats).filter(([,v])=>v.n>=2).sort((a,b)=>b[1].wins/b[1].n-a[1].wins/a[1].n);
-  if(setups.length)patterns.push({color:'#22C55E',text:`Your best setup is <strong>${setups[0][0]}</strong> — ${Math.round(setups[0][1].wins/setups[0][1].n*100)}% win rate over ${setups[0][1].n} trades.`,badge:Math.round(setups[0][1].wins/setups[0][1].n*100)+'% WR'});
+  if(setups.length)patterns.push({color:'#00d084',text:`Your best setup is <strong>${setups[0][0]}</strong> — ${Math.round(setups[0][1].wins/setups[0][1].n*100)}% win rate over ${setups[0][1].n} trades.`,badge:Math.round(setups[0][1].wins/setups[0][1].n*100)+'% WR'});
   if(setups.length>1){const worst=setups[setups.length-1];patterns.push({color:'#f5a623',text:`<strong>${worst[0]}</strong> is your weakest setup — only ${Math.round(worst[1].wins/worst[1].n*100)}% win rate. Consider reducing size or avoiding it.`,badge:Math.round(worst[1].wins/worst[1].n*100)+'% WR'});}
 
   // Mistake costs
@@ -3005,15 +3003,15 @@ function refreshPatternFeed() {
     });
   });
   const topMistake=Object.entries(mistakeCost).sort((a,b)=>a[1].cost-b[1].cost)[0];
-  if(topMistake)patterns.push({color:'#EF4444',text:`<strong>${topMistake[0]}</strong> has cost you <strong>$${Math.abs(Math.round(topMistake[1].cost))}</strong> across ${topMistake[1].n} trades — your single most expensive behavior.`,badge:'-$'+Math.abs(Math.round(topMistake[1].cost))});
+  if(topMistake)patterns.push({color:'#ff4d4d',text:`<strong>${topMistake[0]}</strong> has cost you <strong>$${Math.abs(Math.round(topMistake[1].cost))}</strong> across ${topMistake[1].n} trades — your single most expensive behavior.`,badge:'-$'+Math.abs(Math.round(topMistake[1].cost))});
 
   // Win/loss after loss
   const afterLoss=T.filter((t,i)=>i>0&&calcPnL(T[i-1])<0);
-  if(afterLoss.length>=3){const wr=Math.round(afterLoss.filter(t=>calcPnL(t)>0).length/afterLoss.length*100);const dir=wr>=50;patterns.push({color:dir?'#22C55E':'#EF4444',text:`After a losing trade, your win rate is <strong>${wr}%</strong> (${afterLoss.length} samples). ${wr<40?'Consider taking a break after losses.':wr>=60?'You bounce back well after losses.':'Mixed results after losses.'}`,badge:wr+'% after loss'});}
+  if(afterLoss.length>=3){const wr=Math.round(afterLoss.filter(t=>calcPnL(t)>0).length/afterLoss.length*100);const dir=wr>=50;patterns.push({color:dir?'#00d084':'#ff4d4d',text:`After a losing trade, your win rate is <strong>${wr}%</strong> (${afterLoss.length} samples). ${wr<40?'Consider taking a break after losses.':wr>=60?'You bounce back well after losses.':'Mixed results after losses.'}`,badge:wr+'% after loss'});}
 
   // Revenge trading speed
   const quickEntries=T.filter((t,i)=>{if(i===0)return false;const prev=T[i-1];if(calcPnL(prev)>=0)return false;if(!prev.datetime||!t.datetime)return false;return (new Date(t.datetime)-new Date(prev.datetime))/60000<=5;});
-  if(quickEntries.length>=2){const revWR=Math.round(quickEntries.filter(t=>calcPnL(t)>0).length/quickEntries.length*100);patterns.push({color:'#EF4444',text:`You've entered <strong>${quickEntries.length} trades within 5 min of a loss</strong> — potential revenge trading. Win rate on those: ${revWR}%.`,badge:revWR+'% WR'});}
+  if(quickEntries.length>=2){const revWR=Math.round(quickEntries.filter(t=>calcPnL(t)>0).length/quickEntries.length*100);patterns.push({color:'#ff4d4d',text:`You've entered <strong>${quickEntries.length} trades within 5 min of a loss</strong> — potential revenge trading. Win rate on those: ${revWR}%.`,badge:revWR+'% WR'});}
 
   // Consistency
   const pnls=T.map(t=>calcPnL(t));
@@ -3021,7 +3019,7 @@ function refreshPatternFeed() {
   const wins=T.filter(t=>calcPnL(t)>0);const losses=T.filter(t=>calcPnL(t)<0);
   const avgW=wins.length?wins.reduce((a,t)=>a+calcPnL(t),0)/wins.length:0;
   const avgL=losses.length?Math.abs(losses.reduce((a,t)=>a+calcPnL(t),0)/losses.length):0;
-  if(avgW&&avgL)patterns.push({color:avgW/avgL>=1.5?'#22C55E':'#f5a623',text:`Your average win is <strong>$${Math.round(avgW)}</strong> and average loss is <strong>$${Math.round(avgL)}</strong> — a ${(avgW/avgL).toFixed(2)}:1 win/loss ratio. ${avgW/avgL>=2?'Excellent.':avgW/avgL>=1?'Acceptable, keep it above 1.5x.':'Your losses are too large relative to wins.'}`,badge:(avgW/avgL).toFixed(2)+'x W/L'});
+  if(avgW&&avgL)patterns.push({color:avgW/avgL>=1.5?'#00d084':'#f5a623',text:`Your average win is <strong>$${Math.round(avgW)}</strong> and average loss is <strong>$${Math.round(avgL)}</strong> — a ${(avgW/avgL).toFixed(2)}:1 win/loss ratio. ${avgW/avgL>=2?'Excellent.':avgW/avgL>=1?'Acceptable, keep it above 1.5x.':'Your losses are too large relative to wins.'}`,badge:(avgW/avgL).toFixed(2)+'x W/L'});
 
   el.innerHTML=patterns.slice(0,6).map(p=>`
     <div class="pattern-feed-item">
@@ -3375,7 +3373,7 @@ Give 3-4 specific findings with exact numbers. Start each with [TILT], [RISK], o
     if(data.error){document.getElementById('tilt-output').innerHTML=`<div class="empty"><strong>API Error</strong> ${data.error.message}</div>`;return;}
     const text=data.content?.map(b=>b.text||'').join('')||'';
     const lines=text.split('\n').filter(l=>l.trim()&&l.includes('['));
-    const colorMap={TILT:'#EF4444',RISK:'#f5a623',STRENGTH:'#22C55E'};
+    const colorMap={TILT:'#ff4d4d',RISK:'#f5a623',STRENGTH:'#00d084'};
     document.getElementById('tilt-output').innerHTML=lines.map(l=>{const tag=l.match(/\[(\w+)\]/)?.[1]||'';const col=colorMap[tag]||'var(--muted)';return `<div class="insight-box" style="border-left-color:${col}"><span class="insight-dot" style="background:${col}"></span>${l}</div>`;}).join('')||'<div class="empty">No patterns found. Log more trades.</div>';
   } catch(e){document.getElementById('tilt-output').innerHTML=`<div class="empty"><strong>Failed:</strong> ${e.message}</div>`;}
 }
@@ -3410,7 +3408,7 @@ function renderRisk() {
   if(riskChartObj){riskChartObj.destroy();riskChartObj=null;}
   const labels=T.map((t,i)=>t.datetime?t.datetime.slice(5,10):'#'+i);
   const avgLine=Array(risks.length).fill(parseFloat(avg.toFixed(1)));
-  riskChartObj=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Risk (pts)',data:risks.map(r=>parseFloat(r.toFixed(1))),backgroundColor:risks.map(r=>r>avg*1.5?'rgba(239,68,68,0.7)':r>avg*1.2?'rgba(245,166,35,0.7)':'rgba(34,197,94,0.6)'),borderRadius:3},{label:'Avg',data:avgLine,type:'line',borderColor:'rgba(255,255,255,0.3)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:9},maxTicksLimit:10}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10,family:'DM Mono'}}}}}});
+  riskChartObj=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Risk (pts)',data:risks.map(r=>parseFloat(r.toFixed(1))),backgroundColor:risks.map(r=>r>avg*1.5?'rgba(255,77,77,0.7)':r>avg*1.2?'rgba(245,166,35,0.7)':'rgba(0,208,132,0.6)'),borderRadius:3},{label:'Avg',data:avgLine,type:'line',borderColor:'rgba(255,255,255,0.3)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:9},maxTicksLimit:10}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10,family:'DM Mono'}}}}}});
 
   const consistency=stddev/avg;
   document.getElementById('risk-breakdown').innerHTML=`
@@ -4755,7 +4753,7 @@ function renderEditTags(containerId, allTags, selected, type) {
   el.innerHTML = allTags.map(tag => {
     const active = selected.includes(tag);
     return `<span onclick="toggleEditTag('${type}','${tag}')" id="et-tag-${type}-${tag.replace(/\s/g,'-')}"
-      style="cursor:pointer;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid ${active?(type==='setup'?'var(--green)':'var(--red)'):'var(--border2)'};background:${active?(type==='setup'?'rgba(34,197,94,0.15)':'rgba(239,68,68,0.12)'):'var(--bg3)'};color:${active?(type==='setup'?'var(--green)':'var(--red)'):'var(--muted)'};transition:all .15s">${tag}</span>`;
+      style="cursor:pointer;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid ${active?(type==='setup'?'var(--green)':'var(--red)'):'var(--border2)'};background:${active?(type==='setup'?'rgba(0,208,132,0.15)':'rgba(255,77,77,0.12)'):'var(--bg3)'};color:${active?(type==='setup'?'var(--green)':'var(--red)'):'var(--muted)'};transition:all .15s">${tag}</span>`;
   }).join('');
 }
 
@@ -5108,7 +5106,7 @@ function renderGallery() {
       {color:'#010c06'},{color:'#021408'},{color:'#031e0b'},
       {color:'#042a0e'},{color:'#053812'},{color:'#064a16'},
       {color:'#07611b'},{color:'#087a22'},{color:'#09922a'},
-      {color:'#00a832'},{color:'#00bf3a'},{color:'#22C55E'},
+      {color:'#00a832'},{color:'#00bf3a'},{color:'#00d084'},
       {color:'#00c4a0'},{color:'#00b8b8'},{color:'#009fa8'}
     ];
     function easeOutBack(x){ const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); }
@@ -5127,8 +5125,8 @@ function renderGallery() {
       let sX=1,sY=1,oX=0,oY=0,gA=1;
       if(entering){const p=Math.min(enterT/75,1),e=easeOutBack(p);sX=0.3+e*0.7;sY=0.3+e*0.7;oX=(1-e)*W*0.4;oY=(1-e)*H*0.1;gA=easeOutExpo(Math.min(enterT/40,1));enterT++;if(enterT>75)entering=false;}
       ctx.globalAlpha=gA;
-      layers.forEach((layer,i)=>{buildSharpPath(i,t+i*600,sX,sY,oX,oY);ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=12;ctx.shadowOffsetX=-4;ctx.shadowOffsetY=6;ctx.fillStyle=layer.color;ctx.globalAlpha=gA*0.82;ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;ctx.strokeStyle='rgba(34,197,94,0.06)';ctx.lineWidth=0.9;ctx.stroke();ctx.globalAlpha=gA;});
-      layers.forEach((layer,i)=>{if(i%2!==0)return;const ph=(t+i*300)*0.0005*Math.PI*2;const cx=(W*(0.75+Math.sin(ph*1.1+i)*0.10))*sX+oX;const cy=(H*(0.08+i*0.065+Math.cos(ph*0.9+i)*0.025))*sY+oY;const r=(3+i*0.35)*sX;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=layer.color;ctx.shadowColor='rgba(34,197,94,0.6)';ctx.shadowBlur=14;ctx.globalAlpha=gA*0.9;ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=gA;});
+      layers.forEach((layer,i)=>{buildSharpPath(i,t+i*600,sX,sY,oX,oY);ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=12;ctx.shadowOffsetX=-4;ctx.shadowOffsetY=6;ctx.fillStyle=layer.color;ctx.globalAlpha=gA*0.82;ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;ctx.strokeStyle='rgba(0,208,132,0.06)';ctx.lineWidth=0.9;ctx.stroke();ctx.globalAlpha=gA;});
+      layers.forEach((layer,i)=>{if(i%2!==0)return;const ph=(t+i*300)*0.0005*Math.PI*2;const cx=(W*(0.75+Math.sin(ph*1.1+i)*0.10))*sX+oX;const cy=(H*(0.08+i*0.065+Math.cos(ph*0.9+i)*0.025))*sY+oY;const r=(3+i*0.35)*sX;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=layer.color;ctx.shadowColor='rgba(0,208,132,0.6)';ctx.shadowBlur=14;ctx.globalAlpha=gA*0.9;ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=gA;});
       ctx.globalAlpha=1;
       const fade=ctx.createLinearGradient(0,0,W*0.55,0);
       fade.addColorStop(0,'rgba(10,10,11,1)');fade.addColorStop(0.5,'rgba(10,10,11,0.85)');fade.addColorStop(1,'rgba(10,10,11,0)');
@@ -5194,7 +5192,7 @@ function renderWLHeatmap(trades) {
               if (cell.future) return `<div style="width:12px;height:12px;border-radius:2px;background:transparent"></div>`;
               if (!cell.data) return `<div style="width:12px;height:12px;border-radius:2px;background:var(--bg3)" title="${cell.date}"></div>`;
               const pnl = cell.data.pnl;
-              const bg = pnl > 0 ? `rgba(34,197,94,${Math.min(0.9, 0.35 + Math.abs(pnl)/500*0.55)})` : `rgba(239,68,68,${Math.min(0.9, 0.35 + Math.abs(pnl)/500*0.55)})`;
+              const bg = pnl > 0 ? `rgba(0,208,132,${Math.min(0.9, 0.35 + Math.abs(pnl)/500*0.55)})` : `rgba(255,77,77,${Math.min(0.9, 0.35 + Math.abs(pnl)/500*0.55)})`;
               return `<div style="width:12px;height:12px;border-radius:2px;background:${bg};cursor:default" title="${cell.date}: ${pnl>=0?'+':''}$${Math.round(pnl)} (${cell.data.n} trades)"></div>`;
             }).join('')}
           </div>`).join('')}
@@ -5202,10 +5200,10 @@ function renderWLHeatmap(trades) {
     </div>
     <div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-left:14px">
       <span style="font-size:10px;color:var(--muted)">Less</span>
-      ${['var(--bg3)','rgba(34,197,94,0.35)','rgba(34,197,94,0.6)','rgba(34,197,94,0.9)'].map(c=>`<div style="width:10px;height:10px;border-radius:2px;background:${c}"></div>`).join('')}
+      ${['var(--bg3)','rgba(0,208,132,0.35)','rgba(0,208,132,0.6)','rgba(0,208,132,0.9)'].map(c=>`<div style="width:10px;height:10px;border-radius:2px;background:${c}"></div>`).join('')}
       <span style="font-size:10px;color:var(--muted)">More (wins)</span>
       <span style="font-size:10px;color:var(--muted);margin-left:8px">·</span>
-      ${['rgba(239,68,68,0.35)','rgba(239,68,68,0.7)'].map(c=>`<div style="width:10px;height:10px;border-radius:2px;background:${c}"></div>`).join('')}
+      ${['rgba(255,77,77,0.35)','rgba(255,77,77,0.7)'].map(c=>`<div style="width:10px;height:10px;border-radius:2px;background:${c}"></div>`).join('')}
       <span style="font-size:10px;color:var(--muted)">Losses</span>
     </div>`;
 }
@@ -5226,7 +5224,7 @@ function renderDOWChart(trades) {
   });
   dowChartObj = new Chart(ctx, {
     type: 'bar',
-    data: { labels: DAYS, datasets: [{ data: totals.map(v=>Math.round(v)), backgroundColor: totals.map(v=>v>=0?'rgba(34,197,94,0.7)':'rgba(239,68,68,0.7)'), borderRadius: 4, borderSkipped: false }] },
+    data: { labels: DAYS, datasets: [{ data: totals.map(v=>Math.round(v)), backgroundColor: totals.map(v=>v>=0?'rgba(0,208,132,0.7)':'rgba(255,77,77,0.7)'), borderRadius: 4, borderSkipped: false }] },
     options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>(c.parsed.y>=0?'+':'')+'$'+c.parsed.y.toLocaleString()+' ('+counts[c.dataIndex]+' trades)' } } }, scales:{ x:{ grid:{display:false}, ticks:{color:'#888',font:{size:11}} }, y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:10},callback:v=>'$'+v.toLocaleString()}, border:{display:false} } } }
   });
 }
@@ -5248,7 +5246,7 @@ function renderWRTrendChart(T) {
   }
   wrTrendChartObj = new Chart(ctx, {
     type:'line',
-    data:{ labels, datasets:[{ data, borderColor:'#3B82F6', borderWidth:2, pointRadius:data.length>20?0:3, pointBackgroundColor:'#3B82F6', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,148); g.addColorStop(0,'rgba(59,130,246,0.2)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4 }] },
+    data:{ labels, datasets:[{ data, borderColor:'#63b3ed', borderWidth:2, pointRadius:data.length>20?0:3, pointBackgroundColor:'#63b3ed', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,148); g.addColorStop(0,'rgba(99,179,237,0.2)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4 }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.y+'% WR' } } }, scales:{ x:{grid:{display:false},ticks:{color:'#555',font:{size:9},maxTicksLimit:8}}, y:{min:0,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},callback:v=>v+'%'},border:{display:false}} } }
   });
 }
@@ -5270,7 +5268,7 @@ function renderSetupRadar(T) {
   const data = entries.map(([,v])=>Math.round(v.wins/v.n*100));
   setupRadarChartObj = new Chart(ctx, {
     type:'radar',
-    data:{ labels, datasets:[{ data, backgroundColor:'rgba(34,197,94,0.15)', borderColor:'rgba(34,197,94,0.8)', borderWidth:2, pointBackgroundColor:'#22C55E', pointRadius:4 }] },
+    data:{ labels, datasets:[{ data, backgroundColor:'rgba(0,208,132,0.15)', borderColor:'rgba(0,208,132,0.8)', borderWidth:2, pointBackgroundColor:'#00d084', pointRadius:4 }] },
     options:{ responsive:true, maintainAspectRatio:true, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.r+'% WR' } } }, scales:{ r:{ min:0, max:100, ticks:{color:'#555',font:{size:9},stepSize:25,backdropColor:'transparent',callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,0.08)'}, pointLabels:{color:'#999',font:{size:11}} } } }
   });
 }
@@ -5284,7 +5282,7 @@ function renderRolling10(trades) {
   const wins = sorted.filter(t=>calcPnL(t)>0).length;
   const pnl  = sorted.reduce((a,t)=>a+calcPnL(t),0);
   el.innerHTML = sorted.map(t => {
-    const p = calcPnL(t); const col = p>0?'#22C55E':p<0?'#EF4444':'#888';
+    const p = calcPnL(t); const col = p>0?'#00d084':p<0?'#ff4d4d':'#888';
     return `<div title="${p>=0?'+':''}$${Math.round(p)}" style="width:28px;height:28px;border-radius:50%;background:${col}22;border:2px solid ${col};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${col}">${p>0?'W':p<0?'L':'BE'}</div>`;
   }).join('');
   const wrEl = document.getElementById('rolling10-wr');
@@ -5410,7 +5408,7 @@ function renderCalendar() {
       const isToday = isThisMo && todayDate.getDate() === day;
       const isSel   = calSelectedDay === day;
       const dow     = new Date(calYear, calMonth, day).getDay();
-      cell.style.cssText = `background:${isSel?'rgba(34,197,94,.08)':'var(--bg2)'};border:${isToday?'2px solid var(--green)':isSel?'1px solid var(--green)':'1px solid var(--border)'};border-radius:var(--r);min-height:88px;padding:8px 9px;cursor:${trades.length?'pointer':'default'};position:relative;display:flex;flex-direction:column;box-sizing:border-box;transition:border-color .15s;${!trades.length&&(dow===0||dow===6)?'opacity:.35':''}`;
+      cell.style.cssText = `background:${isSel?'rgba(0,208,132,.08)':'var(--bg2)'};border:${isToday?'2px solid var(--green)':isSel?'1px solid var(--green)':'1px solid var(--border)'};border-radius:var(--r);min-height:88px;padding:8px 9px;cursor:${trades.length?'pointer':'default'};position:relative;display:flex;flex-direction:column;box-sizing:border-box;transition:border-color .15s;${!trades.length&&(dow===0||dow===6)?'opacity:.35':''}`;
 
       const numDiv = document.createElement('div');
       numDiv.style.cssText = 'font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:3px';
@@ -5546,7 +5544,7 @@ function renderStatsExtras(T) {
       sorted.forEach((t,i)=>{ run+=calcPnL(t); labels.push(t.datetime?t.datetime.slice(5,10):'#'+(i+1)); data.push(Math.round(run)); });
       const isPos=run>=0;
       document.getElementById('stats-eq-lbl').textContent=(isPos?'+':'')+'$'+Math.round(run).toLocaleString()+' cumulative';
-      statsEqChartObj=new Chart(eqCtx,{type:'line',data:{labels,datasets:[{data,borderColor:isPos?'#22C55E':'#EF4444',borderWidth:2,pointRadius:data.length>20?0:2,pointBackgroundColor:isPos?'#22C55E':'#EF4444',fill:true,backgroundColor:(c)=>{const g=c.chart.ctx.createLinearGradient(0,0,0,165);g.addColorStop(0,isPos?'rgba(34,197,94,0.2)':'rgba(239,68,68,0.2)');g.addColorStop(1,'transparent');return g;},tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.parsed.y.toLocaleString()}}},scales:{x:{display:false},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},callback:v=>'$'+v.toLocaleString()}}}}});
+      statsEqChartObj=new Chart(eqCtx,{type:'line',data:{labels,datasets:[{data,borderColor:isPos?'#00d084':'#ff4d4d',borderWidth:2,pointRadius:data.length>20?0:2,pointBackgroundColor:isPos?'#00d084':'#ff4d4d',fill:true,backgroundColor:(c)=>{const g=c.chart.ctx.createLinearGradient(0,0,0,165);g.addColorStop(0,isPos?'rgba(0,208,132,0.2)':'rgba(255,77,77,0.2)');g.addColorStop(1,'transparent');return g;},tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.parsed.y.toLocaleString()}}},scales:{x:{display:false},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},callback:v=>'$'+v.toLocaleString()}}}}});
     }
   }
 
