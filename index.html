@@ -1280,7 +1280,10 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <div class="card-header" style="margin-bottom:6px"><span class="card-title">Win rate over time</span><span class="card-sub">Rolling 10-trade trend</span></div>
       <div style="position:relative;height:148px"><canvas id="wrTrendChart"></canvas></div>
     </div>
-
+    <div class="card">
+      <div class="card-header" style="margin-bottom:6px"><span class="card-title">Avg R:R over time</span><span class="card-sub">Rolling 10-trade realized R</span></div>
+      <div style="position:relative;height:148px"><canvas id="rrTrendChart"></canvas></div>
+    </div>
   </div>
   <div class="card" style="margin-bottom:12px">
     <div class="card-header" style="margin-bottom:6px"><span class="card-title">Setup radar</span><span class="card-sub">Win rate per setup — needs 2+ setups tagged</span></div>
@@ -4443,6 +4446,7 @@ function renderSetupsPage() {
   const T = periodFilter(state.trades, period);
   renderStatsExtras(T);
   renderWRTrendChart(T);
+  renderRRTrendChart(T);
   renderSetupRadar(T);
   if (!T.length) return;
 
@@ -5248,6 +5252,35 @@ function renderWRTrendChart(T) {
     type:'line',
     data:{ labels, datasets:[{ data, borderColor:'#63b3ed', borderWidth:2, pointRadius:data.length>20?0:3, pointBackgroundColor:'#63b3ed', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,148); g.addColorStop(0,'rgba(99,179,237,0.2)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4 }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.y+'% WR' } } }, scales:{ x:{grid:{display:false},ticks:{color:'#555',font:{size:9},maxTicksLimit:8}}, y:{min:0,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},callback:v=>v+'%'},border:{display:false}} } }
+  });
+}
+
+// ─── AVG R:R OVER TIME ────────────────────────────────────────────────────────
+let rrTrendChartObj = null;
+function renderRRTrendChart(T) {
+  const ctx = document.getElementById('rrTrendChart')?.getContext('2d');
+  if (!ctx) return;
+  if (rrTrendChartObj) { rrTrendChartObj.destroy(); rrTrendChartObj = null; }
+  const withRR = T.filter(t => { const r = parseFloat(calcRR(t)) || parseFloat(t.quickRR) || null; return r !== null && !isNaN(r); });
+  if (withRR.length < 2) {
+    ctx.canvas.parentElement.innerHTML = '<div class="empty" style="height:148px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px"><span>Need R:R on 2+ trades</span><span style="font-size:11px;color:var(--dim)">Log Realized R:R when logging</span></div>';
+    return;
+  }
+  const sorted = [...withRR].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
+  const labels=[], data=[];
+  for (let i=0; i<sorted.length; i++) {
+    const win = sorted.slice(Math.max(0,i-9),i+1);
+    const avg = win.map(t=>parseFloat(calcRR(t))||parseFloat(t.quickRR)||0).reduce((a,b)=>a+b,0)/win.length;
+    labels.push(sorted[i].datetime?sorted[i].datetime.slice(5,10):'#'+(i+1));
+    data.push(parseFloat(avg.toFixed(2)));
+  }
+  const latest = data[data.length-1];
+  const col = latest >= 1 ? '#00d084' : '#f5a623';
+  const fillCol = latest >= 1 ? 'rgba(0,208,132,0.18)' : 'rgba(245,166,35,0.18)';
+  rrTrendChartObj = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[{ data, borderColor:col, borderWidth:2, pointRadius:data.length>20?0:3, pointBackgroundColor:col, fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,148); g.addColorStop(0,fillCol); g.addColorStop(1,'transparent'); return g; }, tension:0.4 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.y.toFixed(2)+'R avg' } } }, scales:{ x:{grid:{display:false},ticks:{color:'#555',font:{size:9},maxTicksLimit:8}}, y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},callback:v=>v+'R'},border:{display:false}} } }
   });
 }
 
