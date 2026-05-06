@@ -910,7 +910,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
         <div class="qe-field">
           <label>Time <span style="color:var(--dim);font-weight:400;font-size:10px">(EST)</span></label>
-          <div id="time-wheel-trigger" onclick="openTimeWheel()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text);cursor:pointer;text-align:center;letter-spacing:2px;user-select:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border2)'" id="time-wheel-display">9:30</div>
+          <div id="time-wheel-display" onclick="openTimeWheel()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text);cursor:pointer;text-align:center;letter-spacing:2px;user-select:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border2)'">9:30</div>
           <input type="hidden" id="q-time-select" value="09:30">
         </div>
         <div class="qe-field"><label>Setup</label><select id="q-setup"><option value="">— setup —</option></select></div>
@@ -2151,7 +2151,7 @@ function renderLogPage() {
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
   if (todayEl && !todayEl.value) todayEl.value = now.toISOString().slice(0,10);
-  if (timeEl && !timeEl.dataset.userSet) {
+  if (timeEl) {
     const now = new Date();
     const pad = n => String(n).padStart(2,'0');
     const h = now.getHours(), m = now.getMinutes();
@@ -2268,7 +2268,6 @@ function fullLog(){
   const qrr=document.getElementById('q-quick-rr'); if(qrr) qrr.value='';
   const qprr=document.getElementById('q-planned-rr'); if(qprr) qprr.value='';
   const qod=document.getElementById('q-outcome-d'); if(qod) qod.value='';
-  const qtsel=document.getElementById('q-time-select'); if(qtsel){qtsel.value='';delete qtsel.dataset.userSet;}
   renderTagSelectors();
   // Success toast + open trade modal for live AI review
   const toast = document.createElement('div');
@@ -4655,8 +4654,7 @@ function twRefresh() {
 function confirmTimeWheel() {
   const pad = n => String(n).padStart(2,'0');
   const timeStr = `${pad(twHour)}:${pad(twMin)}`;
-  const inp = document.getElementById('q-time-select');
-  if (inp) { inp.value = timeStr; inp.dataset.userSet = '1'; }
+  document.getElementById('q-time-select').value = timeStr;
   const display = document.getElementById('time-wheel-display');
   if (display) display.textContent = `${twHour}:${pad(twMin)}`;
   closeTimeWheel();
