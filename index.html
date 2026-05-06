@@ -1441,10 +1441,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 </div>
 
-    <button class="btn btn-green" onclick="openPlaybookModal()">+ Add setup</button>
-  </div>
-  <div id="playbook-list"><div class="empty"><strong>Your playbook is empty</strong>Document your best setups with rules and notes so you always know what you're trading.</div></div>
-</div>
 
 <!-- DAILY ROUTINE -->
 <div class="page" id="page-routine">
@@ -1494,34 +1490,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 </div>
 
-    <button class="btn btn-green" onclick="openRuleModal()">+ Add rule</button>
-  </div>
-  <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-    <div class="metric"><div class="metric-label">Overall Compliance</div><div class="metric-val" id="rule-compliance-score">—</div><div class="metric-sub">of all tagged trades</div></div>
-    <div class="metric"><div class="metric-label">P&L Following Rules</div><div class="metric-val pos" id="rule-pnl-yes">—</div><div class="metric-sub">avg per trade</div></div>
-    <div class="metric"><div class="metric-label">P&L Breaking Rules</div><div class="metric-val neg" id="rule-pnl-no">—</div><div class="metric-sub">avg per trade</div></div>
-    <div class="metric"><div class="metric-label">Rule Violations</div><div class="metric-val neg" id="rule-violations">0</div><div class="metric-sub">total trades flagged</div></div>
-  </div>
-  <div class="card">
-    <div class="card-header"><span class="card-title">Your rules</span><span class="card-sub">Auto-checked against each trade after logging</span></div>
-    <div id="rules-list"><div class="empty"><strong>No rules yet</strong>Add rules like "No trades after 11AM" or "Max 3 trades/day".</div></div>
-  </div>
-  <div class="card">
-    <div class="card-header"><span class="card-title">Rule violations — recent trades</span></div>
-    <div id="rule-violations-list"><div class="empty">No violations detected yet.</div></div>
-  </div>
-</div>
-
-    <button class="btn btn-green" onclick="runTiltAnalysis()">Run analysis ↗</button>
-  </div>
-  <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-    <div class="metric"><div class="metric-label">Tilt Events Detected</div><div class="metric-val neg" id="tilt-count">—</div><div class="metric-sub">sessions with tilt</div></div>
-    <div class="metric"><div class="metric-label">Revenge Trade Cost</div><div class="metric-val neg" id="tilt-revenge-cost">—</div><div class="metric-sub">avg PnL after loss</div></div>
-    <div class="metric"><div class="metric-label">Overtrade Sessions</div><div class="metric-val amber" id="tilt-overtrade">—</div><div class="metric-sub">days with 4+ trades</div></div>
-    <div class="metric"><div class="metric-label">Size Spike Events</div><div class="metric-val amber" id="tilt-spike">—</div><div class="metric-sub">2x size after loss</div></div>
-  </div>
-  <div id="tilt-output"><div class="empty"><strong>Run analysis to detect tilt patterns</strong>Requires at least 5 trades.</div></div>
-</div>
 
 <!-- RISK CONSISTENCY -->
 <div class="page" id="page-risk">
@@ -1767,11 +1735,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 </div>
 
-<!-- PLAYBOOK MODAL -->
-<div class="modal-overlay" id="playbook-modal" onclick="if(event.target===this)closePlaybookModal()">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div class="modal-title">Add Playbook Entry</div>
       <button class="btn btn-sm" onclick="closePlaybookModal()">✕</button>
     </div>
     <div class="modal-field"><label>Setup name</label><input id="pb-name" placeholder="e.g. Mech Model, VWAP Bounce"></div>
