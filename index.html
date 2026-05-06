@@ -493,8 +493,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   .metrics{grid-template-columns:repeat(2,1fr)}
   .grid2{grid-template-columns:1fr}
 }
-.tw-qs{padding:5px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s}
-.tw-qs:hover{border-color:var(--green);color:var(--green)}
 </style>
 </head>
 <body>
@@ -1552,7 +1550,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     <div><div class="page-title">Risk Consistency</div><div class="page-sub">Are you sizing consistently, or emotionally?</div></div>
   </div>
   <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-    <div class="metric"><div class="metric-label">Avg Risk / Trade</div><div class="metric-val" id="risk-avg">—</div><div class="metric-sub">pts × contracts</div></div>
+    <div class="metric"><div class="metric-label">Avg Risk / Trade</div><div class="metric-val" id="risk-avg">—</div><div class="metric-sub">dollar value of 1R</div></div>
     <div class="metric"><div class="metric-label">Risk Std Dev</div><div class="metric-val amber" id="risk-stddev">—</div><div class="metric-sub">consistency score</div></div>
     <div class="metric"><div class="metric-label">Largest Risk Taken</div><div class="metric-val neg" id="risk-max">—</div><div class="metric-sub">single trade</div></div>
     <div class="metric"><div class="metric-label">Risk After Loss</div><div class="metric-val" id="risk-after-loss">—</div><div class="metric-sub">vs avg risk</div></div>
@@ -1703,9 +1701,9 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <!-- MINUTE -->
       <div style="text-align:center">
         <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">Minute</div>
-        <button onclick="twAdjust('m',1)" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:20px;cursor:pointer;margin-bottom:6px">▲</button>
+        <button onclick="twAdjust('m',5)" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:20px;cursor:pointer;margin-bottom:6px">▲</button>
         <div id="tw-m-big" style="font-family:var(--mono);font-size:36px;font-weight:800;color:var(--green);padding:8px 0;border-top:2px solid var(--green);border-bottom:2px solid var(--green);margin:4px 0">30</div>
-        <button onclick="twAdjust('m',-1)" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:20px;cursor:pointer;margin-top:6px">▼</button>
+        <button onclick="twAdjust('m',-5)" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:20px;cursor:pointer;margin-top:6px">▼</button>
       </div>
     </div>
 
@@ -1713,13 +1711,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     <div style="margin-bottom:20px">
       <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">Quick select</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
-        <button onclick="twSetQuick('9:30')"  class="tw-qs">9:30</button>
-        <button onclick="twSetQuick('9:45')"  class="tw-qs">9:45</button>
-        <button onclick="twSetQuick('10:00')" class="tw-qs">10:00</button>
-        <button onclick="twSetQuick('10:15')" class="tw-qs">10:15</button>
-        <button onclick="twSetQuick('10:30')" class="tw-qs">10:30</button>
-        <button onclick="twSetQuick('10:45')" class="tw-qs">10:45</button>
-        <button onclick="twSetQuick('11:00')" class="tw-qs">11:00</button>
+        ${['9:30','9:45','10:00','10:15','10:30','10:45','11:00'].map(t => `<button onclick="twSetQuick('${t}')" style="padding:5px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">${t}</button>`).join('')}
       </div>
     </div>
 
@@ -3349,47 +3341,89 @@ Give 3-4 specific findings with exact numbers. Start each with [TILT], [RISK], o
 
 // ─── RISK CONSISTENCY ─────────────────────────────────────────────────────────
 let riskChartObj=null;
+
+// Get the dollar risk for a trade — works for both quick mode and detailed mode
+function getTradeRisk(t) {
+  // Detailed mode: pts × contracts
+  if (!t.quickMode && t.sl && t.entry && t.sl !== t.entry) {
+    const mult = {NQ:20,MNQ:2,ES:50,MES:5}[t.ticker?.toUpperCase()] || 1;
+    return Math.abs(t.entry - t.sl) * (t.qty||1) * mult;
+  }
+  // Quick mode: 1R = |P&L| / |realizedRR|  (or plannedRR as fallback)
+  const pnl = Math.abs(t.quickPnL !== undefined ? t.quickPnL : calcPnL(t));
+  const rr = Math.abs(parseFloat(t.quickRR) || parseFloat(t.plannedRR) || 0);
+  if (pnl && rr) return pnl / rr;
+  return null;
+}
+
 function renderRisk() {
-  const T=state.trades.filter(t=>t.sl&&t.entry&&t.sl!==t.entry);
-  if(!T.length){['risk-avg','risk-stddev','risk-max','risk-after-loss'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('risk-breakdown').innerHTML='<div class="empty">Log trades with stop losses to see risk analysis.</div>';return;}
+  // Include ALL trades that have computable risk
+  const allTrades = state.trades;
+  const riskData = allTrades.map(t => ({ t, risk: getTradeRisk(t) })).filter(x => x.risk !== null && x.risk > 0);
 
-  const risks=T.map(t=>Math.abs(t.entry-t.sl)*t.qty);
-  const avg=risks.reduce((a,b)=>a+b,0)/risks.length;
-  const stddev=Math.sqrt(risks.reduce((a,r)=>a+Math.pow(r-avg,2),0)/risks.length);
-  const maxR=Math.max(...risks);
+  if (!riskData.length) {
+    ['risk-avg','risk-stddev','risk-max','risk-after-loss'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('risk-breakdown').innerHTML = '<div class="empty">Log trades with Planned R:R to see risk consistency analysis.</div>';
+    return;
+  }
 
-  // Risk after loss
-  const afterLoss=[];
-  state.trades.forEach((t,i)=>{if(i===0)return;const prev=state.trades[i-1];if(calcPnL(prev)<0&&t.sl&&t.sl!==t.entry)afterLoss.push(Math.abs(t.entry-t.sl)*t.qty);});
-  const avgAfterLoss=afterLoss.length?afterLoss.reduce((a,b)=>a+b,0)/afterLoss.length:null;
+  const risks = riskData.map(x => x.risk);
+  const avg = risks.reduce((a,b) => a+b, 0) / risks.length;
+  const stddev = Math.sqrt(risks.reduce((a,r) => a + Math.pow(r-avg,2), 0) / risks.length);
+  const maxR = Math.max(...risks);
 
-  document.getElementById('risk-avg').textContent=avg.toFixed(1)+' pts';
-  const sdEl=document.getElementById('risk-stddev');
-  sdEl.textContent=stddev.toFixed(1)+' pts';
-  sdEl.className='metric-val '+(stddev/avg<0.3?'pos':stddev/avg<0.6?'amber':'neg');
-  document.getElementById('risk-max').textContent=maxR.toFixed(1)+' pts';
-  const alEl=document.getElementById('risk-after-loss');
-  alEl.textContent=avgAfterLoss!=null?(avgAfterLoss/avg>1.3?'▲ ':'')+(avgAfterLoss.toFixed(1)+' pts'):'—';
-  alEl.className='metric-val '+(avgAfterLoss==null||avgAfterLoss<=avg*1.3?'pos':'neg');
+  // Risk after a losing trade
+  const afterLoss = [];
+  allTrades.forEach((t,i) => {
+    if (i === 0) return;
+    const prev = allTrades[i-1];
+    if (calcPnL(prev) < 0) {
+      const r = getTradeRisk(t);
+      if (r) afterLoss.push(r);
+    }
+  });
+  const avgAfterLoss = afterLoss.length ? afterLoss.reduce((a,b) => a+b, 0) / afterLoss.length : null;
+
+  // Decide label unit — dollar for quick mode dominant, pts for detailed dominant
+  const quickCount = riskData.filter(x => x.t.quickMode).length;
+  const unit = quickCount > riskData.length / 2 ? '$' : '$';
+
+  document.getElementById('risk-avg').textContent = unit + Math.round(avg);
+  document.getElementById('risk-sub') && (document.getElementById('risk-sub').textContent = 'per trade (1R)');
+  const sdEl = document.getElementById('risk-stddev');
+  sdEl.textContent = unit + Math.round(stddev);
+  sdEl.className = 'metric-val ' + (stddev/avg < 0.3 ? 'pos' : stddev/avg < 0.6 ? 'amber' : 'neg');
+  document.getElementById('risk-max').textContent = unit + Math.round(maxR);
+  const alEl = document.getElementById('risk-after-loss');
+  alEl.textContent = avgAfterLoss != null ? (avgAfterLoss/avg > 1.3 ? '▲ ' : '') + unit + Math.round(avgAfterLoss) : '—';
+  alEl.className = 'metric-val ' + (avgAfterLoss == null || avgAfterLoss <= avg*1.3 ? 'pos' : 'neg');
 
   // Chart
-  const ctx=document.getElementById('riskChart').getContext('2d');
-  if(riskChartObj){riskChartObj.destroy();riskChartObj=null;}
-  const labels=T.map((t,i)=>t.datetime?t.datetime.slice(5,10):'#'+i);
-  const avgLine=Array(risks.length).fill(parseFloat(avg.toFixed(1)));
-  riskChartObj=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Risk (pts)',data:risks.map(r=>parseFloat(r.toFixed(1))),backgroundColor:risks.map(r=>r>avg*1.5?'rgba(255,77,77,0.7)':r>avg*1.2?'rgba(245,166,35,0.7)':'rgba(0,208,132,0.6)'),borderRadius:3},{label:'Avg',data:avgLine,type:'line',borderColor:'rgba(255,255,255,0.3)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:9},maxTicksLimit:10}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10,family:'DM Mono'}}}}}});
+  const ctx = document.getElementById('riskChart').getContext('2d');
+  if (riskChartObj) { riskChartObj.destroy(); riskChartObj = null; }
+  const labels = riskData.map((x,i) => x.t.datetime ? x.t.datetime.slice(5,10) : '#'+i);
+  const avgLine = Array(risks.length).fill(parseFloat(avg.toFixed(0)));
+  riskChartObj = new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[
+      { label:'Risk ($)', data:risks.map(r => parseFloat(r.toFixed(0))), backgroundColor:risks.map(r => r>avg*1.5?'rgba(255,77,77,0.7)':r>avg*1.2?'rgba(245,166,35,0.7)':'rgba(0,208,132,0.6)'), borderRadius:3 },
+      { label:'Avg', data:avgLine, type:'line', borderColor:'rgba(255,255,255,0.3)', borderWidth:1.5, borderDash:[4,4], pointRadius:0 }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:9},maxTicksLimit:10} }, y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:10,family:'DM Mono'},callback:v=>'$'+v} } } }
+  });
 
-  const consistency=stddev/avg;
-  document.getElementById('risk-breakdown').innerHTML=`
+  const consistency = stddev / avg;
+  document.getElementById('risk-breakdown').innerHTML = `
     <div style="margin-bottom:12px">
       <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">Consistency rating</div>
       <div style="font-size:15px;font-weight:700;color:${consistency<0.3?'var(--green)':consistency<0.6?'var(--amber)':'var(--red)'}">${consistency<0.3?'Excellent — very consistent sizing':consistency<0.6?'Moderate — some variability':'Inconsistent — emotional sizing detected'}</div>
     </div>
     <div class="risk-meter"><div class="risk-meter-fill" style="width:${Math.min(consistency*100,100)}%;background:${consistency<0.3?'var(--green)':consistency<0.6?'var(--amber)':'var(--red)'}"></div></div>
-    ${afterLoss!=null&&afterLoss>avg*1.3?`<div class="tilt-alert" style="margin-top:12px;font-size:12px"><strong>⚠ Risk spike after losses</strong><br>You risk ${((avgAfterLoss/avg-1)*100).toFixed(0)}% more after a losing trade (${avgAfterLoss.toFixed(1)} pts vs ${avg.toFixed(1)} avg). Classic revenge behavior.</div>`:''}
+    ${avgAfterLoss!=null&&avgAfterLoss>avg*1.3?`<div class="tilt-alert" style="margin-top:12px;font-size:12px"><strong>⚠ Risk spike after losses</strong><br>You risk ${((avgAfterLoss/avg-1)*100).toFixed(0)}% more after a losing trade ($${Math.round(avgAfterLoss)} vs $${Math.round(avg)} avg). Classic revenge behavior.</div>`:''}
     <div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.7">
-      Avg risk: <strong>${avg.toFixed(1)} pts</strong> &nbsp;·&nbsp; Std dev: <strong>${stddev.toFixed(1)} pts</strong> &nbsp;·&nbsp; CV: <strong>${(consistency*100).toFixed(0)}%</strong><br>
-      ${afterLoss!=null?`Avg risk after loss: <strong>${avgAfterLoss.toFixed(1)} pts</strong>`:'Not enough data for post-loss analysis'}
+      Avg 1R: <strong>$${Math.round(avg)}</strong> &nbsp;·&nbsp; Std dev: <strong>$${Math.round(stddev)}</strong> &nbsp;·&nbsp; CV: <strong>${(consistency*100).toFixed(0)}%</strong><br>
+      ${afterLoss.length?`Avg risk after loss: <strong>$${Math.round(avgAfterLoss)}</strong>`:'Not enough data for post-loss analysis'}<br>
+      <span style="color:var(--dim);font-size:11px">Risk calculated from your Planned R:R and P&L (quick mode) or stop distance (detailed mode)</span>
     </div>`;
 }
 
@@ -4624,7 +4658,7 @@ function openTimeWheel() {
 
 function twAdjust(unit, delta) {
   if (unit === 'h') {
-    twHour = Math.min(11, Math.max(9, twHour + delta));
+    twHour = Math.min(12, Math.max(7, twHour + delta));
   } else {
     twMin = (twMin + delta + 60) % 60;
   }
