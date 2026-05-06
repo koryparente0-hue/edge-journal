@@ -493,26 +493,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   .metrics{grid-template-columns:repeat(2,1fr)}
   .grid2{grid-template-columns:1fr}
 }
-/* TRADE CALENDAR */
-.cal-day{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-height:80px;padding:6px 8px;cursor:pointer;transition:border-color .15s;position:relative;display:flex;flex-direction:column}
-.cal-day:hover{border-color:var(--border2)}
-.cal-day.cal-today{border-color:var(--green);border-width:2px}
-.cal-day.cal-active{border-color:var(--green);background:var(--green-dim)}
-.cal-day.cal-empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
-.cal-day.cal-other-month{opacity:.35}
-.cal-day-num{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:4px}
-.cal-day-num.is-today{color:var(--green);font-weight:800}
-.cal-today-dot{width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block}
-.cal-day-pnl{font-size:15px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;line-height:1.2}
-.cal-day-meta{font-size:9px;color:var(--muted);margin-top:2px;line-height:1.4}
-.cal-day-win-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 var(--r) var(--r);overflow:hidden}
-.cal-week-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px}
-.cal-week-label{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;font-weight:600}
-.cal-week-pnl{font-size:14px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px}
-.cal-week-days{font-size:10px;color:var(--muted);margin-top:2px}
-.cal-detail-trade{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
-.cal-detail-trade:last-child{border-bottom:none}
-.cal-detail-trade:hover{background:var(--bg3)}
 </style>
 </head>
 <body>
@@ -726,12 +706,18 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   <div class="nav-item" id="nav-propfirms" onclick="go('propfirms')">
     <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5V3.5A1.5 1.5 0 016.5 2h3A1.5 1.5 0 0111 3.5V5" stroke="currentColor" stroke-width="1.4"/><path d="M1 9h14" stroke="currentColor" stroke-width="1.4"/></svg>Prop Firms
   </div>
+  <div class="nav-item" id="nav-rules" onclick="go('rules')">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M4 8l2.5 2.5L12 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="1" y="1" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.3"/></svg>Rule Tracker
+  </div>
 
   <div class="nav-divider"></div>
 
   <!-- ANALYTICS -->
   <div class="nav-item" id="nav-setups" onclick="go('setups')" style="background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);border-radius:var(--r);color:#ff8c00;font-weight:700;margin-bottom:2px">
     <svg viewBox="0 0 16 16" fill="none"><path d="M1 12l4-5 4 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Stats
+  </div>
+  <div class="nav-item" id="nav-mistakes" onclick="go('mistakes')">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L1 14h14L8 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 7v3M8 12v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Mistakes
   </div>
   <div class="nav-item" id="nav-insights" onclick="go('insights')">
     <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" fill="currentColor" opacity=".5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>AI Insights
@@ -752,11 +738,17 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     <div class="nav-item" id="nav-streaks" onclick="go('streaks')">
       <svg viewBox="0 0 16 16" fill="none"><path d="M9 2c0 3-3 4-3 7a4 4 0 008 0c0-4-5-7-5-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Streaks
     </div>
+    <div class="nav-item" id="nav-tilt" onclick="go('tilt')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6 2.7-6 6-6z" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v4l2.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Tilt Detection
+    </div>
     <div class="nav-item" id="nav-risk" onclick="go('risk')">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14V6l4-4h6l2 2v10" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 14v-4h4v4" stroke="currentColor" stroke-width="1.3"/></svg>Risk &amp; Mistakes
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14V6l4-4h6l2 2v10" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 14v-4h4v4" stroke="currentColor" stroke-width="1.3"/></svg>Risk Consistency
     </div>
     <div class="nav-item" id="nav-setuplibrary" onclick="go('setuplibrary')">
       <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Setup Library
+    </div>
+    <div class="nav-item" id="nav-playbook" onclick="go('playbook')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 5h6M5 8h4M5 11h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Playbook
     </div>
     <div class="nav-divider"></div>
     <div class="nav-item" id="nav-grading" onclick="openGradingSettings()" style="color:#a78bfa;font-weight:600">
@@ -1041,68 +1033,27 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 <div class="page" id="page-history">
   <div class="page-header">
     <div><div class="page-title">Trade History</div><div class="page-sub" id="history-count"></div></div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <!-- VIEW TOGGLE -->
-      <div style="display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:2px;gap:2px">
-        <button id="view-table-btn" onclick="setHistoryView('table')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:var(--green);color:#000;transition:all .15s">Table</button>
-        <button id="view-cal-btn"   onclick="setHistoryView('calendar')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s">Calendar</button>
-      </div>
-      <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
-    </div>
+    <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
   </div>
-
-  <!-- TABLE VIEW -->
-  <div id="history-table-view">
-    <div class="filters">
-      <input class="filter-input" id="f-ticker" placeholder="Ticker..." onkeyup="renderHistory()" style="width:90px">
-      <select class="filter-input" id="f-side" onchange="renderHistory()"><option value="">All sides</option><option value="long">Long</option><option value="short">Short</option></select>
-      <select class="filter-input" id="f-result" onchange="renderHistory()"><option value="">Win / Loss</option><option value="win">Wins only</option><option value="loss">Losses only</option></select>
-      <select class="filter-input" id="f-setup-filter" onchange="renderHistory()"><option value="">All setups</option></select>
-      <select class="filter-input" id="f-mistake-filter" onchange="renderHistory()"><option value="">All mistakes</option></select>
-      <input class="filter-input" id="f-date-from" type="date" onchange="renderHistory()" title="From date">
-      <input class="filter-input" id="f-date-to" type="date" onchange="renderHistory()" title="To date">
-      <button class="btn btn-sm" onclick="clearFilters()">Clear filters</button>
-    </div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <div style="overflow-x:auto">
-        <table class="trades-table">
-          <thead><tr>
-            <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
-          </tr></thead>
-          <tbody id="history-body"></tbody>
-        </table>
-      </div>
-    </div>
+  <div class="filters">
+    <input class="filter-input" id="f-ticker" placeholder="Ticker..." onkeyup="renderHistory()" style="width:90px">
+    <select class="filter-input" id="f-side" onchange="renderHistory()"><option value="">All sides</option><option value="long">Long</option><option value="short">Short</option></select>
+    <select class="filter-input" id="f-result" onchange="renderHistory()"><option value="">Win / Loss</option><option value="win">Wins only</option><option value="loss">Losses only</option></select>
+    <select class="filter-input" id="f-setup-filter" onchange="renderHistory()"><option value="">All setups</option></select>
+    <select class="filter-input" id="f-mistake-filter" onchange="renderHistory()"><option value="">All mistakes</option></select>
+    <input class="filter-input" id="f-date-from" type="date" onchange="renderHistory()" title="From date">
+    <input class="filter-input" id="f-date-to" type="date" onchange="renderHistory()" title="To date">
+    <button class="btn btn-sm" onclick="clearFilters()">Clear filters</button>
   </div>
-
-  <!-- CALENDAR VIEW -->
-  <div id="history-calendar-view" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <button class="btn btn-sm" onclick="calNav(-1)">← Prev</button>
-      <div style="font-size:16px;font-weight:700;color:var(--text)" id="cal-month-label"></div>
-      <button class="btn btn-sm" onclick="calNav(1)">Next →</button>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="overflow-x:auto">
+      <table class="trades-table">
+        <thead><tr>
+          <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
+        </tr></thead>
+        <tbody id="history-body"></tbody>
+      </table>
     </div>
-    <div style="display:flex;gap:8px;align-items:flex-start">
-      <!-- CALENDAR GRID -->
-      <div style="flex:1;min-width:0">
-        <!-- Day headers -->
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px">
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:6px 0">Sun</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:6px 0">Mon</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:6px 0">Tue</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:6px 0">Wed</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:6px 0">Thu</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:6px 0">Fri</div>
-          <div style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:6px 0">Sat</div>
-        </div>
-        <!-- Day cells -->
-        <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px"></div>
-      </div>
-      <!-- WEEK SUMMARY SIDEBAR — padding-top matches day-header row height (28px) -->
-      <div id="cal-week-sidebar" style="width:110px;display:flex;flex-direction:column;gap:3px;padding-top:28px;flex-shrink:0"></div>
-    </div>
-    <!-- DAY DETAIL PANEL -->
-    <div id="cal-day-detail" style="display:none;margin-top:12px"></div>
   </div>
 </div>
 
@@ -1412,6 +1363,20 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 </div>
 
 <!-- MISTAKES -->
+<div class="page" id="page-mistakes">
+  <div class="page-header"><div><div class="page-title">Mistake Tracker</div><div class="page-sub">What's actually costing you money</div></div></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cost per mistake (total $)</span></div>
+      <div id="mistake-cost-list"><div class="empty"><strong>No data yet</strong>Tag trades with mistakes to track their cost.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Mistake frequency</span></div>
+      <div id="mistake-freq-list"><div class="empty"><strong>No data yet</strong>Start tagging bad trades.</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- AI INSIGHTS -->
 <div class="page" id="page-insights">
   <div class="page-header">
@@ -1485,6 +1450,10 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 </div>
 
+<!-- PLAYBOOK -->
+<div class="page" id="page-playbook">
+  <div class="page-header">
+    <div><div class="page-title">Playbook</div><div class="page-sub">Your best setups, documented</div></div>
     <button class="btn btn-green" onclick="openPlaybookModal()">+ Add setup</button>
   </div>
   <div id="playbook-list"><div class="empty"><strong>Your playbook is empty</strong>Document your best setups with rules and notes so you always know what you're trading.</div></div>
@@ -1538,6 +1507,10 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 </div>
 
+<!-- RULE TRACKER -->
+<div class="page" id="page-rules">
+  <div class="page-header">
+    <div><div class="page-title">Rule Tracker</div><div class="page-sub">Track compliance and what it costs you when you break them</div></div>
     <button class="btn btn-green" onclick="openRuleModal()">+ Add rule</button>
   </div>
   <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
@@ -1556,6 +1529,10 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 </div>
 
+<!-- TILT DETECTION -->
+<div class="page" id="page-tilt">
+  <div class="page-header">
+    <div><div class="page-title">Tilt Detection</div><div class="page-sub">Revenge trading, overtrading, and emotional patterns</div></div>
     <button class="btn btn-green" onclick="runTiltAnalysis()">Run analysis ↗</button>
   </div>
   <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
@@ -1570,33 +1547,22 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 <!-- RISK CONSISTENCY -->
 <div class="page" id="page-risk">
   <div class="page-header">
-    <div><div class="page-title">Risk &amp; Mistakes</div><div class="page-sub">Sizing consistency and what's costing you money</div></div>
+    <div><div class="page-title">Risk Consistency</div><div class="page-sub">Are you sizing consistently, or emotionally?</div></div>
   </div>
-  <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px">
-    <div class="metric"><div class="metric-label">Avg Risk / Trade</div><div class="metric-val" id="risk-avg">—</div><div class="metric-sub">dollar value of 1R</div></div>
+  <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+    <div class="metric"><div class="metric-label">Avg Risk / Trade</div><div class="metric-val" id="risk-avg">—</div><div class="metric-sub">pts × contracts</div></div>
     <div class="metric"><div class="metric-label">Risk Std Dev</div><div class="metric-val amber" id="risk-stddev">—</div><div class="metric-sub">consistency score</div></div>
     <div class="metric"><div class="metric-label">Largest Risk Taken</div><div class="metric-val neg" id="risk-max">—</div><div class="metric-sub">single trade</div></div>
     <div class="metric"><div class="metric-label">Risk After Loss</div><div class="metric-val" id="risk-after-loss">—</div><div class="metric-sub">vs avg risk</div></div>
   </div>
-  <div class="grid2" style="margin-bottom:20px">
+  <div class="grid2">
     <div class="card">
       <div class="card-header"><span class="card-title">Risk per trade over time</span></div>
       <div id="risk-chart-wrap" style="position:relative;height:180px"><canvas id="riskChart"></canvas></div>
     </div>
     <div class="card">
       <div class="card-header"><span class="card-title">Risk consistency breakdown</span></div>
-      <div id="risk-breakdown"><div class="empty">Log trades with Planned R:R to see risk analysis.</div></div>
-    </div>
-  </div>
-  <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Mistake Tracker</div>
-  <div class="grid2">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Cost per mistake (total $)</span></div>
-      <div id="mistake-cost-list"><div class="empty"><strong>No data yet</strong>Tag trades with mistakes to track their cost.</div></div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Mistake frequency</span></div>
-      <div id="mistake-freq-list"><div class="empty"><strong>No data yet</strong>Start tagging bad trades.</div></div>
+      <div id="risk-breakdown"><div class="empty">Log trades with stop losses to see risk analysis.</div></div>
     </div>
   </div>
 </div>
@@ -2018,24 +1984,29 @@ window._mergeCloudData = function(cloudData) {
 };
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
-const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','insights','routine','risk','streaks','setuplibrary'];
+const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','mistakes','insights','routine','rules','tilt','risk','streaks','playbook'];
 function go(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const pageEl = document.getElementById('page-'+page);
   if (pageEl) pageEl.classList.add('active');
+  // Activate the correct nav item by ID
   const navEl = document.getElementById('nav-'+page);
   if (navEl) navEl.classList.add('active');
-  if (page==='setups')      { renderSetupsPage(); return; }
-  if (page==='propfirms')   renderPropFirmsPage();
-  if (page==='dashboard')   renderDashboard();
-  if (page==='history')     { if(typeof currentHistoryView!=='undefined'&&currentHistoryView==='calendar') renderCalendar(); else renderHistory(); }
-  if (page==='log')         renderLogPage();
+  if (page==='setups')    { renderSetupsPage(); return; }
+  if (page==='propfirms') renderPropFirmsPage();
+  if (page==='dashboard') renderDashboard();
+  if (page==='history')   renderHistory();
+  if (page==='mistakes')  renderMistakeAnalytics();
+  if (page==='log')       renderLogPage();
   if (page==='setuplibrary') renderSetupLibrary();
-  if (page==='routine')     renderRoutinePage();
-  if (page==='risk')        { renderRisk(); renderMistakeAnalytics(); }
-  if (page==='streaks')     renderStreaks();
-  if (page==='copilot')     renderCopilotPage();
+  if (page==='playbook')  renderPlaybook();
+  if (page==='routine')   renderRoutinePage();
+  if (page==='rules')     renderRules();
+  if (page==='tilt')      renderTilt();
+  if (page==='risk')      renderRisk();
+  if (page==='streaks')   renderStreaks();
+  if (page==='copilot')   renderCopilotPage();
 }
 
 // ─── CALC ─────────────────────────────────────────────────────────────────────
@@ -3369,47 +3340,37 @@ Give 3-4 specific findings with exact numbers. Start each with [TILT], [RISK], o
 }
 
 // ─── RISK CONSISTENCY ─────────────────────────────────────────────────────────
-function getTradeRisk(t) {
-  if (!t.quickMode && t.sl && t.entry && t.sl !== t.entry) {
-    const mult = {NQ:20,MNQ:2,ES:50,MES:5}[t.ticker?.toUpperCase()] || 1;
-    return Math.abs(t.entry - t.sl) * (t.qty||1) * mult;
-  }
-  const pnl = Math.abs(t.quickPnL !== undefined ? t.quickPnL : calcPnL(t));
-  const rr = Math.abs(parseFloat(t.quickRR) || parseFloat(t.plannedRR) || 0);
-  if (pnl && rr) return pnl / rr;
-  return null;
-}
-
 let riskChartObj=null;
 function renderRisk() {
-  const riskData = state.trades.map(t => ({ t, risk: getTradeRisk(t) })).filter(x => x.risk !== null && x.risk > 0);
-  if (!riskData.length) {
-    ['risk-avg','risk-stddev','risk-max','risk-after-loss'].forEach(id => document.getElementById(id).textContent = '—');
-    document.getElementById('risk-breakdown').innerHTML = '<div class="empty">Log trades with Planned R:R to see risk analysis.</div>';
-    return;
-  }
-  const risks = riskData.map(x => x.risk);
-  const avg = risks.reduce((a,b)=>a+b,0)/risks.length;
-  const stddev = Math.sqrt(risks.reduce((a,r)=>a+Math.pow(r-avg,2),0)/risks.length);
-  const maxR = Math.max(...risks);
-  const afterLoss = [];
-  state.trades.forEach((t,i)=>{if(i===0)return;if(calcPnL(state.trades[i-1])<0){const r=getTradeRisk(t);if(r)afterLoss.push(r);}});
-  const avgAfterLoss = afterLoss.length?afterLoss.reduce((a,b)=>a+b,0)/afterLoss.length:null;
-  document.getElementById('risk-avg').textContent='$'+Math.round(avg);
+  const T=state.trades.filter(t=>t.sl&&t.entry&&t.sl!==t.entry);
+  if(!T.length){['risk-avg','risk-stddev','risk-max','risk-after-loss'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('risk-breakdown').innerHTML='<div class="empty">Log trades with stop losses to see risk analysis.</div>';return;}
+
+  const risks=T.map(t=>Math.abs(t.entry-t.sl)*t.qty);
+  const avg=risks.reduce((a,b)=>a+b,0)/risks.length;
+  const stddev=Math.sqrt(risks.reduce((a,r)=>a+Math.pow(r-avg,2),0)/risks.length);
+  const maxR=Math.max(...risks);
+
+  // Risk after loss
+  const afterLoss=[];
+  state.trades.forEach((t,i)=>{if(i===0)return;const prev=state.trades[i-1];if(calcPnL(prev)<0&&t.sl&&t.sl!==t.entry)afterLoss.push(Math.abs(t.entry-t.sl)*t.qty);});
+  const avgAfterLoss=afterLoss.length?afterLoss.reduce((a,b)=>a+b,0)/afterLoss.length:null;
+
+  document.getElementById('risk-avg').textContent=avg.toFixed(1)+' pts';
   const sdEl=document.getElementById('risk-stddev');
-  sdEl.textContent='$'+Math.round(stddev);
+  sdEl.textContent=stddev.toFixed(1)+' pts';
   sdEl.className='metric-val '+(stddev/avg<0.3?'pos':stddev/avg<0.6?'amber':'neg');
-  document.getElementById('risk-max').textContent='$'+Math.round(maxR);
+  document.getElementById('risk-max').textContent=maxR.toFixed(1)+' pts';
   const alEl=document.getElementById('risk-after-loss');
-  alEl.textContent=avgAfterLoss!=null?(avgAfterLoss/avg>1.3?'▲ ':'')+('$'+Math.round(avgAfterLoss)):'—';
+  alEl.textContent=avgAfterLoss!=null?(avgAfterLoss/avg>1.3?'▲ ':'')+(avgAfterLoss.toFixed(1)+' pts'):'—';
   alEl.className='metric-val '+(avgAfterLoss==null||avgAfterLoss<=avg*1.3?'pos':'neg');
+
+  // Chart
   const ctx=document.getElementById('riskChart').getContext('2d');
   if(riskChartObj){riskChartObj.destroy();riskChartObj=null;}
-  const labels=riskData.map((x,i)=>x.t.datetime?x.t.datetime.slice(5,10):'#'+i);
-  riskChartObj=new Chart(ctx,{type:'bar',data:{labels,datasets:[
-    {label:'Risk ($)',data:risks.map(r=>Math.round(r)),backgroundColor:risks.map(r=>r>avg*1.5?'rgba(255,77,77,0.7)':r>avg*1.2?'rgba(245,166,35,0.7)':'rgba(0,208,132,0.6)'),borderRadius:3},
-    {label:'Avg',data:Array(risks.length).fill(Math.round(avg)),type:'line',borderColor:'rgba(255,255,255,0.3)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:9},maxTicksLimit:10}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},callback:v=>'$'+v}}}}});
+  const labels=T.map((t,i)=>t.datetime?t.datetime.slice(5,10):'#'+i);
+  const avgLine=Array(risks.length).fill(parseFloat(avg.toFixed(1)));
+  riskChartObj=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Risk (pts)',data:risks.map(r=>parseFloat(r.toFixed(1))),backgroundColor:risks.map(r=>r>avg*1.5?'rgba(255,77,77,0.7)':r>avg*1.2?'rgba(245,166,35,0.7)':'rgba(0,208,132,0.6)'),borderRadius:3},{label:'Avg',data:avgLine,type:'line',borderColor:'rgba(255,255,255,0.3)',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:9},maxTicksLimit:10}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10,family:'DM Mono'}}}}}});
+
   const consistency=stddev/avg;
   document.getElementById('risk-breakdown').innerHTML=`
     <div style="margin-bottom:12px">
@@ -3417,11 +3378,10 @@ function renderRisk() {
       <div style="font-size:15px;font-weight:700;color:${consistency<0.3?'var(--green)':consistency<0.6?'var(--amber)':'var(--red)'}">${consistency<0.3?'Excellent — very consistent sizing':consistency<0.6?'Moderate — some variability':'Inconsistent — emotional sizing detected'}</div>
     </div>
     <div class="risk-meter"><div class="risk-meter-fill" style="width:${Math.min(consistency*100,100)}%;background:${consistency<0.3?'var(--green)':consistency<0.6?'var(--amber)':'var(--red)'}"></div></div>
-    ${avgAfterLoss!=null&&avgAfterLoss>avg*1.3?`<div class="tilt-alert" style="margin-top:12px;font-size:12px"><strong>⚠ Risk spike after losses</strong><br>You risk ${((avgAfterLoss/avg-1)*100).toFixed(0)}% more after a loss ($${Math.round(avgAfterLoss)} vs $${Math.round(avg)} avg).</div>`:''}
+    ${afterLoss!=null&&afterLoss>avg*1.3?`<div class="tilt-alert" style="margin-top:12px;font-size:12px"><strong>⚠ Risk spike after losses</strong><br>You risk ${((avgAfterLoss/avg-1)*100).toFixed(0)}% more after a losing trade (${avgAfterLoss.toFixed(1)} pts vs ${avg.toFixed(1)} avg). Classic revenge behavior.</div>`:''}
     <div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.7">
-      Avg 1R: <strong>$${Math.round(avg)}</strong> · Std dev: <strong>$${Math.round(stddev)}</strong> · CV: <strong>${(consistency*100).toFixed(0)}%</strong><br>
-      ${afterLoss.length?`Avg risk after loss: <strong>$${Math.round(avgAfterLoss)}</strong>`:'Not enough data for post-loss analysis'}<br>
-      <span style="color:var(--dim);font-size:11px">Calculated from Planned R:R + P&L</span>
+      Avg risk: <strong>${avg.toFixed(1)} pts</strong> &nbsp;·&nbsp; Std dev: <strong>${stddev.toFixed(1)} pts</strong> &nbsp;·&nbsp; CV: <strong>${(consistency*100).toFixed(0)}%</strong><br>
+      ${afterLoss!=null?`Avg risk after loss: <strong>${avgAfterLoss.toFixed(1)} pts</strong>`:'Not enough data for post-loss analysis'}
     </div>`;
 }
 
@@ -5137,200 +5097,6 @@ function renderGallery() {
   }
 })();
 
-// ─── TRADE CALENDAR ───────────────────────────────────────────────────────────
-let calYear  = new Date().getFullYear();
-let calMonth = new Date().getMonth(); // 0-indexed
-let calActiveDay = null;
-let currentHistoryView = 'table';
-
-function setHistoryView(view) {
-  currentHistoryView = view;
-  const tableEl = document.getElementById('history-table-view');
-  const calEl   = document.getElementById('history-calendar-view');
-  const tableBtn = document.getElementById('view-table-btn');
-  const calBtn   = document.getElementById('view-cal-btn');
-  if (view === 'table') {
-    tableEl.style.display = ''; calEl.style.display = 'none';
-    tableBtn.style.background = 'var(--green)'; tableBtn.style.color = '#000';
-    calBtn.style.background = 'transparent';    calBtn.style.color = 'var(--muted)';
-    renderHistory();
-  } else {
-    tableEl.style.display = 'none'; calEl.style.display = '';
-    calBtn.style.background = 'var(--green)'; calBtn.style.color = '#000';
-    tableBtn.style.background = 'transparent'; tableBtn.style.color = 'var(--muted)';
-    // Default to the month with the most recent trade
-    if (state.trades.length) {
-      const last = state.trades.slice().reverse().find(t => t.datetime);
-      if (last) {
-        const d = new Date(last.datetime);
-        calYear = d.getFullYear(); calMonth = d.getMonth();
-      }
-    }
-    renderCalendar();
-  }
-}
-
-function calNav(dir) {
-  calMonth += dir;
-  if (calMonth > 11) { calMonth = 0; calYear++; }
-  if (calMonth < 0)  { calMonth = 11; calYear--; }
-  calActiveDay = null;
-  document.getElementById('cal-day-detail').style.display = 'none';
-  renderCalendar();
-}
-
-function renderCalendar() {
-  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('cal-month-label').textContent = `${monthNames[calMonth]} ${calYear}`;
-
-  // Build day → trades map
-  const dayMap = {};
-  state.trades.forEach(t => {
-    if (!t.datetime) return;
-    const d = new Date(t.datetime);
-    if (d.getFullYear() !== calYear || d.getMonth() !== calMonth) return;
-    const key = d.getDate();
-    if (!dayMap[key]) dayMap[key] = [];
-    dayMap[key].push(t);
-  });
-
-  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
-  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-  const today = new Date();
-  const isThisMonth = today.getFullYear() === calYear && today.getMonth() === calMonth;
-
-  const grid = document.getElementById('cal-grid');
-  grid.innerHTML = '';
-
-  // Empty cells before first day
-  for (let i = 0; i < firstDay; i++) {
-    const empty = document.createElement('div');
-    empty.className = 'cal-day cal-empty';
-    grid.appendChild(empty);
-  }
-
-  // Day cells
-  for (let day = 1; day <= daysInMonth; day++) {
-    const trades = dayMap[day] || [];
-    const pnl = trades.reduce((a,t) => a+calcPnL(t), 0);
-    const wins = trades.filter(t => calcPnL(t) > 0).length;
-    const wr = trades.length ? Math.round(wins/trades.length*100) : 0;
-    const isToday = isThisMonth && today.getDate() === day;
-    const isActive = calActiveDay === day;
-
-    const cell = document.createElement('div');
-    cell.className = 'cal-day' + (isToday?' cal-today':'') + (isActive?' cal-active':'');
-
-    const dayNumHtml = `<div class="cal-day-num ${isToday?'is-today':''}">
-      ${isToday?'<span class="cal-today-dot"></span>':''}${day}
-    </div>`;
-
-    if (trades.length) {
-      const pnlColor = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--muted)';
-      const sign = pnl >= 0 ? '+' : '-';
-      const absStr = Math.abs(pnl) >= 1000 ? '$' + (Math.abs(pnl)/1000).toFixed(1) + 'K' : '$' + Math.round(Math.abs(pnl));
-      cell.innerHTML = `
-        ${dayNumHtml}
-        <div class="cal-day-pnl" style="color:${pnlColor}">${sign}${absStr}</div>
-        <div class="cal-day-meta">${trades.length} trade${trades.length>1?'s':''}<br>${wr}%</div>
-        <div class="cal-day-win-bar">
-          <div style="width:${wr}%;height:100%;background:${pnl>=0?'var(--green)':'var(--red)'}"></div>
-        </div>`;
-      cell.onclick = () => calSelectDay(day, trades);
-    } else {
-      cell.innerHTML = dayNumHtml;
-      const dow = new Date(calYear, calMonth, day).getDay();
-      if (dow === 0 || dow === 6) cell.style.opacity = '0.4';
-    }
-
-    grid.appendChild(cell);
-  }
-
-  // Week summary sidebar — render AFTER grid so we can measure row heights
-  renderCalWeekSidebar(dayMap, firstDay, daysInMonth);
-}
-
-function renderCalWeekSidebar(dayMap, firstDay, daysInMonth) {
-  const sidebar = document.getElementById('cal-week-sidebar');
-  const grid    = document.getElementById('cal-grid');
-  sidebar.innerHTML = '';
-
-  const numWeeks = Math.ceil((firstDay + daysInMonth) / 7);
-
-  // After grid renders, measure actual row height to size sidebar cards
-  requestAnimationFrame(() => {
-    const gridH = grid ? grid.offsetHeight : 0;
-    const gap = 3;
-    const rowH = numWeeks > 0 ? Math.floor((gridH - gap * (numWeeks - 1)) / numWeeks) : 80;
-
-    for (let w = 0; w < numWeeks; w++) {
-      let wPnL = 0, wDays = 0;
-      for (let d = 0; d < 7; d++) {
-        const day = w * 7 + d - firstDay + 1;
-        if (day < 1 || day > daysInMonth) continue;
-        const trades = dayMap[day] || [];
-        if (trades.length) { wPnL += trades.reduce((a,t) => a + calcPnL(t), 0); wDays++; }
-      }
-      const pnlColor = wPnL > 0 ? 'var(--green)' : wPnL < 0 ? 'var(--red)' : 'var(--muted)';
-      const sign = wPnL >= 0 ? '+' : '-';
-      const absStr = Math.abs(wPnL) >= 1000 ? '$' + (Math.abs(wPnL)/1000).toFixed(1) + 'K' : '$' + Math.round(Math.abs(wPnL));
-      const pnlStr = wDays === 0 ? '$0' : sign + absStr;
-
-      const card = document.createElement('div');
-      card.className = 'cal-week-card';
-      card.style.cssText = `height:${rowH}px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box`;
-      card.innerHTML = `
-        <div class="cal-week-label">Week ${w+1}</div>
-        <div class="cal-week-pnl" style="color:${pnlColor}">${pnlStr}</div>
-        <div class="cal-week-days">${wDays} day${wDays!==1?'s':''}</div>`;
-      sidebar.appendChild(card);
-    }
-  });
-}
-
-function calSelectDay(day, trades) {
-  // Deselect if clicking same day
-  if (calActiveDay === day) {
-    calActiveDay = null;
-    renderCalendar();
-    document.getElementById('cal-day-detail').style.display = 'none';
-    return;
-  }
-  calActiveDay = day;
-  renderCalendar();
-
-  const detail = document.getElementById('cal-day-detail');
-  const pnl = trades.reduce((a,t) => a+calcPnL(t), 0);
-  const wins = trades.filter(t => calcPnL(t) > 0).length;
-  const wr = Math.round(wins/trades.length*100);
-  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-  detail.style.display = '';
-  detail.innerHTML = `
-    <div class="card" style="padding:0;overflow:hidden">
-      <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px">
-        <div style="font-size:15px;font-weight:700">${monthNames[calMonth]} ${day}, ${calYear}</div>
-        <span style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}$${Math.round(pnl).toLocaleString()}</span>
-        <span style="font-size:12px;color:var(--muted)">${trades.length} trade${trades.length>1?'s':''} · ${wr}% WR</span>
-        <button class="btn btn-sm" style="margin-left:auto" onclick="calActiveDay=null;document.getElementById('cal-day-detail').style.display='none';renderCalendar()">✕</button>
-      </div>
-      ${trades.map(t => {
-        const tpnl = calcPnL(t);
-        const rr = calcRR(t) || t.quickRR || null;
-        const idx = state.trades.indexOf(t);
-        return `<div class="cal-detail-trade" onclick="openTradeModal(${idx})">
-          <span class="side-pill ${t.side==='long'?'long-pill':'short-pill'}">${t.side.toUpperCase()}</span>
-          <strong style="font-size:13px">${t.ticker}</strong>
-          <span style="font-size:11px;color:var(--muted)">${t.datetime?t.datetime.slice(11,16):''} EST</span>
-          ${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')}
-          ${t.grade?`<span class="grade-badge grade-${t.grade.replace(/[^A-F]/g,'')[0]||''}" style="font-size:18px">${t.grade}</span>`:''}
-          <span style="margin-left:auto;font-weight:700;font-family:'Geist Mono',monospace;font-size:13px" class="${tpnl>=0?'pnl-pos':'pnl-neg'}">${tpnl>=0?'+':''}$${Math.round(tpnl)}</span>
-          ${rr?`<span style="font-size:11px;color:var(--muted)">${rr}R</span>`:''}
-        </div>`;
-      }).join('')}
-    </div>`;
-}
-
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Set datetime to local time (not UTC)
 const _now = new Date();
@@ -5342,3 +5108,4 @@ if (state.trades.length > 0) renderDashboard();
 </script>
 </body>
 </html>
+
