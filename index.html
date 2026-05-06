@@ -888,11 +888,12 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 
     <!-- QUICK MODE -->
     <div id="log-mode-quick">
-      <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:12px">
         <div class="qe-field"><label>Ticker</label><input id="q-ticker" placeholder="NQ" value="NQ"></div>
         <div class="qe-field"><label>P&amp;L ($)</label><input id="q-quick-pnl" type="number" placeholder="+500 or -250"></div>
         <div class="qe-field"><label>Planned R:R</label><input id="q-planned-rr" type="number" step="0.1" placeholder="e.g. 2.0" min="-5"></div>
         <div class="qe-field"><label>Realized R:R</label><input id="q-quick-rr" type="number" step="0.1" placeholder="actual taken" min="-5"></div>
+        <div class="qe-field"><label>Hold Time <span style="color:var(--dim);font-weight:400;font-size:10px">mins</span></label><input id="q-hold-mins" type="number" step="1" min="0" placeholder="e.g. 12"></div>
         <div class="qe-field"><label>Date</label><input id="q-date" type="date"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
@@ -1084,15 +1085,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   <!-- TOP: Expectancy + Equity Curve -->
   <div style="display:grid;grid-template-columns:320px 1fr;gap:12px;margin-bottom:12px">
     <div class="card">
-      <div class="card-header" style="margin-bottom:10px"><span class="card-title">Expectancy</span><span class="card-sub">Expected R per trade</span></div>
-      <div id="exp-main" style="font-size:38px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;line-height:1;margin-bottom:4px">—</div>
-      <div id="exp-lbl" style="font-size:11px;color:var(--muted);margin-bottom:12px">per trade</div>
-      <div id="exp-proj" style="font-size:12px;color:var(--muted);line-height:1.6;padding:9px 11px;background:var(--bg3);border-radius:var(--r);margin-bottom:12px"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-        <div style="text-align:center;padding:7px 4px;background:var(--bg3);border-radius:var(--r)"><div style="font-size:15px;font-weight:700;font-family:'Geist Mono',monospace" id="exp-wr">—</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Win Rate</div></div>
-        <div style="text-align:center;padding:7px 4px;background:var(--bg3);border-radius:var(--r)"><div style="font-size:15px;font-weight:700;font-family:'Geist Mono',monospace;color:var(--green)" id="exp-avgw">—</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Avg Win</div></div>
-        <div style="text-align:center;padding:7px 4px;background:var(--bg3);border-radius:var(--r)"><div style="font-size:15px;font-weight:700;font-family:'Geist Mono',monospace;color:var(--red)" id="exp-avgl">—</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Avg Loss</div></div>
-      </div>
+      <div class="card-header" style="margin-bottom:10px"><span class="card-title">Hold Duration</span><span class="card-sub">P&L by how long you held</span></div>
+      <div id="duration-table" style="font-size:12px"></div>
     </div>
     <div class="card">
       <div class="card-header" style="margin-bottom:8px"><span class="card-title">Equity Curve</span><span class="card-sub" id="stats-eq-lbl"></span></div>
@@ -2193,7 +2187,8 @@ function buildTrade(withNotes) {
     const propAccounts = propFirm ? Array.from(document.querySelectorAll('#q-prop-account-checkboxes input:checked')).map(cb=>cb.value) : [];
     const propAccount = propAccounts.join(', ');
     const entryTF = document.getElementById('q-entry-tf')?.value || '';
-    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF};
+    const holdMins = parseFloat(document.getElementById('q-hold-mins')?.value) || null;
+    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF, holdMins};
   } else {
     // Detailed mode
     entry = parseFloat(document.getElementById('q-entry').value);
@@ -2244,6 +2239,7 @@ function fullLog(){
   const qpnl=document.getElementById('q-quick-pnl'); if(qpnl) qpnl.value='';
   const qrr=document.getElementById('q-quick-rr'); if(qrr) qrr.value='';
   const qprr=document.getElementById('q-planned-rr'); if(qprr) qprr.value='';
+  const qhm=document.getElementById('q-hold-mins'); if(qhm) qhm.value='';
   const qod=document.getElementById('q-outcome-d'); if(qod) qod.value='';
   const _qts=document.getElementById('q-time-select'); if(_qts){_qts.value='';delete _qts.dataset.userSet;}
   const qtsel=document.getElementById('q-time-select'); if(qtsel){qtsel.value='';delete qtsel.dataset.userSet;}
@@ -5248,39 +5244,65 @@ function calClickDay(day, trades) {
   </div>`;
 }
 
-// ─── STATS PAGE EXTRAS (expectancy, equity, insight cards) ────────────────────
+// ─── STATS PAGE EXTRAS (duration, equity, insight cards) ─────────────────────
 let statsEqChartObj = null;
 
 function renderStatsExtras(T) {
-  // Expectancy — use a local helper to avoid name collision
   function trRR(t) { return parseFloat(calcRR(t)) || (t.quickRR ? parseFloat(t.quickRR) : null); }
-  const winRRs  = T.filter(t=>calcPnL(t)>0).map(trRR).filter(v=>v!==null&&!isNaN(v));
-  const lossRRs = T.filter(t=>calcPnL(t)<0).map(trRR).filter(v=>v!==null&&!isNaN(v));
-  const wrFrac  = T.length ? T.filter(t=>calcPnL(t)>0).length/T.length : 0;
-  const avgW    = winRRs.length  ? winRRs.reduce((a,b)=>a+b,0)/winRRs.length  : null;
-  const avgL    = lossRRs.length ? Math.abs(lossRRs.reduce((a,b)=>a+b,0)/lossRRs.length) : null;
-  const E       = avgW!==null&&avgL!==null ? wrFrac*avgW-(1-wrFrac)*avgL : null;
 
-  const eMain = document.getElementById('exp-main');
-  if (eMain) {
-    if (E !== null) {
-      eMain.textContent  = (E>=0?'+':'')+E.toFixed(2)+'R';
-      eMain.style.color  = E>0?'var(--green)':E<0?'var(--red)':'var(--muted)';
-      document.getElementById('exp-lbl').textContent = 'expected per trade';
-      document.getElementById('exp-proj').innerHTML = E>0
-        ? `50 trades ≈ <strong style="color:var(--green)">+${(E*50).toFixed(1)}R</strong> &nbsp;·&nbsp; 100 trades ≈ <strong style="color:var(--green)">+${(E*100).toFixed(1)}R</strong>`
-        : `<span style="color:var(--red)">Negative expectancy — this system loses long-term.</span>`;
+  // ── DURATION TABLE ──────────────────────────────────────────────────────────
+  const BUCKETS = [
+    { label: 'Under 1 min',      min: 0,    max: 1    },
+    { label: '1 to 4 min',       min: 1,    max: 5    },
+    { label: '5 to 9 min',       min: 5,    max: 10   },
+    { label: '10 to 29 min',     min: 10,   max: 30   },
+    { label: '30 to 59 min',     min: 30,   max: 60   },
+    { label: '1 hr to 1:59',     min: 60,   max: 120  },
+    { label: '2 hrs to 3:59',    min: 120,  max: 240  },
+    { label: '4 hrs+',           min: 240,  max: Infinity },
+  ];
+
+  const durEl = document.getElementById('duration-table');
+  if (durEl) {
+    const withDur = T.filter(t => t.holdMins != null && t.holdMins >= 0);
+    if (!withDur.length) {
+      durEl.innerHTML = '<div class="empty" style="padding:16px"><strong>No duration data yet</strong>Log Hold Time (mins) when logging trades to see this breakdown.</div>';
     } else {
-      eMain.textContent = '—'; eMain.style.color='var(--muted)';
-      document.getElementById('exp-lbl').textContent = 'need R:R data';
-      document.getElementById('exp-proj').innerHTML = '<span style="color:var(--dim)">Log Planned R:R + Realized R:R to calculate.</span>';
+      const maxAbsPnL = Math.max(...BUCKETS.map(b => {
+        const group = withDur.filter(t => t.holdMins >= b.min && t.holdMins < b.max);
+        return Math.abs(group.reduce((a,t)=>a+calcPnL(t),0));
+      }), 1);
+
+      durEl.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:0 0 8px 0;border-bottom:1px solid var(--border);margin-bottom:4px">
+          <div>Duration</div><div style="text-align:right">Net P&L</div><div style="text-align:center;padding:0 12px">Win %</div><div style="text-align:right"># Trades</div>
+        </div>
+        ${BUCKETS.map(b => {
+          const group = withDur.filter(t => t.holdMins >= b.min && t.holdMins < b.max);
+          if (!group.length) return '';
+          const pnl  = group.reduce((a,t)=>a+calcPnL(t),0);
+          const wins = group.filter(t=>calcPnL(t)>0).length;
+          const wr   = Math.round(wins/group.length*100);
+          const col  = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
+          const barW = Math.round(Math.abs(pnl)/maxAbsPnL*100);
+          const winBarW = wr;
+          const lossBarW = 100-wr;
+          return `<div style="display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:0;padding:7px 0;border-bottom:1px solid var(--border)">
+            <div style="font-size:12px;font-weight:600">${b.label}</div>
+            <div style="font-size:12px;font-weight:700;font-family:'Geist Mono',monospace;color:${col};text-align:right;white-space:nowrap">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+            <div style="display:flex;align-items:center;gap:0;padding:0 10px;width:120px">
+              <div style="flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;display:flex">
+                <div style="width:${lossBarW}%;background:var(--red);opacity:.7"></div>
+                <div style="width:${winBarW}%;background:var(--green);opacity:.8"></div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);text-align:right;white-space:nowrap">${group.length}</div>
+          </div>`;
+        }).join('')}`;
     }
-    document.getElementById('exp-wr').textContent   = T.length ? Math.round(wrFrac*100)+'%' : '—';
-    document.getElementById('exp-avgw').textContent = avgW!==null ? '+'+avgW.toFixed(2)+'R' : '—';
-    document.getElementById('exp-avgl').textContent = avgL!==null ? '-'+avgL.toFixed(2)+'R' : '—';
   }
 
-  // Compact equity curve
+  // ── COMPACT EQUITY CURVE ────────────────────────────────────────────────────
   const eqCtx = document.getElementById('statsEqChart')?.getContext('2d');
   if (eqCtx) {
     if (statsEqChartObj) { statsEqChartObj.destroy(); statsEqChartObj=null; }
@@ -5294,7 +5316,7 @@ function renderStatsExtras(T) {
     }
   }
 
-  // Insight cards
+  // ── INSIGHT CARDS ───────────────────────────────────────────────────────────
   const setupMap={};
   T.forEach(t=>(t.setups||[]).forEach(s=>{
     if(!setupMap[s])setupMap[s]={wins:0,n:0,rrs:[]};
