@@ -495,6 +495,27 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 }
 .tw-qs{padding:5px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s}
 .tw-qs:hover{border-color:var(--green);color:var(--green)}
+/* TRADE CALENDAR */
+.cal-hdr{text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:5px 0;font-family:'Geist',sans-serif}
+.cal-day{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-height:82px;padding:7px 8px;cursor:pointer;transition:border-color .15s;position:relative;display:flex;flex-direction:column;box-sizing:border-box}
+.cal-day:hover{border-color:var(--border2)}
+.cal-day.cal-empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
+.cal-day.cal-today{border-color:var(--green);border-width:2px}
+.cal-day.cal-selected{border-color:var(--green);background:var(--green-dim)}
+.cal-day.cal-weekend{opacity:.45}
+.cal-day-num{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;line-height:1}
+.cal-day-num.today{color:var(--green)}
+.cal-today-pip{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--green);margin-right:3px;vertical-align:middle;margin-top:-2px}
+.cal-day-pnl{font-size:15px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;line-height:1.2}
+.cal-day-meta{font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4}
+.cal-win-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 var(--r) var(--r);overflow:hidden}
+.cal-week-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;display:flex;flex-direction:column;justify-content:center}
+.cal-week-lbl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:3px}
+.cal-week-pnl{font-size:13px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px}
+.cal-week-days{font-size:10px;color:var(--muted);margin-top:2px}
+.cal-detail-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.cal-detail-row:last-child{border-bottom:none}
+.cal-detail-row:hover{background:var(--bg3)}
 </style>
 </head>
 <body>
@@ -1023,27 +1044,66 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 <div class="page" id="page-history">
   <div class="page-header">
     <div><div class="page-title">Trade History</div><div class="page-sub" id="history-count"></div></div>
-    <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
-  </div>
-  <div class="filters">
-    <input class="filter-input" id="f-ticker" placeholder="Ticker..." onkeyup="renderHistory()" style="width:90px">
-    <select class="filter-input" id="f-side" onchange="renderHistory()"><option value="">All sides</option><option value="long">Long</option><option value="short">Short</option></select>
-    <select class="filter-input" id="f-result" onchange="renderHistory()"><option value="">Win / Loss</option><option value="win">Wins only</option><option value="loss">Losses only</option></select>
-    <select class="filter-input" id="f-setup-filter" onchange="renderHistory()"><option value="">All setups</option></select>
-    <select class="filter-input" id="f-mistake-filter" onchange="renderHistory()"><option value="">All mistakes</option></select>
-    <input class="filter-input" id="f-date-from" type="date" onchange="renderHistory()" title="From date">
-    <input class="filter-input" id="f-date-to" type="date" onchange="renderHistory()" title="To date">
-    <button class="btn btn-sm" onclick="clearFilters()">Clear filters</button>
-  </div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <div style="overflow-x:auto">
-      <table class="trades-table">
-        <thead><tr>
-          <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
-        </tr></thead>
-        <tbody id="history-body"></tbody>
-      </table>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:2px;gap:2px">
+        <button id="hist-view-table" onclick="setHistoryView('table')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:var(--green);color:#000;transition:all .15s">Table</button>
+        <button id="hist-view-cal" onclick="setHistoryView('calendar')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s">Calendar</button>
+      </div>
+      <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
     </div>
+  </div>
+
+  <!-- TABLE VIEW -->
+  <div id="hist-table-view">
+    <div class="filters">
+      <input class="filter-input" id="f-ticker" placeholder="Ticker..." onkeyup="renderHistory()" style="width:90px">
+      <select class="filter-input" id="f-side" onchange="renderHistory()"><option value="">All sides</option><option value="long">Long</option><option value="short">Short</option></select>
+      <select class="filter-input" id="f-result" onchange="renderHistory()"><option value="">Win / Loss</option><option value="win">Wins only</option><option value="loss">Losses only</option></select>
+      <select class="filter-input" id="f-setup-filter" onchange="renderHistory()"><option value="">All setups</option></select>
+      <select class="filter-input" id="f-mistake-filter" onchange="renderHistory()"><option value="">All mistakes</option></select>
+      <input class="filter-input" id="f-date-from" type="date" onchange="renderHistory()" title="From date">
+      <input class="filter-input" id="f-date-to" type="date" onchange="renderHistory()" title="To date">
+      <button class="btn btn-sm" onclick="clearFilters()">Clear filters</button>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="overflow-x:auto">
+        <table class="trades-table">
+          <thead><tr>
+            <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
+          </tr></thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR VIEW -->
+  <div id="hist-cal-view" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <button class="btn btn-sm" onclick="calNav(-1)">← Prev</button>
+      <div style="font-size:16px;font-weight:700;color:var(--text);font-family:'Geist',sans-serif" id="cal-month-label"></div>
+      <button class="btn btn-sm" onclick="calNav(1)">Next →</button>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <!-- GRID -->
+      <div style="flex:1;min-width:0">
+        <!-- Day headers -->
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px">
+          <div class="cal-hdr">Sun</div>
+          <div class="cal-hdr">Mon</div>
+          <div class="cal-hdr">Tue</div>
+          <div class="cal-hdr">Wed</div>
+          <div class="cal-hdr">Thu</div>
+          <div class="cal-hdr">Fri</div>
+          <div class="cal-hdr">Sat</div>
+        </div>
+        <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px"></div>
+      </div>
+      <!-- WEEK SIDEBAR -->
+      <div id="cal-week-sidebar" style="width:110px;flex-shrink:0;display:flex;flex-direction:column;gap:3px;padding-top:26px"></div>
+    </div>
+    <!-- DAY DETAIL -->
+    <div id="cal-day-detail" style="display:none;margin-top:14px"></div>
   </div>
 </div>
 
@@ -1930,7 +1990,7 @@ function go(page) {
   if (page==='setups')    { renderSetupsPage(); return; }
   if (page==='propfirms') renderPropFirmsPage();
   if (page==='dashboard') renderDashboard();
-  if (page==='history')   renderHistory();
+  if (page==='history')   { if (histView === 'calendar') renderCalendar(); else renderHistory(); }
   if (page==='log')       renderLogPage();
   if (page==='setuplibrary') renderSetupLibrary();
   if (page==='routine')   renderRoutinePage();
@@ -5028,6 +5088,187 @@ function renderGallery() {
     window._initBlob = initBlob;
   }
 })();
+
+// ─── TRADE CALENDAR ───────────────────────────────────────────────────────────
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calSelectedDay = null;
+let histView = 'table';
+
+function setHistoryView(v) {
+  histView = v;
+  const tableEl = document.getElementById('hist-table-view');
+  const calEl   = document.getElementById('hist-cal-view');
+  const tBtn    = document.getElementById('hist-view-table');
+  const cBtn    = document.getElementById('hist-view-cal');
+  if (v === 'table') {
+    tableEl.style.display = ''; calEl.style.display = 'none';
+    tBtn.style.background = 'var(--green)'; tBtn.style.color = '#000';
+    cBtn.style.background = 'transparent'; cBtn.style.color = 'var(--muted)';
+    renderHistory();
+  } else {
+    tableEl.style.display = 'none'; calEl.style.display = '';
+    cBtn.style.background = 'var(--green)'; cBtn.style.color = '#000';
+    tBtn.style.background = 'transparent'; tBtn.style.color = 'var(--muted)';
+    // Jump to month of most recent trade
+    const last = [...state.trades].reverse().find(t => t.datetime);
+    if (last) { const d = new Date(last.datetime); calYear = d.getFullYear(); calMonth = d.getMonth(); }
+    renderCalendar();
+  }
+}
+
+function calNav(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  calSelectedDay = null;
+  document.getElementById('cal-day-detail').style.display = 'none';
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent = `${MONTHS[calMonth]} ${calYear}`;
+
+  // Build day map
+  const dayMap = {};
+  state.trades.forEach(t => {
+    if (!t.datetime) return;
+    const d = new Date(t.datetime);
+    if (d.getFullYear() !== calYear || d.getMonth() !== calMonth) return;
+    const k = d.getDate();
+    if (!dayMap[k]) dayMap[k] = [];
+    dayMap[k].push(t);
+  });
+
+  const firstDow  = new Date(calYear, calMonth, 1).getDay();
+  const daysInMo  = new Date(calYear, calMonth + 1, 0).getDate();
+  const todayDate = new Date();
+  const isThisMonth = todayDate.getFullYear() === calYear && todayDate.getMonth() === calMonth;
+  const numWeeks  = Math.ceil((firstDow + daysInMo) / 7);
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  // Empty leading cells
+  for (let i = 0; i < firstDow; i++) {
+    const e = document.createElement('div'); e.className = 'cal-day cal-empty'; grid.appendChild(e);
+  }
+
+  // Day cells
+  for (let day = 1; day <= daysInMo; day++) {
+    const trades  = dayMap[day] || [];
+    const pnl     = trades.reduce((a, t) => a + calcPnL(t), 0);
+    const wins    = trades.filter(t => calcPnL(t) > 0).length;
+    const wr      = trades.length ? Math.round(wins / trades.length * 100) : 0;
+    const dow     = new Date(calYear, calMonth, day).getDay();
+    const isToday = isThisMonth && todayDate.getDate() === day;
+    const isSel   = calSelectedDay === day;
+    const isWknd  = dow === 0 || dow === 6;
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-day' +
+      (isToday ? ' cal-today' : '') +
+      (isSel   ? ' cal-selected' : '') +
+      (isWknd && !trades.length ? ' cal-weekend' : '');
+
+    const numEl = `<div class="cal-day-num${isToday ? ' today' : ''}">${isToday ? '<span class="cal-today-pip"></span>' : ''}${day}</div>`;
+
+    if (trades.length) {
+      const col  = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--muted)';
+      const sign = pnl >= 0 ? '+' : '-';
+      const abs  = Math.abs(pnl);
+      const str  = abs >= 1000 ? sign + '$' + (abs / 1000).toFixed(1) + 'K' : sign + '$' + Math.round(abs);
+      cell.innerHTML = `${numEl}
+        <div class="cal-day-pnl" style="color:${col}">${str}</div>
+        <div class="cal-day-meta">${trades.length} trade${trades.length > 1 ? 's' : ''}<br>${wr}%</div>
+        <div class="cal-win-bar"><div style="width:${wr}%;height:100%;background:${col}"></div></div>`;
+      cell.onclick = () => calClickDay(day, trades);
+    } else {
+      cell.innerHTML = numEl;
+    }
+    grid.appendChild(cell);
+  }
+
+  // Week sidebar — rendered after grid paints so we can measure row heights
+  requestAnimationFrame(() => renderCalWeekSidebar(dayMap, firstDow, daysInMo, numWeeks));
+}
+
+function renderCalWeekSidebar(dayMap, firstDow, daysInMo, numWeeks) {
+  const sidebar = document.getElementById('cal-week-sidebar');
+  const grid    = document.getElementById('cal-grid');
+  sidebar.innerHTML = '';
+  if (!grid) return;
+
+  const gridH = grid.offsetHeight;
+  const gap   = 3;
+  const rowH  = numWeeks > 0 ? Math.floor((gridH - gap * (numWeeks - 1)) / numWeeks) : 82;
+
+  for (let w = 0; w < numWeeks; w++) {
+    let wPnL = 0, wDays = 0;
+    for (let d = 0; d < 7; d++) {
+      const day = w * 7 + d - firstDow + 1;
+      if (day < 1 || day > daysInMo) continue;
+      const trades = dayMap[day] || [];
+      if (trades.length) { wPnL += trades.reduce((a, t) => a + calcPnL(t), 0); wDays++; }
+    }
+    const col  = wPnL > 0 ? 'var(--green)' : wPnL < 0 ? 'var(--red)' : 'var(--muted)';
+    const sign = wPnL >= 0 ? '+' : '-';
+    const abs  = Math.abs(wPnL);
+    const str  = wDays === 0 ? '$0' : (sign + '$' + (abs >= 1000 ? (abs / 1000).toFixed(1) + 'K' : Math.round(abs)));
+
+    const card = document.createElement('div');
+    card.className = 'cal-week-card';
+    card.style.height = rowH + 'px';
+    card.innerHTML = `<div class="cal-week-lbl">Week ${w + 1}</div><div class="cal-week-pnl" style="color:${col}">${str}</div><div class="cal-week-days">${wDays} day${wDays !== 1 ? 's' : ''}</div>`;
+    sidebar.appendChild(card);
+  }
+}
+
+function calClickDay(day, trades) {
+  if (calSelectedDay === day) {
+    calSelectedDay = null;
+    renderCalendar();
+    document.getElementById('cal-day-detail').style.display = 'none';
+    return;
+  }
+  calSelectedDay = day;
+  renderCalendar();
+
+  const detail = document.getElementById('cal-day-detail');
+  const pnl    = trades.reduce((a, t) => a + calcPnL(t), 0);
+  const wins   = trades.filter(t => calcPnL(t) > 0).length;
+  const wr     = Math.round(wins / trades.length * 100);
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const col    = pnl >= 0 ? 'var(--green)' : 'var(--red)';
+  const sign   = pnl >= 0 ? '+' : '-';
+  const pnlStr = sign + '$' + Math.abs(Math.round(pnl)).toLocaleString();
+
+  detail.style.display = '';
+  detail.innerHTML = `<div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="font-size:14px;font-weight:700">${MONTHS[calMonth]} ${day}, ${calYear}</div>
+      <span style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:${col}">${pnlStr}</span>
+      <span style="font-size:12px;color:var(--muted)">${trades.length} trade${trades.length > 1 ? 's' : ''} · ${wr}% WR</span>
+      <button class="btn btn-sm" style="margin-left:auto" onclick="calSelectedDay=null;document.getElementById('cal-day-detail').style.display='none';renderCalendar()">✕</button>
+    </div>
+    ${trades.map(t => {
+      const tp  = calcPnL(t);
+      const rr  = calcRR(t);
+      const idx = state.trades.indexOf(t);
+      const tc  = tp >= 0 ? 'var(--green)' : 'var(--red)';
+      return `<div class="cal-detail-row" onclick="openTradeModal(${idx})">
+        <span class="side-pill ${t.side === 'long' ? 'long-pill' : 'short-pill'}">${t.side.toUpperCase()}</span>
+        <strong style="font-size:13px">${t.ticker}</strong>
+        <span style="font-size:11px;color:var(--muted)">${t.datetime ? t.datetime.slice(11, 16) : ''}</span>
+        ${(t.setups || []).map(s => `<span class="tag-pill setup-pill">${s}</span>`).join('')}
+        ${t.grade ? `<span class="grade-badge grade-${t.grade.replace(/[^A-F]/g, '')[0] || ''}" style="font-size:18px">${t.grade}</span>` : ''}
+        <span style="margin-left:auto;font-weight:700;font-family:'Geist Mono',monospace;font-size:13px;color:${tc}">${tp >= 0 ? '+' : '-'}$${Math.abs(Math.round(tp))}</span>
+        ${rr ? `<span style="font-size:11px;color:var(--muted)">${rr}R</span>` : ''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Set datetime to local time (not UTC)
