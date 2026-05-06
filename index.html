@@ -493,6 +493,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   .metrics{grid-template-columns:repeat(2,1fr)}
   .grid2{grid-template-columns:1fr}
 }
+.tw-qs{padding:5px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s}
+.tw-qs:hover{border-color:var(--green);color:var(--green)}
 </style>
 </head>
 <body>
@@ -896,7 +898,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
         <div class="qe-field">
           <label>Time <span style="color:var(--dim);font-weight:400;font-size:10px">(EST)</span></label>
-          <div id="time-wheel-trigger" onclick="openTimeWheel()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text);cursor:pointer;text-align:center;letter-spacing:2px;user-select:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border2)'" id="time-wheel-display">9:30</div>
+          <div id="time-wheel-display" onclick="openTimeWheel()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text);cursor:pointer;text-align:center;letter-spacing:2px;user-select:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border2)'">9:30</div>
           <input type="hidden" id="q-time-select" value="09:30">
         </div>
         <div class="qe-field"><label>Setup</label><select id="q-setup"><option value="">— setup —</option></select></div>
@@ -1641,9 +1643,9 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <!-- MINUTE -->
       <div style="text-align:center">
         <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">Minute</div>
-        <button onclick="twAdjust('m',5)" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:20px;cursor:pointer;margin-bottom:6px">▲</button>
+        <button onclick="twAdjust('m',1)" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:20px;cursor:pointer;margin-bottom:6px">▲</button>
         <div id="tw-m-big" style="font-family:var(--mono);font-size:36px;font-weight:800;color:var(--green);padding:8px 0;border-top:2px solid var(--green);border-bottom:2px solid var(--green);margin:4px 0">30</div>
-        <button onclick="twAdjust('m',-5)" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:20px;cursor:pointer;margin-top:6px">▼</button>
+        <button onclick="twAdjust('m',-1)" style="width:100%;padding:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:20px;cursor:pointer;margin-top:6px">▼</button>
       </div>
     </div>
 
@@ -1651,7 +1653,13 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     <div style="margin-bottom:20px">
       <div style="font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px">Quick select</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
-        ${['9:30','9:45','10:00','10:15','10:30','10:45','11:00'].map(t => `<button onclick="twSetQuick('${t}')" style="padding:5px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">${t}</button>`).join('')}
+                <button onclick="twSetQuick('9:30')"  class="tw-qs">9:30</button>
+        <button onclick="twSetQuick('9:45')"  class="tw-qs">9:45</button>
+        <button onclick="twSetQuick('10:00')" class="tw-qs">10:00</button>
+        <button onclick="twSetQuick('10:15')" class="tw-qs">10:15</button>
+        <button onclick="twSetQuick('10:30')" class="tw-qs">10:30</button>
+        <button onclick="twSetQuick('10:45')" class="tw-qs">10:45</button>
+        <button onclick="twSetQuick('11:00')" class="tw-qs">11:00</button>
       </div>
     </div>
 
@@ -2065,7 +2073,7 @@ function renderLogPage() {
   const now = new Date();
   const pad = n => String(n).padStart(2,'0');
   if (todayEl && !todayEl.value) todayEl.value = now.toISOString().slice(0,10);
-  if (timeEl) {
+  if (timeEl && !timeEl.dataset.userSet) {
     const now = new Date();
     const pad = n => String(n).padStart(2,'0');
     const h = now.getHours(), m = now.getMinutes();
@@ -2182,6 +2190,7 @@ function fullLog(){
   const qrr=document.getElementById('q-quick-rr'); if(qrr) qrr.value='';
   const qprr=document.getElementById('q-planned-rr'); if(qprr) qprr.value='';
   const qod=document.getElementById('q-outcome-d'); if(qod) qod.value='';
+  const qtsel=document.getElementById('q-time-select'); if(qtsel){qtsel.value='';delete qtsel.dataset.userSet;}
   renderTagSelectors();
   // Success toast + open trade modal for live AI review
   const toast = document.createElement('div');
@@ -4538,7 +4547,7 @@ function openTimeWheel() {
 
 function twAdjust(unit, delta) {
   if (unit === 'h') {
-    twHour = Math.min(12, Math.max(7, twHour + delta));
+    twHour = Math.min(11, Math.max(9, twHour + delta));
   } else {
     twMin = (twMin + delta + 60) % 60;
   }
@@ -4568,7 +4577,8 @@ function twRefresh() {
 function confirmTimeWheel() {
   const pad = n => String(n).padStart(2,'0');
   const timeStr = `${pad(twHour)}:${pad(twMin)}`;
-  document.getElementById('q-time-select').value = timeStr;
+  const inp = document.getElementById('q-time-select');
+  if (inp) { inp.value = timeStr; inp.dataset.userSet = '1'; }
   const display = document.getElementById('time-wheel-display');
   if (display) display.textContent = `${twHour}:${pad(twMin)}`;
   closeTimeWheel();
