@@ -1672,6 +1672,65 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 </div><!-- /app-shell -->
 
 <!-- TRADE DETAIL MODAL -->
+<!-- EDIT TRADE MODAL -->
+<div class="modal-overlay" id="edit-trade-modal" onclick="if(event.target===this)closeEditTradeModal()">
+  <div class="modal" style="width:560px;max-height:90vh;overflow-y:auto">
+    <div class="modal-title">Edit Trade</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="modal-field"><label class="modal-label">Ticker</label><input class="modal-input" id="et-ticker"></div>
+      <div class="modal-field"><label class="modal-label">Side</label>
+        <select class="modal-select" id="et-side">
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+        </select>
+      </div>
+      <div class="modal-field"><label class="modal-label">P&L ($) <span style="color:var(--dim);font-size:10px">or leave blank for calculated</span></label><input class="modal-input" id="et-pnl" type="number" placeholder="Quick mode P&L"></div>
+      <div class="modal-field"><label class="modal-label">Planned R:R</label><input class="modal-input" id="et-planned-rr" type="number" step="0.1"></div>
+      <div class="modal-field"><label class="modal-label">Realized R:R</label><input class="modal-input" id="et-rr" type="number" step="0.1"></div>
+      <div class="modal-field"><label class="modal-label">Outcome</label>
+        <select class="modal-select" id="et-outcome">
+          <option value="">—</option>
+          <option value="win">Win</option>
+          <option value="loss">Loss</option>
+          <option value="be_win">BE → Win</option>
+          <option value="be_loss">BE → Loss</option>
+        </select>
+      </div>
+      <div class="modal-field"><label class="modal-label">Date</label><input class="modal-input" id="et-date" type="date"></div>
+      <div class="modal-field"><label class="modal-label">Time (EST)</label><input class="modal-input" id="et-time" type="time"></div>
+      <div class="modal-field"><label class="modal-label">Entry $</label><input class="modal-input" id="et-entry" type="number"></div>
+      <div class="modal-field"><label class="modal-label">Exit $</label><input class="modal-input" id="et-exit" type="number"></div>
+      <div class="modal-field"><label class="modal-label">Qty</label><input class="modal-input" id="et-qty" type="number"></div>
+      <div class="modal-field"><label class="modal-label">Fees $</label><input class="modal-input" id="et-fees" type="number"></div>
+      <div class="modal-field"><label class="modal-label">Stop $</label><input class="modal-input" id="et-sl" type="number"></div>
+      <div class="modal-field"><label class="modal-label">Target $</label><input class="modal-input" id="et-tp" type="number"></div>
+      <div class="modal-field"><label class="modal-label">Entry TF</label>
+        <select class="modal-select" id="et-entrytf">
+          <option value="">—</option>
+          <option>15s</option><option>30s</option><option>1m</option>
+          <option>2m</option><option>3m</option><option>5m</option>
+          <option>15m</option><option>30m</option><option>1h</option>
+        </select>
+      </div>
+      <div class="modal-field"><label class="modal-label">Prop Firm</label><input class="modal-input" id="et-propfirm" placeholder="optional"></div>
+    </div>
+    <div class="modal-field" style="margin-bottom:12px"><label class="modal-label">Notes</label><textarea class="modal-input" id="et-notes" style="min-height:70px;resize:vertical"></textarea></div>
+    <div class="modal-field" style="margin-bottom:16px">
+      <label class="modal-label">Setup tags</label>
+      <div id="et-setup-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+    </div>
+    <div class="modal-field" style="margin-bottom:16px">
+      <label class="modal-label">Mistake tags</label>
+      <div id="et-mistake-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green" style="flex:1;justify-content:center" onclick="saveEditTrade()">Save Changes</button>
+      <button class="btn" onclick="closeEditTradeModal()">Cancel</button>
+      <button class="btn" style="color:var(--amber)" onclick="saveEditTrade(true)">Save + Re-review</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="trade-modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
@@ -2387,7 +2446,7 @@ function renderHistory() {
       <td>${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
       <td>${(t.mistakes||[]).map(m=>`<span class="tag-pill mistake-pill">${m}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
       <td style="text-align:center">${t.grade?`<span class="grade-badge grade-${t.grade?.replace(/[^A-F]/g,'')[0]||''}">${t.grade}</span>`:'<span style="color:var(--dim);font-size:18px;font-weight:700">—</span>'}</td>
-      <td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" onclick="openTradeModal(${idx})">Review</button> <button class="btn btn-sm btn-red" style="padding:5px 8px" onclick="event.stopPropagation();deleteTrade(${idx})" title="Delete trade">✕</button></td>
+      <td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" onclick="openTradeModal(${idx})">Review</button> <button class="btn btn-sm" onclick="event.stopPropagation();openEditTradeModal(${idx})">Edit</button> <button class="btn btn-sm btn-red" style="padding:5px 8px" onclick="event.stopPropagation();deleteTrade(${idx})" title="Delete trade">✕</button></td>
     </tr>`;
   }).join('');
 }
@@ -4486,6 +4545,120 @@ function renderSetupsPage() {
 
   renderBEAnalysis(T);
   renderGallery();
+}
+
+// ─── EDIT TRADE MODAL ─────────────────────────────────────────────────────────
+let editingTradeIdx = -1;
+let editingTradeSetups = [];
+let editingTradeMistakes = [];
+
+function openEditTradeModal(idx) {
+  editingTradeIdx = idx;
+  const t = state.trades[idx];
+  if (!t) return;
+
+  editingTradeSetups = [...(t.setups||[])];
+  editingTradeMistakes = [...(t.mistakes||[])];
+
+  // Fill fields
+  document.getElementById('et-ticker').value = t.ticker||'NQ';
+  document.getElementById('et-side').value = t.side||'long';
+  document.getElementById('et-pnl').value = t.quickPnL !== undefined ? t.quickPnL : '';
+  document.getElementById('et-planned-rr').value = t.plannedRR||'';
+  document.getElementById('et-rr').value = t.quickRR||'';
+  document.getElementById('et-outcome').value = t.outcome||'';
+  document.getElementById('et-entry').value = t.entry||'';
+  document.getElementById('et-exit').value = t.exit||'';
+  document.getElementById('et-qty').value = t.qty||1;
+  document.getElementById('et-fees').value = t.fees||0;
+  document.getElementById('et-sl').value = t.sl||'';
+  document.getElementById('et-tp').value = t.tp||'';
+  document.getElementById('et-entrytf').value = t.entryTF||'';
+  document.getElementById('et-propfirm').value = t.propFirm||'';
+  document.getElementById('et-notes').value = t.notes||'';
+
+  // Parse datetime
+  const dt = t.datetime||'';
+  if (dt.includes('T')) {
+    document.getElementById('et-date').value = dt.slice(0,10);
+    document.getElementById('et-time').value = dt.slice(11,16);
+  } else {
+    document.getElementById('et-date').value = dt.slice(0,10)||'';
+    document.getElementById('et-time').value = '';
+  }
+
+  // Render tag selectors
+  renderEditTags('et-setup-tags', state.setups, editingTradeSetups, 'setup');
+  renderEditTags('et-mistake-tags', state.mistakes, editingTradeMistakes, 'mistake');
+
+  document.getElementById('edit-trade-modal').classList.add('open');
+}
+
+function renderEditTags(containerId, allTags, selected, type) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = allTags.map(tag => {
+    const active = selected.includes(tag);
+    return `<span onclick="toggleEditTag('${type}','${tag}')" id="et-tag-${type}-${tag.replace(/\s/g,'-')}"
+      style="cursor:pointer;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid ${active?(type==='setup'?'var(--green)':'var(--red)'):'var(--border2)'};background:${active?(type==='setup'?'rgba(0,208,132,0.15)':'rgba(255,77,77,0.12)'):'var(--bg3)'};color:${active?(type==='setup'?'var(--green)':'var(--red)'):'var(--muted)'};transition:all .15s">${tag}</span>`;
+  }).join('');
+}
+
+function toggleEditTag(type, tag) {
+  const arr = type === 'setup' ? editingTradeSetups : editingTradeMistakes;
+  const i = arr.indexOf(tag);
+  if (i >= 0) arr.splice(i, 1); else arr.push(tag);
+  renderEditTags(type==='setup'?'et-setup-tags':'et-mistake-tags',
+    type==='setup'?state.setups:state.mistakes, arr, type);
+}
+
+function closeEditTradeModal() {
+  document.getElementById('edit-trade-modal').classList.remove('open');
+}
+
+function saveEditTrade(reReview = false) {
+  const t = state.trades[editingTradeIdx];
+  if (!t) return;
+
+  const dateVal = document.getElementById('et-date').value;
+  const timeVal = document.getElementById('et-time').value;
+  const pnlVal = document.getElementById('et-pnl').value;
+
+  t.ticker = document.getElementById('et-ticker').value.trim().toUpperCase() || 'NQ';
+  t.side = document.getElementById('et-side').value;
+  t.outcome = document.getElementById('et-outcome').value;
+  t.datetime = dateVal && timeVal ? `${dateVal}T${timeVal}` : dateVal || t.datetime;
+  t.entry = parseFloat(document.getElementById('et-entry').value)||t.entry;
+  t.exit = parseFloat(document.getElementById('et-exit').value)||t.exit;
+  t.qty = parseInt(document.getElementById('et-qty').value)||t.qty||1;
+  t.fees = parseFloat(document.getElementById('et-fees').value)||0;
+  t.sl = parseFloat(document.getElementById('et-sl').value)||null;
+  t.tp = parseFloat(document.getElementById('et-tp').value)||null;
+  t.plannedRR = parseFloat(document.getElementById('et-planned-rr').value)||null;
+  t.quickRR = parseFloat(document.getElementById('et-rr').value)||null;
+  t.entryTF = document.getElementById('et-entrytf').value;
+  t.propFirm = document.getElementById('et-propfirm').value.trim();
+  t.notes = document.getElementById('et-notes').value.trim();
+  t.setups = [...editingTradeSetups];
+  t.mistakes = [...editingTradeMistakes];
+
+  // Update quickPnL if provided
+  if (pnlVal !== '') {
+    t.quickPnL = parseFloat(pnlVal);
+    t.quickMode = true;
+  }
+
+  save();
+  closeEditTradeModal();
+  renderHistory();
+  renderDashboard();
+
+  if (reReview) {
+    setTimeout(() => {
+      openTradeModal(editingTradeIdx, true);
+      reviewTrade(editingTradeIdx);
+    }, 300);
+  }
 }
 
 // ─── SETUP LIBRARY ────────────────────────────────────────────────────────────
