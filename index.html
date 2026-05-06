@@ -741,6 +741,9 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     <div class="nav-item" id="nav-risk" onclick="go('risk')">
       <svg viewBox="0 0 16 16" fill="none"><path d="M2 14V6l4-4h6l2 2v10" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 14v-4h4v4" stroke="currentColor" stroke-width="1.3"/></svg>Risk Consistency
     </div>
+    <div class="nav-item" id="nav-setuplibrary" onclick="go('setuplibrary')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Setup Library
+    </div>
     <div class="nav-item" id="nav-playbook" onclick="go('playbook')">
       <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 5h6M5 8h4M5 11h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Playbook
     </div>
@@ -1404,6 +1407,70 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   <div id="insights-output"><div class="empty"><strong>No analysis yet</strong>Log at least 5 trades, then click "Run analysis" to get AI coaching on your patterns.</div></div>
 </div>
 
+<!-- SETUP LIBRARY -->
+<div class="page" id="page-setuplibrary">
+  <div class="page-header">
+    <div><div class="page-title">Setup Library</div><div class="page-sub">Define your setups — confluences, entry rules, what makes each one A+ vs a bad trade</div></div>
+    <button class="btn btn-green" onclick="openSetupLibModal()">+ Add Setup</button>
+  </div>
+  <div id="setup-library-list"><div class="empty"><strong>No setups defined yet</strong>Add your setups here and the AI will use them when grading your trades.</div></div>
+</div>
+
+<!-- SETUP LIBRARY MODAL -->
+<div class="modal-overlay" id="setup-lib-modal" onclick="if(event.target===this)closeSetupLibModal()">
+  <div class="modal" style="width:580px;max-height:90vh;overflow-y:auto">
+    <div class="modal-title" id="setup-lib-modal-title">Add Setup</div>
+    <div style="display:grid;gap:12px;margin-bottom:16px">
+      <div class="modal-field">
+        <label class="modal-label">Setup Name</label>
+        <input class="modal-input" id="sl-name" placeholder="e.g. Continuation, Mech Model, Tape Read">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Setup Description <span style="color:var(--dim);font-size:10px">— what is this setup in one sentence</span></label>
+        <textarea class="modal-input" id="sl-desc" style="min-height:50px;resize:vertical" placeholder="e.g. Pullback after sweep into rejection block then inversion FVG on highest TF of leg"></textarea>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Required Confluences <span style="color:var(--dim);font-size:10px">— what MUST be present for a valid entry</span></label>
+        <textarea class="modal-input" id="sl-confluences" style="min-height:80px;resize:vertical" placeholder="e.g.
+• LRLR built up with clear path to target
+• Sweep of liquidity into 5m or 15m FVG
+• Inversion FVG on highest TF of the leg
+• Entry on close through inversion FVG
+• Clear target identified (LRLR, eq H/L, session H/L, HTF FVG)"></textarea>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">What makes it A+ <span style="color:var(--dim);font-size:10px">— ideal conditions on top of the required confluences</span></label>
+        <textarea class="modal-input" id="sl-aplus" style="min-height:70px;resize:vertical" placeholder="e.g.
+• Higher TF FVG aligns with entry zone
+• Multiple liquidity targets in the same direction
+• London high/low as additional target
+• Inversion is on 15m or higher"></textarea>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">What disqualifies the setup <span style="color:var(--dim);font-size:10px">— automatic grade reduction or no-trade</span></label>
+        <textarea class="modal-input" id="sl-disqualifiers" style="min-height:70px;resize:vertical" placeholder="e.g.
+• No clear LRLR — choppy overlapping structure
+• No manipulation into a gap — just a random pullback
+• No inversion FVG — just a reversal candle
+• Trading against the HTF draw
+• Entered during chop zone or near major resistance"></textarea>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Typical targets <span style="color:var(--dim);font-size:10px">— what you're aiming for</span></label>
+        <textarea class="modal-input" id="sl-targets" style="min-height:50px;resize:vertical" placeholder="e.g. LRLR, eq highs/lows, session highs/lows, unfilled 5m/15m/1h/4h FVGs"></textarea>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Notes / anything else</label>
+        <textarea class="modal-input" id="sl-notes" style="min-height:50px;resize:vertical" placeholder="Any other rules, tips, or context specific to this setup"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green" style="flex:1;justify-content:center" onclick="saveSetupLib()">Save Setup</button>
+      <button class="btn" onclick="closeSetupLibModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- PLAYBOOK -->
 <div class="page" id="page-playbook">
   <div class="page-header">
@@ -1789,7 +1856,8 @@ let state = {
   selectedSetups: [],
   selectedMistakes: [],
   propAccounts: [],   // user's prop firm accounts
-  propPayouts: []     // logged payouts
+  propPayouts: [],    // logged payouts
+  setupLibrary: []    // user-defined setup definitions with confluences
 };
 
 // Load from localStorage as fallback while Firebase initialises
@@ -1811,7 +1879,8 @@ function save() {
       routines: state.routines,
       gradingCriteria: state.gradingCriteria || {},
       propAccounts: state.propAccounts || [],
-      propPayouts: state.propPayouts || []
+      propPayouts: state.propPayouts || [],
+      setupLibrary: state.setupLibrary || []
     }).then(()=>{ if(dot) dot.className='sync-dot'; }).catch(()=>{ if(dot) dot.className='sync-dot'; });
   }
 }
@@ -1828,6 +1897,7 @@ window._mergeCloudData = function(cloudData) {
   state.gradingCriteria = cloudData.gradingCriteria || state.gradingCriteria || {};
   state.propAccounts = cloudData.propAccounts || state.propAccounts || [];
   state.propPayouts = cloudData.propPayouts || state.propPayouts || [];
+  state.setupLibrary = cloudData.setupLibrary || state.setupLibrary || [];
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
   if (typeof updateProUI === 'function') updateProUI();
 };
@@ -1848,6 +1918,7 @@ function go(page) {
   if (page==='history')   renderHistory();
   if (page==='mistakes')  renderMistakeAnalytics();
   if (page==='log')       renderLogPage();
+  if (page==='setuplibrary') renderSetupLibrary();
   if (page==='playbook')  renderPlaybook();
   if (page==='routine')   renderRoutinePage();
   if (page==='rules')     renderRules();
@@ -2183,6 +2254,7 @@ Trader-tagged mistakes: ${t.mistakes?.join(', ')||'none'} ← ADD to these, do n
 Outcome: ${t.outcome?{win:'Win',loss:'Loss',be_win:'BE → Win',be_loss:'BE → Loss'}[t.outcome]:'not specified'}
 Trader notes: "${t.notes||'none'}" ← READ THIS CAREFULLY — this is what actually happened
 ${t.notes?.includes('Imported from Tradovate') || t.quickMode ? 'DATA NOTE: Imported from Tradovate — SL/TP not available. Do not penalize for missing SL/TP.' : ''}
+${buildSetupLibraryContext(t.setups)}
 ${histContext}
 
 Respond in this EXACT JSON format only, no other text:
@@ -4446,6 +4518,136 @@ function renderSetupsPage() {
 
   renderBEAnalysis(T);
   renderGallery();
+}
+
+// ─── SETUP LIBRARY ────────────────────────────────────────────────────────────
+let editingSetupLibIdx = -1;
+
+function openSetupLibModal(idx) {
+  editingSetupLibIdx = idx !== undefined ? idx : -1;
+  const title = document.getElementById('setup-lib-modal-title');
+  if (editingSetupLibIdx >= 0) {
+    const s = state.setupLibrary[editingSetupLibIdx];
+    title.textContent = 'Edit Setup';
+    document.getElementById('sl-name').value = s.name || '';
+    document.getElementById('sl-desc').value = s.desc || '';
+    document.getElementById('sl-confluences').value = s.confluences || '';
+    document.getElementById('sl-aplus').value = s.aplus || '';
+    document.getElementById('sl-disqualifiers').value = s.disqualifiers || '';
+    document.getElementById('sl-targets').value = s.targets || '';
+    document.getElementById('sl-notes').value = s.notes || '';
+  } else {
+    title.textContent = 'Add Setup';
+    ['sl-name','sl-desc','sl-confluences','sl-aplus','sl-disqualifiers','sl-targets','sl-notes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+  }
+  document.getElementById('setup-lib-modal').classList.add('open');
+}
+
+function closeSetupLibModal() {
+  document.getElementById('setup-lib-modal').classList.remove('open');
+}
+
+function saveSetupLib() {
+  const name = document.getElementById('sl-name').value.trim();
+  if (!name) { alert('Enter a setup name'); return; }
+  const entry = {
+    name,
+    desc: document.getElementById('sl-desc').value.trim(),
+    confluences: document.getElementById('sl-confluences').value.trim(),
+    aplus: document.getElementById('sl-aplus').value.trim(),
+    disqualifiers: document.getElementById('sl-disqualifiers').value.trim(),
+    targets: document.getElementById('sl-targets').value.trim(),
+    notes: document.getElementById('sl-notes').value.trim()
+  };
+  if (editingSetupLibIdx >= 0) {
+    state.setupLibrary[editingSetupLibIdx] = entry;
+  } else {
+    if (!state.setupLibrary) state.setupLibrary = [];
+    state.setupLibrary.push(entry);
+  }
+  save();
+  closeSetupLibModal();
+  renderSetupLibrary();
+}
+
+function deleteSetupLib(idx) {
+  if (!confirm('Remove this setup definition?')) return;
+  state.setupLibrary.splice(idx, 1);
+  save();
+  renderSetupLibrary();
+}
+
+function renderSetupLibrary() {
+  const list = document.getElementById('setup-library-list');
+  if (!list) return;
+  const lib = state.setupLibrary || [];
+  if (!lib.length) {
+    list.innerHTML = '<div class="empty"><strong>No setups defined yet</strong>Add your setups here and the AI will use their confluences and rules when grading your trades.</div>';
+    return;
+  }
+  list.innerHTML = lib.map((s, i) => `
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-header" style="margin-bottom:12px">
+        <div>
+          <span class="card-title">${s.name}</span>
+          ${s.desc ? `<div class="card-sub" style="margin-top:4px">${s.desc}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" onclick="openSetupLibModal(${i})">Edit</button>
+          <button class="btn btn-sm" style="color:var(--red)" onclick="deleteSetupLib(${i})">✕</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        ${s.confluences ? `<div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Required Confluences</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.7;white-space:pre-line">${s.confluences}</div>
+        </div>` : ''}
+        ${s.aplus ? `<div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--green);text-transform:uppercase;margin-bottom:6px">A+ Conditions</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.7;white-space:pre-line">${s.aplus}</div>
+        </div>` : ''}
+        ${s.disqualifiers ? `<div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--red);text-transform:uppercase;margin-bottom:6px">Disqualifiers</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.7;white-space:pre-line">${s.disqualifiers}</div>
+        </div>` : ''}
+        ${s.targets ? `<div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--amber);text-transform:uppercase;margin-bottom:6px">Targets</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.7;white-space:pre-line">${s.targets}</div>
+        </div>` : ''}
+      </div>
+      ${s.notes ? `<div style="margin-top:10px;font-size:12px;color:var(--muted);border-left:2px solid var(--border);padding-left:10px;line-height:1.6">${s.notes}</div>` : ''}
+    </div>`).join('');
+}
+
+// Inject setup library context into AI prompt
+function buildSetupLibraryContext(tradeSetups) {
+  const lib = state.setupLibrary || [];
+  if (!lib.length) return '';
+  // Find matching setup definitions for this trade's tags
+  const matching = lib.filter(s =>
+    (tradeSetups || []).some(ts => ts.toLowerCase().includes(s.name.toLowerCase()) || s.name.toLowerCase().includes(ts.toLowerCase()))
+  );
+  if (!matching.length) {
+    // If no match, include all definitions so AI knows the full library
+    if (lib.length <= 3) {
+      return '\n\nSETUP LIBRARY (trader-defined):\n' + lib.map(s => formatSetupForAI(s)).join('\n\n');
+    }
+    return '';
+  }
+  return '\n\nSETUP DEFINITIONS FOR THIS TRADE:\n' + matching.map(s => formatSetupForAI(s)).join('\n\n');
+}
+
+function formatSetupForAI(s) {
+  let out = `=== ${s.name.toUpperCase()} ===`;
+  if (s.desc) out += `\nDescription: ${s.desc}`;
+  if (s.confluences) out += `\nRequired confluences:\n${s.confluences}`;
+  if (s.aplus) out += `\nWhat makes it A+:\n${s.aplus}`;
+  if (s.disqualifiers) out += `\nDisqualifiers (grade reduction or no-trade):\n${s.disqualifiers}`;
+  if (s.targets) out += `\nTypical targets: ${s.targets}`;
+  if (s.notes) out += `\nAdditional rules: ${s.notes}`;
+  return out;
 }
 
 // ─── PHOTO UPLOAD ─────────────────────────────────────────────────────────────
