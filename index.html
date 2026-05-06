@@ -495,29 +495,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 }
 .tw-qs{padding:5px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--muted);font-family:var(--mono);font-size:11px;cursor:pointer;transition:all .15s}
 .tw-qs:hover{border-color:var(--green);color:var(--green)}
-/* TRADE CALENDAR */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr) 140px;gap:3px}
-.cal-hdr{text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.06em;padding:6px 0;text-transform:uppercase;font-family:'Geist',sans-serif}
-.cal-hdr-week{font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.06em;padding:6px 8px;text-transform:uppercase;font-family:'Geist',sans-serif;text-align:left}
-.cal-cell{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);min-height:88px;padding:8px 9px;cursor:pointer;transition:border-color .15s;position:relative;display:flex;flex-direction:column;box-sizing:border-box}
-.cal-cell:hover{border-color:var(--border2)}
-.cal-cell.cal-empty{background:rgba(255,255,255,0.02);border-color:var(--border);cursor:default;opacity:.4;pointer-events:none}
-.cal-cell.cal-no-trade{cursor:default}
-.cal-cell.cal-today{border-color:var(--green);border-width:2px}
-.cal-cell.cal-selected{border-color:var(--green);background:rgba(0,208,132,.08)}
-.cal-cell.cal-weekend-empty{opacity:.3}
-.cal-week-cell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);min-height:88px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box}
-.cal-day-num{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:4px;line-height:1}
-.cal-today-pip{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
-.cal-day-pnl{font-size:16px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;line-height:1.1;margin-top:auto}
-.cal-day-meta{font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4}
-.cal-win-bar{position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 var(--r) var(--r);overflow:hidden}
-.cal-week-lbl{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
-.cal-week-pnl{font-size:16px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;line-height:1}
-.cal-week-sub{font-size:10px;color:var(--muted);margin-top:4px}
-.cal-detail-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
-.cal-detail-row:last-child{border-bottom:none}
-.cal-detail-row:hover{background:var(--bg3)}
 </style>
 </head>
 <body>
@@ -1054,8 +1031,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
     </div>
   </div>
-
-  <!-- TABLE VIEW -->
   <div id="hist-table-view">
     <div class="filters">
       <input class="filter-input" id="f-ticker" placeholder="Ticker..." onkeyup="renderHistory()" style="width:90px">
@@ -1078,23 +1053,17 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       </div>
     </div>
   </div>
-
-  <!-- CALENDAR VIEW -->
   <div id="hist-cal-view" style="display:none">
-    <!-- Monthly P&L header -->
     <div style="text-align:center;margin-bottom:14px">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Monthly P/L</div>
-      <div id="cal-monthly-pnl" style="font-size:26px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px">$0.00</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Monthly P/L</div>
+      <div id="cal-monthly-pnl" style="font-size:28px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px">$0.00</div>
     </div>
-    <!-- Nav -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <button class="btn btn-sm" onclick="calNav(-1)">← Prev</button>
       <div style="font-size:15px;font-weight:700;color:var(--text);font-family:'Geist',sans-serif" id="cal-month-label"></div>
       <button class="btn btn-sm" onclick="calNav(1)">Next →</button>
     </div>
-    <!-- Calendar grid: 7 day cols + 1 week summary col = 8 cols -->
     <div id="cal-grid-wrap"></div>
-    <!-- Day detail panel -->
     <div id="cal-day-detail" style="display:none;margin-top:14px"></div>
   </div>
 </div>
@@ -1109,6 +1078,49 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
         <option value="week">This week</option>
         <option value="month">This month</option>
       </select>
+    </div>
+  </div>
+
+  <!-- TOP: Expectancy + Equity Curve -->
+  <div style="display:grid;grid-template-columns:320px 1fr;gap:12px;margin-bottom:12px">
+    <div class="card">
+      <div class="card-header" style="margin-bottom:10px"><span class="card-title">Expectancy</span><span class="card-sub">Expected R per trade</span></div>
+      <div id="exp-main" style="font-size:38px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;line-height:1;margin-bottom:4px">—</div>
+      <div id="exp-lbl" style="font-size:11px;color:var(--muted);margin-bottom:12px">per trade</div>
+      <div id="exp-proj" style="font-size:12px;color:var(--muted);line-height:1.6;padding:9px 11px;background:var(--bg3);border-radius:var(--r);margin-bottom:12px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <div style="text-align:center;padding:7px 4px;background:var(--bg3);border-radius:var(--r)"><div style="font-size:15px;font-weight:700;font-family:'Geist Mono',monospace" id="exp-wr">—</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Win Rate</div></div>
+        <div style="text-align:center;padding:7px 4px;background:var(--bg3);border-radius:var(--r)"><div style="font-size:15px;font-weight:700;font-family:'Geist Mono',monospace;color:var(--green)" id="exp-avgw">—</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Avg Win</div></div>
+        <div style="text-align:center;padding:7px 4px;background:var(--bg3);border-radius:var(--r)"><div style="font-size:15px;font-weight:700;font-family:'Geist Mono',monospace;color:var(--red)" id="exp-avgl">—</div><div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Avg Loss</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header" style="margin-bottom:8px"><span class="card-title">Equity Curve</span><span class="card-sub" id="stats-eq-lbl"></span></div>
+      <div style="position:relative;height:165px"><canvas id="statsEqChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- INSIGHT CARDS -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+    <div class="card" style="padding:14px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:8px">🏆 Best Setup</div>
+      <div id="ins-best-val" style="font-size:14px;font-weight:700">—</div>
+      <div id="ins-best-sub" style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4"></div>
+    </div>
+    <div class="card" style="padding:14px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin-bottom:8px">⚠ Worst Setup</div>
+      <div id="ins-worst-val" style="font-size:14px;font-weight:700">—</div>
+      <div id="ins-worst-sub" style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4"></div>
+    </div>
+    <div class="card" style="padding:14px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--amber);margin-bottom:8px">💸 Top Mistake</div>
+      <div id="ins-mistake-val" style="font-size:14px;font-weight:700">—</div>
+      <div id="ins-mistake-sub" style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4"></div>
+    </div>
+    <div class="card" style="padding:14px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);margin-bottom:8px">⏰ Best Time</div>
+      <div id="ins-time-val" style="font-size:14px;font-weight:700">—</div>
+      <div id="ins-time-sub" style="font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4"></div>
     </div>
   </div>
 
@@ -2242,7 +2254,7 @@ function fullLog(){
   const qrr=document.getElementById('q-quick-rr'); if(qrr) qrr.value='';
   const qprr=document.getElementById('q-planned-rr'); if(qprr) qprr.value='';
   const qod=document.getElementById('q-outcome-d'); if(qod) qod.value='';
-  const _qtsel=document.getElementById('q-time-select'); if(_qtsel){_qtsel.value='';delete _qtsel.dataset.userSet;}
+  const _qts=document.getElementById('q-time-select'); if(_qts){_qts.value='';delete _qts.dataset.userSet;}
   const qtsel=document.getElementById('q-time-select'); if(qtsel){qtsel.value='';delete qtsel.dataset.userSet;}
   renderTagSelectors();
   // Success toast + open trade modal for live AI review
@@ -4386,6 +4398,7 @@ function renderDashPropSummary() {
 function renderSetupsPage() {
   const period = document.getElementById('stats-period')?.value || 'all';
   const T = periodFilter(state.trades, period);
+  renderStatsExtras(T);
   if (!T.length) return;
 
   const wins = t => ['win','be_win'].includes(t.outcome);
@@ -5096,14 +5109,13 @@ function setHistoryView(v) {
   const cBtn = document.getElementById('hist-view-cal');
   if (v === 'table') {
     tbl.style.display = ''; cal.style.display = 'none';
-    tBtn.style.cssText += ';background:var(--green);color:#000';
-    cBtn.style.cssText += ';background:transparent;color:var(--muted)';
+    tBtn.style.background = 'var(--green)'; tBtn.style.color = '#000';
+    cBtn.style.background = 'transparent'; cBtn.style.color = 'var(--muted)';
     renderHistory();
   } else {
     tbl.style.display = 'none'; cal.style.display = '';
-    cBtn.style.cssText += ';background:var(--green);color:#000';
-    tBtn.style.cssText += ';background:transparent;color:var(--muted)';
-    // Jump to month of most recent trade
+    cBtn.style.background = 'var(--green)'; cBtn.style.color = '#000';
+    tBtn.style.background = 'transparent'; tBtn.style.color = 'var(--muted)';
     const last = [...state.trades].reverse().find(t => t.datetime);
     if (last) { const d = new Date(last.datetime); calYear = d.getFullYear(); calMonth = d.getMonth(); }
     renderCalendar();
@@ -5122,8 +5134,6 @@ function calNav(dir) {
 function renderCalendar() {
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   document.getElementById('cal-month-label').textContent = `${MONTHS[calMonth]} ${calYear}`;
-
-  // Build day→trades map
   const dayMap = {};
   state.trades.forEach(t => {
     if (!t.datetime) return;
@@ -5133,152 +5143,193 @@ function renderCalendar() {
     if (!dayMap[k]) dayMap[k] = [];
     dayMap[k].push(t);
   });
-
-  // Monthly P&L
-  const monthlyPnL = Object.values(dayMap).flat().reduce((a, t) => a + calcPnL(t), 0);
+  const monthPnL = Object.values(dayMap).flat().reduce((a, t) => a + calcPnL(t), 0);
   const mpEl = document.getElementById('cal-monthly-pnl');
-  mpEl.textContent = (monthlyPnL >= 0 ? '+' : '-') + '$' + Math.abs(monthlyPnL).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-  mpEl.style.color = monthlyPnL > 0 ? 'var(--green)' : monthlyPnL < 0 ? 'var(--red)' : 'var(--muted)';
-
-  const firstDow = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
-  const daysInMo = new Date(calYear, calMonth + 1, 0).getDate();
-  const numWeeks = Math.ceil((firstDow + daysInMo) / 7);
+  if (mpEl) {
+    mpEl.textContent = (monthPnL >= 0 ? '+' : '-') + '$' + Math.abs(monthPnL).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    mpEl.style.color = monthPnL > 0 ? 'var(--green)' : monthPnL < 0 ? 'var(--red)' : 'var(--muted)';
+  }
+  const firstDow  = new Date(calYear, calMonth, 1).getDay();
+  const daysInMo  = new Date(calYear, calMonth + 1, 0).getDate();
+  const numWeeks  = Math.ceil((firstDow + daysInMo) / 7);
   const todayDate = new Date();
-  const isThisMonth = todayDate.getFullYear() === calYear && todayDate.getMonth() === calMonth;
-
+  const isThisMo  = todayDate.getFullYear() === calYear && todayDate.getMonth() === calMonth;
   const wrap = document.getElementById('cal-grid-wrap');
   wrap.innerHTML = '';
-
-  // Build one grid: header row + week rows
-  // Each row: 7 day cells + 1 week summary cell
   const grid = document.createElement('div');
-  grid.className = 'cal-grid';
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr) 130px;gap:3px';
 
-  // Header row: Sun Mon Tue Wed Thu Fri Sat | (week label)
+  // Header row
   ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
-    const h = document.createElement('div'); h.className = 'cal-hdr'; h.textContent = d; grid.appendChild(h);
+    const h = document.createElement('div');
+    h.style.cssText = 'text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:5px 0;text-transform:uppercase';
+    h.textContent = d; grid.appendChild(h);
   });
-  const wh = document.createElement('div'); wh.className = 'cal-hdr-week'; wh.textContent = 'Week'; grid.appendChild(wh);
+  const wh = document.createElement('div');
+  wh.style.cssText = 'font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.05em;padding:5px 8px;text-align:left;text-transform:uppercase';
+  wh.textContent = 'Week'; grid.appendChild(wh);
 
-  // Week rows
+  // Rows
   for (let w = 0; w < numWeeks; w++) {
     let wPnL = 0, wTrades = 0;
-
     for (let d = 0; d < 7; d++) {
       const day = w * 7 + d - firstDow + 1;
       const cell = document.createElement('div');
-
       if (day < 1 || day > daysInMo) {
-        cell.className = 'cal-cell cal-empty';
-        grid.appendChild(cell);
-        continue;
+        cell.style.cssText = 'background:rgba(255,255,255,0.015);border:1px solid var(--border);border-radius:var(--r);min-height:88px;opacity:.4';
+        grid.appendChild(cell); continue;
       }
-
-      const trades = dayMap[day] || [];
-      const isToday = isThisMonth && todayDate.getDate() === day;
+      const trades  = dayMap[day] || [];
+      const isToday = isThisMo && todayDate.getDate() === day;
       const isSel   = calSelectedDay === day;
       const dow     = new Date(calYear, calMonth, day).getDay();
-      const isWknd  = dow === 0 || dow === 6;
-
-      cell.className = 'cal-cell' +
-        (isToday ? ' cal-today' : '') +
-        (isSel   ? ' cal-selected' : '') +
-        (isWknd && !trades.length ? ' cal-weekend-empty' : '') +
-        (!trades.length ? ' cal-no-trade' : '');
+      cell.style.cssText = `background:${isSel?'rgba(0,208,132,.08)':'var(--bg2)'};border:${isToday?'2px solid var(--green)':isSel?'1px solid var(--green)':'1px solid var(--border)'};border-radius:var(--r);min-height:88px;padding:8px 9px;cursor:${trades.length?'pointer':'default'};position:relative;display:flex;flex-direction:column;box-sizing:border-box;transition:border-color .15s;${!trades.length&&(dow===0||dow===6)?'opacity:.35':''}`;
 
       const numDiv = document.createElement('div');
-      numDiv.className = 'cal-day-num';
-      if (isToday) { const pip = document.createElement('span'); pip.className = 'cal-today-pip'; numDiv.appendChild(pip); }
+      numDiv.style.cssText = 'font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:3px';
+      if (isToday) { const pip = document.createElement('span'); pip.style.cssText='width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0'; numDiv.appendChild(pip); }
       numDiv.appendChild(document.createTextNode(day));
       cell.appendChild(numDiv);
 
       if (trades.length) {
-        const pnl  = trades.reduce((a, t) => a + calcPnL(t), 0);
-        const wins = trades.filter(t => calcPnL(t) > 0).length;
-        const wr   = Math.round(wins / trades.length * 100);
-        const col  = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--muted)';
-        const sign = pnl >= 0 ? '+' : '-';
-        const abs  = Math.abs(pnl);
-        const str  = abs >= 1000 ? sign + '$' + (abs / 1000).toFixed(2) + 'K' : sign + '$' + abs.toFixed(2);
-
-        const pnlDiv = document.createElement('div');
-        pnlDiv.className = 'cal-day-pnl'; pnlDiv.style.color = col; pnlDiv.textContent = str;
-
-        const metaDiv = document.createElement('div');
-        metaDiv.className = 'cal-day-meta';
-        metaDiv.textContent = `${trades.length} trade${trades.length > 1 ? 's' : ''}`;
-
-        const bar = document.createElement('div'); bar.className = 'cal-win-bar';
+        const pnl  = trades.reduce((a,t) => a+calcPnL(t), 0);
+        const wins = trades.filter(t => calcPnL(t)>0).length;
+        const wr   = Math.round(wins/trades.length*100);
+        const col  = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
+        const sign = pnl>=0?'+':'-'; const abs=Math.abs(pnl);
+        const str  = abs>=1000 ? sign+'$'+(abs/1000).toFixed(2)+'K' : sign+'$'+abs.toFixed(2);
+        const pDiv = document.createElement('div');
+        pDiv.style.cssText = `font-size:15px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;color:${col};line-height:1.1;margin-top:auto`;
+        pDiv.textContent = str;
+        const mDiv = document.createElement('div');
+        mDiv.style.cssText = 'font-size:9px;color:var(--muted);margin-top:3px';
+        mDiv.textContent = `${trades.length} trade${trades.length>1?'s':''}`;
+        const bar = document.createElement('div');
+        bar.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 var(--r) var(--r);overflow:hidden';
         bar.innerHTML = `<div style="width:${wr}%;height:100%;background:${col}"></div>`;
-
-        cell.appendChild(pnlDiv); cell.appendChild(metaDiv); cell.appendChild(bar);
+        cell.appendChild(pDiv); cell.appendChild(mDiv); cell.appendChild(bar);
         cell.onclick = () => calClickDay(day, trades);
-
         wPnL += pnl; wTrades += trades.length;
       }
-
       grid.appendChild(cell);
     }
-
-    // Week summary cell — in the 8th column of this row
-    const weekCell = document.createElement('div');
-    weekCell.className = 'cal-week-cell';
-    const wCol  = wPnL > 0 ? 'var(--green)' : wPnL < 0 ? 'var(--red)' : 'var(--muted)';
-    const wSign = wPnL >= 0 ? '+' : '-';
-    const wAbs  = Math.abs(wPnL);
-    const wStr  = wSign + '$' + wAbs.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-    weekCell.innerHTML = `
-      <div class="cal-week-lbl">Week ${w + 1}</div>
-      <div class="cal-week-pnl" style="color:${wPnL !== 0 ? wCol : 'var(--muted)'}">${wTrades ? wStr : '$0.00'}</div>
-      <div class="cal-week-sub">${wTrades} trade${wTrades !== 1 ? 's' : ''}</div>`;
-    grid.appendChild(weekCell);
+    // Week summary
+    const wCell = document.createElement('div');
+    const wCol  = wPnL>0?'var(--green)':wPnL<0?'var(--red)':'var(--muted)';
+    const wSign = wPnL>=0?'+':'-'; const wAbs=Math.abs(wPnL);
+    const wStr  = wTrades ? wSign+'$'+wAbs.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '$0.00';
+    wCell.style.cssText = 'background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);min-height:88px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box';
+    wCell.innerHTML = `<div style="font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--dim);text-transform:uppercase;margin-bottom:5px">Week ${w+1}</div><div style="font-size:15px;font-weight:800;font-family:'Geist Mono',monospace;color:${wPnL!==0?wCol:'var(--muted)'}">${wStr}</div><div style="font-size:10px;color:var(--muted);margin-top:3px">${wTrades} trade${wTrades!==1?'s':''}</div>`;
+    grid.appendChild(wCell);
   }
-
   wrap.appendChild(grid);
 }
 
 function calClickDay(day, trades) {
   if (calSelectedDay === day) {
-    calSelectedDay = null;
-    renderCalendar();
-    document.getElementById('cal-day-detail').style.display = 'none';
-    return;
+    calSelectedDay = null; renderCalendar();
+    document.getElementById('cal-day-detail').style.display = 'none'; return;
   }
-  calSelectedDay = day;
-  renderCalendar();
-
+  calSelectedDay = day; renderCalendar();
   const detail = document.getElementById('cal-day-detail');
-  const pnl    = trades.reduce((a, t) => a + calcPnL(t), 0);
-  const wins   = trades.filter(t => calcPnL(t) > 0).length;
-  const wr     = Math.round(wins / trades.length * 100);
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const col    = pnl >= 0 ? 'var(--green)' : 'var(--red)';
-  const pnlStr = (pnl >= 0 ? '+' : '-') + '$' + Math.abs(pnl).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-
-  detail.style.display = '';
-  detail.innerHTML = `<div class="card" style="padding:0;overflow:hidden">
+  const pnl = trades.reduce((a,t)=>a+calcPnL(t),0);
+  const wins = trades.filter(t=>calcPnL(t)>0).length;
+  const wr   = Math.round(wins/trades.length*100);
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const col  = pnl>=0?'var(--green)':'var(--red)';
+  const pStr = (pnl>=0?'+':'-')+'$'+Math.abs(pnl).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  detail.style.display='';
+  detail.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
     <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <div style="font-size:14px;font-weight:700">${MONTHS[calMonth]} ${day}, ${calYear}</div>
-      <span style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:${col}">${pnlStr}</span>
-      <span style="font-size:12px;color:var(--muted)">${trades.length} trade${trades.length > 1 ? 's' : ''} · ${wr}% WR</span>
+      <span style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:${col}">${pStr}</span>
+      <span style="font-size:12px;color:var(--muted)">${trades.length} trade${trades.length>1?'s':''} · ${wr}% WR</span>
       <button class="btn btn-sm" style="margin-left:auto" onclick="calSelectedDay=null;document.getElementById('cal-day-detail').style.display='none';renderCalendar()">✕</button>
     </div>
-    ${trades.map(t => {
-      const tp  = calcPnL(t);
-      const rr  = calcRR(t);
-      const idx = state.trades.indexOf(t);
-      const tc  = tp >= 0 ? 'var(--green)' : 'var(--red)';
-      return `<div class="cal-detail-row" onclick="openTradeModal(${idx})">
-        <span class="side-pill ${t.side === 'long' ? 'long-pill' : 'short-pill'}">${t.side.toUpperCase()}</span>
-        <strong style="font-size:13px">${t.ticker}</strong>
-        <span style="font-size:11px;color:var(--muted)">${t.datetime ? t.datetime.slice(11,16) : ''}</span>
-        ${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')}
-        ${t.grade ? `<span class="grade-badge grade-${t.grade.replace(/[^A-F]/g,'')[0]||''}" style="font-size:18px">${t.grade}</span>` : ''}
-        <span style="margin-left:auto;font-weight:700;font-family:'Geist Mono',monospace;font-size:13px;color:${tc}">${tp>=0?'+':'-'}$${Math.abs(tp).toFixed(2)}</span>
-        ${rr ? `<span style="font-size:11px;color:var(--muted)">${rr}R</span>` : ''}
-      </div>`;
-    }).join('')}
+    ${trades.map(t=>{const tp=calcPnL(t);const idx=state.trades.indexOf(t);const tc=tp>=0?'var(--green)':'var(--red)';return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s" onclick="openTradeModal(${idx})" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <span class="side-pill ${t.side==='long'?'long-pill':'short-pill'}">${t.side.toUpperCase()}</span>
+      <strong style="font-size:13px">${t.ticker}</strong>
+      <span style="font-size:11px;color:var(--muted)">${t.datetime?t.datetime.slice(11,16):''}</span>
+      ${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')}
+      ${t.grade?`<span class="grade-badge grade-${t.grade.replace(/[^A-F]/g,'')[0]||''}" style="font-size:18px">${t.grade}</span>`:''}
+      <span style="margin-left:auto;font-weight:700;font-family:'Geist Mono',monospace;font-size:13px;color:${tc}">${tp>=0?'+':'-'}$${Math.abs(tp).toFixed(2)}</span>
+    </div>`;}).join('')}
   </div>`;
+}
+
+// ─── STATS PAGE EXTRAS (expectancy, equity, insight cards) ────────────────────
+let statsEqChartObj = null;
+
+function renderStatsExtras(T) {
+  // Expectancy — use a local helper to avoid name collision
+  function trRR(t) { return parseFloat(calcRR(t)) || (t.quickRR ? parseFloat(t.quickRR) : null); }
+  const winRRs  = T.filter(t=>calcPnL(t)>0).map(trRR).filter(v=>v!==null&&!isNaN(v));
+  const lossRRs = T.filter(t=>calcPnL(t)<0).map(trRR).filter(v=>v!==null&&!isNaN(v));
+  const wrFrac  = T.length ? T.filter(t=>calcPnL(t)>0).length/T.length : 0;
+  const avgW    = winRRs.length  ? winRRs.reduce((a,b)=>a+b,0)/winRRs.length  : null;
+  const avgL    = lossRRs.length ? Math.abs(lossRRs.reduce((a,b)=>a+b,0)/lossRRs.length) : null;
+  const E       = avgW!==null&&avgL!==null ? wrFrac*avgW-(1-wrFrac)*avgL : null;
+
+  const eMain = document.getElementById('exp-main');
+  if (eMain) {
+    if (E !== null) {
+      eMain.textContent  = (E>=0?'+':'')+E.toFixed(2)+'R';
+      eMain.style.color  = E>0?'var(--green)':E<0?'var(--red)':'var(--muted)';
+      document.getElementById('exp-lbl').textContent = 'expected per trade';
+      document.getElementById('exp-proj').innerHTML = E>0
+        ? `50 trades ≈ <strong style="color:var(--green)">+${(E*50).toFixed(1)}R</strong> &nbsp;·&nbsp; 100 trades ≈ <strong style="color:var(--green)">+${(E*100).toFixed(1)}R</strong>`
+        : `<span style="color:var(--red)">Negative expectancy — this system loses long-term.</span>`;
+    } else {
+      eMain.textContent = '—'; eMain.style.color='var(--muted)';
+      document.getElementById('exp-lbl').textContent = 'need R:R data';
+      document.getElementById('exp-proj').innerHTML = '<span style="color:var(--dim)">Log Planned R:R + Realized R:R to calculate.</span>';
+    }
+    document.getElementById('exp-wr').textContent   = T.length ? Math.round(wrFrac*100)+'%' : '—';
+    document.getElementById('exp-avgw').textContent = avgW!==null ? '+'+avgW.toFixed(2)+'R' : '—';
+    document.getElementById('exp-avgl').textContent = avgL!==null ? '-'+avgL.toFixed(2)+'R' : '—';
+  }
+
+  // Compact equity curve
+  const eqCtx = document.getElementById('statsEqChart')?.getContext('2d');
+  if (eqCtx) {
+    if (statsEqChartObj) { statsEqChartObj.destroy(); statsEqChartObj=null; }
+    if (T.length) {
+      const sorted=[...T].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
+      const labels=['Start']; const data=[0]; let run=0;
+      sorted.forEach((t,i)=>{ run+=calcPnL(t); labels.push(t.datetime?t.datetime.slice(5,10):'#'+(i+1)); data.push(Math.round(run)); });
+      const isPos=run>=0;
+      document.getElementById('stats-eq-lbl').textContent=(isPos?'+':'')+'$'+Math.round(run).toLocaleString()+' cumulative';
+      statsEqChartObj=new Chart(eqCtx,{type:'line',data:{labels,datasets:[{data,borderColor:isPos?'#00d084':'#ff4d4d',borderWidth:2,pointRadius:data.length>20?0:2,pointBackgroundColor:isPos?'#00d084':'#ff4d4d',fill:true,backgroundColor:(c)=>{const g=c.chart.ctx.createLinearGradient(0,0,0,165);g.addColorStop(0,isPos?'rgba(0,208,132,0.2)':'rgba(255,77,77,0.2)');g.addColorStop(1,'transparent');return g;},tension:0.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.parsed.y.toLocaleString()}}},scales:{x:{display:false},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},callback:v=>'$'+v.toLocaleString()}}}}});
+    }
+  }
+
+  // Insight cards
+  const setupMap={};
+  T.forEach(t=>(t.setups||[]).forEach(s=>{
+    if(!setupMap[s])setupMap[s]={wins:0,n:0,rrs:[]};
+    setupMap[s].n++; if(calcPnL(t)>0)setupMap[s].wins++;
+    const r=trRR(t); if(r!==null)setupMap[s].rrs.push(r);
+  }));
+  const sEntries=Object.entries(setupMap).filter(([,v])=>v.n>=2)
+    .map(([s,v])=>({s,wr:v.wins/v.n,n:v.n,avgR:v.rrs.length?v.rrs.reduce((a,b)=>a+b,0)/v.rrs.length:null}))
+    .sort((a,b)=>b.wr-a.wr);
+  const set=(id,val,sub)=>{ const el=document.getElementById(id); if(el)el.textContent=val; const sl=document.getElementById(id.replace('-val','-sub')); if(sl)sl.textContent=sub; };
+  if(sEntries.length){ const b=sEntries[0]; set('ins-best-val',b.s,`${Math.round(b.wr*100)}% WR · ${b.n} trades${b.avgR?' · avg '+b.avgR.toFixed(1)+'R':''}`); }
+  else set('ins-best-val','—','Tag trades with setups');
+  if(sEntries.length>1){ const w=sEntries[sEntries.length-1]; set('ins-worst-val',w.s,`${Math.round(w.wr*100)}% WR · ${w.n} trades${w.avgR?' · avg '+w.avgR.toFixed(1)+'R':''}`); }
+  else set('ins-worst-val','—',sEntries.length<=1?'Need 2+ setups with 2+ trades each':'');
+
+  const mMap={};
+  T.forEach(t=>{ const p=calcPnL(t); (t.mistakes||[]).forEach(m=>{ if(!mMap[m])mMap[m]={cost:0,n:0}; if(p<0)mMap[m].cost+=p; mMap[m].n++; }); });
+  const mEntry=Object.entries(mMap).sort((a,b)=>a[1].cost-b[1].cost)[0];
+  if(mEntry) set('ins-mistake-val',mEntry[0],`-$${Math.abs(Math.round(mEntry[1].cost)).toLocaleString()} total · ${mEntry[1].n}× tagged`);
+  else set('ins-mistake-val','—','Tag mistakes on trades');
+
+  const slotMap={};
+  T.forEach(t=>{ const r=trRR(t); if(!t.datetime||r===null)return; const h=new Date(t.datetime).getHours(); const m=new Date(t.datetime).getMinutes(); const slot=`${h}:${String(Math.floor(m/15)*15).padStart(2,'0')}`; if(!slotMap[slot])slotMap[slot]={rrs:[],n:0}; slotMap[slot].rrs.push(r); slotMap[slot].n++; });
+  const slotBest=Object.entries(slotMap).filter(([,v])=>v.n>=2).map(([s,v])=>({s,avgR:v.rrs.reduce((a,b)=>a+b,0)/v.rrs.length,n:v.n})).sort((a,b)=>b.avgR-a.avgR)[0];
+  if(slotBest) set('ins-time-val',slotBest.s+' EST',`avg ${slotBest.avgR.toFixed(1)}R · ${slotBest.n} trades`);
+  else set('ins-time-val','—','Need R:R + timestamps');
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
