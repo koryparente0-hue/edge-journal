@@ -2041,11 +2041,11 @@ function calcPnL(t) {
   return dir * (t.exit - t.entry) * mult * (t.qty||1) - (t.fees||0);
 }
 function calcRR(t) {
-  if (t.quickMode && t.quickRR) return parseFloat(t.quickRR).toFixed(1);
+  if (t.quickMode && t.quickRR) return parseFloat(t.quickRR).toFixed(2);
   if (!t.sl||!t.tp||t.sl===t.entry||t.tp===t.entry) return null;
   const risk = Math.abs(t.entry - t.sl);
   const reward = Math.abs(t.tp - t.entry);
-  return (reward/risk).toFixed(1);
+  return (reward/risk).toFixed(2);
 }
 function pf(n) { return (n>=0?'+':'') + '$' + Math.abs(Math.round(n)).toLocaleString(); }
 function pct(n) { return Math.round(n)+'%'; }
@@ -2078,7 +2078,7 @@ function renderDashboard() {
   let peak=0,dd=0,run=0;
   for (const p of pnls) { run+=p; if(run>peak)peak=run; dd=Math.min(dd,run-peak); }
   const rrs = T.filter(t=>calcRR(t)).map(t=>parseFloat(calcRR(t)));
-  const avgRR = rrs.length ? (rrs.reduce((a,b)=>a+b,0)/rrs.length).toFixed(1) : null;
+  const avgRR = rrs.length ? (rrs.reduce((a,b)=>a+b,0)/rrs.length).toFixed(2) : null;
 
   const pnlEl = document.getElementById('m-pnl');
   pnlEl.textContent = (total>=0?'+':'') + '$'+Math.abs(Math.round(total)).toLocaleString();
@@ -5592,9 +5592,9 @@ function renderStatsExtras(T) {
     .map(([s,v])=>({s,wr:v.wins/v.n,n:v.n,avgR:v.rrs.length?v.rrs.reduce((a,b)=>a+b,0)/v.rrs.length:null}))
     .sort((a,b)=>b.wr-a.wr);
   const set=(id,val,sub)=>{ const el=document.getElementById(id); if(el)el.textContent=val; const sl=document.getElementById(id.replace('-val','-sub')); if(sl)sl.textContent=sub; };
-  if(sEntries.length){ const b=sEntries[0]; set('ins-best-val',b.s,`${Math.round(b.wr*100)}% WR · ${b.n} trades${b.avgR?' · avg '+b.avgR.toFixed(1)+'R':''}`); }
+  if(sEntries.length){ const b=sEntries[0]; set('ins-best-val',b.s,`${Math.round(b.wr*100)}% WR · ${b.n} trades${b.avgR?' · avg '+b.avgR.toFixed(2)+'R':''}`); }
   else set('ins-best-val','—','Tag trades with setups');
-  if(sEntries.length>1){ const w=sEntries[sEntries.length-1]; set('ins-worst-val',w.s,`${Math.round(w.wr*100)}% WR · ${w.n} trades${w.avgR?' · avg '+w.avgR.toFixed(1)+'R':''}`); }
+  if(sEntries.length>1){ const w=sEntries[sEntries.length-1]; set('ins-worst-val',w.s,`${Math.round(w.wr*100)}% WR · ${w.n} trades${w.avgR?' · avg '+w.avgR.toFixed(2)+'R':''}`); }
   else set('ins-worst-val','—',sEntries.length<=1?'Need 2+ setups with 2+ trades each':'');
 
   const mMap={};
