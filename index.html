@@ -804,6 +804,18 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     <div class="equity-wrap"><canvas id="equityChart"></canvas></div>
   </div>
 
+  <!-- WIN/LOSS HEATMAP + DAY OF WEEK -->
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Win / Loss heatmap</span><span class="card-sub">Last 12 weeks — green=win, red=loss, grey=no trades</span></div>
+      <div id="wl-heatmap" style="padding-top:4px"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">P&amp;L by day of week</span><span class="card-sub">Are you losing on specific days?</span></div>
+      <div style="position:relative;height:130px"><canvas id="dowChart"></canvas></div>
+    </div>
+  </div>
+
   <div class="grid2">
     <div class="card">
       <div class="card-header"><span class="card-title">P&amp;L by session hour</span></div>
@@ -1033,6 +1045,21 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
     </div>
   </div>
   <div id="hist-table-view">
+    <!-- ROLLING 10-TRADE SPARKLINE + HOUR HEATMAP -->
+    <div class="grid2" style="margin-bottom:12px">
+      <div class="card" style="padding:14px 16px">
+        <div class="card-header" style="margin-bottom:10px"><span class="card-title">Last 10 trades</span><span class="card-sub" id="rolling10-sub">Rolling performance</span></div>
+        <div id="rolling10-dots" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:10px">
+          <span style="font-size:11px;color:var(--muted)" id="rolling10-wr"></span>
+          <span style="font-size:11px;font-family:'Geist Mono',monospace;font-weight:700" id="rolling10-pnl"></span>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 16px">
+        <div class="card-header" style="margin-bottom:8px"><span class="card-title">P&amp;L by hour</span><span class="card-sub">All-time breakdown with totals</span></div>
+        <div id="hist-hour-heat"></div>
+      </div>
+    </div>
     <div class="filters">
       <input class="filter-input" id="f-ticker" placeholder="Ticker..." onkeyup="renderHistory()" style="width:90px">
       <select class="filter-input" id="f-side" onchange="renderHistory()"><option value="">All sides</option><option value="long">Long</option><option value="short">Short</option></select>
@@ -1245,6 +1272,22 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <span class="card-sub" id="be-headline"></span>
     </div>
     <div id="be-analysis-content"><div class="empty"><strong>No BE data yet</strong>Tag trades with Win, Loss, BE → Win, or BE → Loss outcomes to see this analysis.</div></div>
+  </div>
+
+  <!-- WIN RATE TREND + P&L DISTRIBUTION + SETUP RADAR -->
+  <div class="grid2" style="margin-bottom:12px">
+    <div class="card">
+      <div class="card-header" style="margin-bottom:6px"><span class="card-title">Win rate over time</span><span class="card-sub">Rolling 10-trade trend</span></div>
+      <div style="position:relative;height:148px"><canvas id="wrTrendChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header" style="margin-bottom:6px"><span class="card-title">P&amp;L distribution</span><span class="card-sub">Trade outcome sizes</span></div>
+      <div style="position:relative;height:148px"><canvas id="pnlDistChart"></canvas></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-header" style="margin-bottom:6px"><span class="card-title">Setup radar</span><span class="card-sub">Win rate per setup — needs 2+ setups tagged</span></div>
+    <div style="display:flex;justify-content:center;align-items:center;height:240px"><canvas id="setupRadarChart" style="max-width:300px"></canvas></div>
   </div>
 
   <!-- TRADE GALLERY -->
@@ -2058,6 +2101,8 @@ function renderDashboard() {
   renderRecent();
   refreshPatternFeed();
   renderDashPropSummary();
+  renderWLHeatmap(state.trades);
+  renderDOWChart(state.trades);
   setTimeout(()=>{ }, 100);
 }
 
@@ -2066,15 +2111,26 @@ function renderEquity(T, pnls) {
   if (equityChartObj) { equityChartObj.destroy(); equityChartObj=null; }
   if (!T.length) { document.getElementById('equity-label').textContent='No trades yet'; return; }
 
-  const labels=['Start'], data=[0]; let run=0;
-  T.forEach((t,i)=>{ run+=pnls[i]; labels.push(t.datetime?t.datetime.slice(5,10):'#'+(i+1)); data.push(Math.round(run)); });
+  const labels=['Start'], data=[0], rData=[0]; let run=0, rRun=0;
+  T.forEach((t,i)=>{
+    run+=pnls[i]; rRun+=parseFloat(calcRR(t)||t.quickRR||0)||0;
+    labels.push(t.datetime?t.datetime.slice(5,10):'#'+(i+1));
+    data.push(Math.round(run)); rData.push(parseFloat(rRun.toFixed(2)));
+  });
   document.getElementById('equity-label').textContent = pf(run)+' cumulative';
 
   const isPos = run >= 0;
+  const hasRR = rData.some(v=>v!==0);
   equityChartObj = new Chart(ctx, {
     type:'line',
-    data:{ labels, datasets:[{ data, borderColor: isPos?'#00d084':'#ff4d4d', borderWidth:2, pointRadius:data.length>30?0:3, pointBackgroundColor:isPos?'#00d084':'#ff4d4d', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,190); g.addColorStop(0,isPos?'rgba(0,208,132,0.25)':'rgba(255,77,77,0.25)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>'$'+c.parsed.y.toLocaleString() } } }, scales:{ x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10},maxTicksLimit:10}}, y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10,family:'DM Mono'},callback:v=>'$'+v.toLocaleString()}} } }
+    data:{ labels, datasets:[
+      { label:'P&L ($)', data, borderColor:isPos?'#00d084':'#ff4d4d', borderWidth:2, pointRadius:data.length>30?0:3, pointBackgroundColor:isPos?'#00d084':'#ff4d4d', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,190); g.addColorStop(0,isPos?'rgba(0,208,132,0.2)':'rgba(255,77,77,0.2)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4, yAxisID:'y' },
+      ...(hasRR ? [{ label:'Cumulative R', data:rData, borderColor:'rgba(99,179,237,0.8)', borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false, tension:0.4, yAxisID:'y2' }] : [])
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:hasRR, labels:{color:'#888',font:{size:10},boxWidth:16} }, tooltip:{ callbacks:{ label:c=>c.datasetIndex===0?'$'+c.parsed.y.toLocaleString():c.parsed.y.toFixed(1)+'R' } } },
+      scales:{ x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10},maxTicksLimit:10}}, y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10,family:'DM Mono'},callback:v=>'$'+v.toLocaleString()}}, ...(hasRR?{y2:{position:'right',grid:{display:false},ticks:{color:'rgba(99,179,237,0.6)',font:{size:10},callback:v=>v+'R'}}}:{}) }
+    }
   });
 }
 
@@ -2439,6 +2495,8 @@ function deleteTrade(idx){if(!confirm('Delete this trade?'))return;state.trades.
 
 // ─── HISTORY ──────────────────────────────────────────────────────────────────
 function renderHistory() {
+  renderRolling10(state.trades);
+  renderHistHourHeat(state.trades);
   const fSetupSel=document.getElementById('f-setup-filter');
   const fMistakeSel=document.getElementById('f-mistake-filter');
   if(fSetupSel){const pv=fSetupSel.value;fSetupSel.innerHTML='<option value="">All setups</option>'+state.setups.map(s=>`<option ${s===pv?'selected':''}>${s}</option>`).join('');}
@@ -4387,6 +4445,9 @@ function renderSetupsPage() {
   const period = document.getElementById('stats-period')?.value || 'all';
   const T = periodFilter(state.trades, period);
   renderStatsExtras(T);
+  renderWRTrendChart(T);
+  renderPnLDistChart(T);
+  renderSetupRadar(T);
   if (!T.length) return;
 
   const wins = t => ['win','be_win'].includes(t.outcome);
@@ -5085,6 +5146,208 @@ function renderGallery() {
     window._initBlob = initBlob;
   }
 })();
+
+// ─── WIN/LOSS HEATMAP ─────────────────────────────────────────────────────────
+function renderWLHeatmap(trades) {
+  const el = document.getElementById('wl-heatmap');
+  if (!el) return;
+  // Build day map for last 84 days (12 weeks)
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dayMap = {};
+  trades.forEach(t => {
+    if (!t.datetime) return;
+    const d = new Date(t.datetime); d.setHours(0,0,0,0);
+    const k = d.toISOString().slice(0,10);
+    if (!dayMap[k]) dayMap[k] = { pnl: 0, n: 0 };
+    dayMap[k].pnl += calcPnL(t); dayMap[k].n++;
+  });
+
+  // Start from 84 days ago, aligning to Sunday
+  const start = new Date(today); start.setDate(today.getDate() - 83);
+  // Back up to Sunday
+  start.setDate(start.getDate() - start.getDay());
+
+  const weeks = [];
+  let d = new Date(start);
+  while (d <= today) {
+    const week = [];
+    for (let i = 0; i < 7; i++) {
+      const k = d.toISOString().slice(0,10);
+      const isFuture = d > today;
+      week.push({ date: k, day: d.getDay(), data: dayMap[k] || null, future: isFuture });
+      d = new Date(d); d.setDate(d.getDate() + 1);
+    }
+    weeks.push(week);
+  }
+
+  const DAYS = ['S','M','T','W','T','F','S'];
+  el.innerHTML = `
+    <div style="display:flex;gap:2px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:2px;padding-top:18px;margin-right:2px">
+        ${DAYS.map(d=>`<div style="font-size:9px;color:var(--dim);height:12px;line-height:12px;width:10px">${d}</div>`).join('')}
+      </div>
+      <div style="display:flex;gap:2px;overflow-x:auto;padding-bottom:4px">
+        ${weeks.map(week => `
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:8px;color:var(--dim);height:16px;text-align:center;line-height:16px;white-space:nowrap">
+              ${week[1] ? new Date(week[1].date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}
+            </div>
+            ${week.map(cell => {
+              if (cell.future) return `<div style="width:12px;height:12px;border-radius:2px;background:transparent"></div>`;
+              if (!cell.data) return `<div style="width:12px;height:12px;border-radius:2px;background:var(--bg3)" title="${cell.date}"></div>`;
+              const pnl = cell.data.pnl;
+              const bg = pnl > 0 ? `rgba(0,208,132,${Math.min(0.9, 0.35 + Math.abs(pnl)/500*0.55)})` : `rgba(255,77,77,${Math.min(0.9, 0.35 + Math.abs(pnl)/500*0.55)})`;
+              return `<div style="width:12px;height:12px;border-radius:2px;background:${bg};cursor:default" title="${cell.date}: ${pnl>=0?'+':''}$${Math.round(pnl)} (${cell.data.n} trades)"></div>`;
+            }).join('')}
+          </div>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-left:14px">
+      <span style="font-size:10px;color:var(--muted)">Less</span>
+      ${['var(--bg3)','rgba(0,208,132,0.35)','rgba(0,208,132,0.6)','rgba(0,208,132,0.9)'].map(c=>`<div style="width:10px;height:10px;border-radius:2px;background:${c}"></div>`).join('')}
+      <span style="font-size:10px;color:var(--muted)">More (wins)</span>
+      <span style="font-size:10px;color:var(--muted);margin-left:8px">·</span>
+      ${['rgba(255,77,77,0.35)','rgba(255,77,77,0.7)'].map(c=>`<div style="width:10px;height:10px;border-radius:2px;background:${c}"></div>`).join('')}
+      <span style="font-size:10px;color:var(--muted)">Losses</span>
+    </div>`;
+}
+
+// ─── P&L BY DAY OF WEEK ───────────────────────────────────────────────────────
+let dowChartObj = null;
+function renderDOWChart(trades) {
+  const ctx = document.getElementById('dowChart')?.getContext('2d');
+  if (!ctx) return;
+  if (dowChartObj) { dowChartObj.destroy(); dowChartObj = null; }
+  const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
+  const totals = [0,0,0,0,0], counts = [0,0,0,0,0];
+  trades.forEach(t => {
+    if (!t.datetime) return;
+    const dow = new Date(t.datetime).getDay(); // 0=Sun
+    if (dow === 0 || dow === 6) return;
+    totals[dow-1] += calcPnL(t); counts[dow-1]++;
+  });
+  dowChartObj = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: DAYS, datasets: [{ data: totals.map(v=>Math.round(v)), backgroundColor: totals.map(v=>v>=0?'rgba(0,208,132,0.7)':'rgba(255,77,77,0.7)'), borderRadius: 4, borderSkipped: false }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>(c.parsed.y>=0?'+':'')+'$'+c.parsed.y.toLocaleString()+' ('+counts[c.dataIndex]+' trades)' } } }, scales:{ x:{ grid:{display:false}, ticks:{color:'#888',font:{size:11}} }, y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:10},callback:v=>'$'+v.toLocaleString()}, border:{display:false} } } }
+  });
+}
+
+// ─── WIN RATE OVER TIME (rolling 10) ─────────────────────────────────────────
+let wrTrendChartObj = null;
+function renderWRTrendChart(T) {
+  const ctx = document.getElementById('wrTrendChart')?.getContext('2d');
+  if (!ctx) return;
+  if (wrTrendChartObj) { wrTrendChartObj.destroy(); wrTrendChartObj = null; }
+  if (T.length < 3) { ctx.canvas.parentElement.innerHTML = '<div class="empty" style="height:148px;display:flex;align-items:center;justify-content:center">Need 3+ trades</div>'; return; }
+  const sorted = [...T].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
+  const labels = [], data = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const window = sorted.slice(Math.max(0, i-9), i+1);
+    const wr = window.filter(t=>calcPnL(t)>0).length / window.length * 100;
+    labels.push(sorted[i].datetime ? sorted[i].datetime.slice(5,10) : '#'+(i+1));
+    data.push(Math.round(wr));
+  }
+  wrTrendChartObj = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[{ data, borderColor:'#63b3ed', borderWidth:2, pointRadius:data.length>20?0:3, pointBackgroundColor:'#63b3ed', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,148); g.addColorStop(0,'rgba(99,179,237,0.2)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.y+'% WR' } } }, scales:{ x:{grid:{display:false},ticks:{color:'#555',font:{size:9},maxTicksLimit:8}}, y:{min:0,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},callback:v=>v+'%'},border:{display:false}} } }
+  });
+}
+
+// ─── P&L DISTRIBUTION HISTOGRAM ──────────────────────────────────────────────
+let pnlDistChartObj = null;
+function renderPnLDistChart(T) {
+  const ctx = document.getElementById('pnlDistChart')?.getContext('2d');
+  if (!ctx) return;
+  if (pnlDistChartObj) { pnlDistChartObj.destroy(); pnlDistChartObj = null; }
+  const BUCKETS = [
+    { label:'<-$500', min:-Infinity, max:-500 },
+    { label:'-$500', min:-500, max:-250 },
+    { label:'-$250', min:-250, max:-100 },
+    { label:'-$100', min:-100, max:0 },
+    { label:'+$100', min:0, max:100 },
+    { label:'+$250', min:100, max:250 },
+    { label:'+$500', min:250, max:500 },
+    { label:'>$500', min:500, max:Infinity },
+  ];
+  const counts = BUCKETS.map(b => T.filter(t=>{ const p=calcPnL(t); return p>=b.min&&p<b.max; }).length);
+  const colors = BUCKETS.map(b => b.min >= 0 ? 'rgba(0,208,132,0.75)' : 'rgba(255,77,77,0.75)');
+  pnlDistChartObj = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: BUCKETS.map(b=>b.label), datasets:[{ data:counts, backgroundColor:colors, borderRadius:3, borderSkipped:false }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.y+' trade'+(c.parsed.y!==1?'s':'') } } }, scales:{ x:{grid:{display:false},ticks:{color:'#666',font:{size:9}}}, y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},stepSize:1},border:{display:false}} } }
+  });
+}
+
+// ─── SETUP RADAR CHART ────────────────────────────────────────────────────────
+let setupRadarChartObj = null;
+function renderSetupRadar(T) {
+  const ctx = document.getElementById('setupRadarChart')?.getContext('2d');
+  if (!ctx) return;
+  if (setupRadarChartObj) { setupRadarChartObj.destroy(); setupRadarChartObj = null; }
+  const setupMap = {};
+  T.forEach(t => (t.setups||[]).forEach(s => {
+    if (!setupMap[s]) setupMap[s] = { wins:0, n:0 };
+    setupMap[s].n++; if (calcPnL(t)>0) setupMap[s].wins++;
+  }));
+  const entries = Object.entries(setupMap).filter(([,v])=>v.n>=1);
+  if (entries.length < 2) { ctx.canvas.parentElement.innerHTML = '<div class="empty" style="padding:20px;text-align:center">Need 2+ setups tagged to render radar</div>'; return; }
+  const labels = entries.map(([s])=>s);
+  const data = entries.map(([,v])=>Math.round(v.wins/v.n*100));
+  setupRadarChartObj = new Chart(ctx, {
+    type:'radar',
+    data:{ labels, datasets:[{ data, backgroundColor:'rgba(0,208,132,0.15)', borderColor:'rgba(0,208,132,0.8)', borderWidth:2, pointBackgroundColor:'#00d084', pointRadius:4 }] },
+    options:{ responsive:true, maintainAspectRatio:true, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.r+'% WR' } } }, scales:{ r:{ min:0, max:100, ticks:{color:'#555',font:{size:9},stepSize:25,backdropColor:'transparent',callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,0.08)'}, pointLabels:{color:'#999',font:{size:11}} } } }
+  });
+}
+
+// ─── HISTORY PAGE: ROLLING 10 SPARKLINE ──────────────────────────────────────
+function renderRolling10(trades) {
+  const el = document.getElementById('rolling10-dots');
+  if (!el) return;
+  const sorted = [...trades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||'')).slice(-10);
+  if (!sorted.length) { el.innerHTML = '<span style="color:var(--muted);font-size:12px">No trades yet</span>'; return; }
+  const wins = sorted.filter(t=>calcPnL(t)>0).length;
+  const pnl  = sorted.reduce((a,t)=>a+calcPnL(t),0);
+  el.innerHTML = sorted.map(t => {
+    const p = calcPnL(t); const col = p>0?'#00d084':p<0?'#ff4d4d':'#888';
+    return `<div title="${p>=0?'+':''}$${Math.round(p)}" style="width:28px;height:28px;border-radius:50%;background:${col}22;border:2px solid ${col};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${col}">${p>0?'W':p<0?'L':'BE'}</div>`;
+  }).join('');
+  const wrEl = document.getElementById('rolling10-wr');
+  const pnlEl = document.getElementById('rolling10-pnl');
+  if (wrEl) wrEl.textContent = `${wins}/${sorted.length} wins (${Math.round(wins/sorted.length*100)}% WR)`;
+  if (pnlEl) { pnlEl.textContent = (pnl>=0?'+':'')+'$'+Math.abs(Math.round(pnl)).toLocaleString(); pnlEl.style.color = pnl>=0?'var(--green)':'var(--red)'; }
+}
+
+// ─── HISTORY PAGE: DETAILED HOUR HEATMAP ─────────────────────────────────────
+function renderHistHourHeat(trades) {
+  const el = document.getElementById('hist-hour-heat');
+  if (!el) return;
+  const hours = {};
+  trades.forEach(t => {
+    const d = new Date(t.datetime||''); if (isNaN(d)) return;
+    const h = d.getHours();
+    if (!hours[h]) hours[h] = { pnl:0, n:0, wins:0 };
+    hours[h].pnl += calcPnL(t); hours[h].n++; if(calcPnL(t)>0) hours[h].wins++;
+  });
+  const hoursToShow = [9,10,11,12,13,14,15,16];
+  const maxAbs = Math.max(...hoursToShow.map(h=>Math.abs((hours[h]||{pnl:0}).pnl)), 1);
+  el.innerHTML = hoursToShow.map(h => {
+    const d = hours[h]; if (!d) return '';
+    const pnl = d.pnl; const col = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
+    const barPct = Math.round(Math.abs(pnl)/maxAbs*100);
+    const wr = Math.round(d.wins/d.n*100);
+    const pStr = (pnl>=0?'+':'-')+'$'+Math.abs(Math.round(pnl)).toLocaleString();
+    return `<div style="display:grid;grid-template-columns:44px 1fr 56px 36px 28px;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:600;color:var(--muted)">${h<12?h+':00 AM':(h===12?'12:00 PM':(h-12)+':00 PM')}</div>
+      <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="width:${barPct}%;height:100%;background:${col};opacity:.8"></div></div>
+      <div style="font-size:11px;font-weight:700;font-family:'Geist Mono',monospace;color:${col};text-align:right">${pStr}</div>
+      <div style="font-size:10px;color:var(--muted);text-align:right">${wr}% WR</div>
+      <div style="font-size:10px;color:var(--dim);text-align:right">${d.n}×</div>
+    </div>`;
+  }).join('') || '<div class="empty" style="padding:12px">No time data yet</div>';
+}
 
 // ─── TRADE CALENDAR ───────────────────────────────────────────────────────────
 let calYear = new Date().getFullYear();
