@@ -5271,11 +5271,15 @@ function renderPnLDistChart(T) {
     { label:'+$500', min:250, max:500 },
     { label:'>$500', min:500, max:Infinity },
   ];
-  const counts = BUCKETS.map(b => T.filter(t=>{ const p=calcPnL(t); return p>=b.min&&p<b.max; }).length);
-  const colors = BUCKETS.map(b => b.min >= 0 ? 'rgba(0,208,132,0.75)' : 'rgba(255,77,77,0.75)');
+  const allCounts = BUCKETS.map(b => T.filter(t=>{ const p=calcPnL(t); return p>=b.min&&p<b.max; }).length);
+  // Only show buckets that have data
+  const activeBuckets = BUCKETS.filter((_,i) => allCounts[i] > 0);
+  const counts = activeBuckets.map(b => T.filter(t=>{ const p=calcPnL(t); return p>=b.min&&p<b.max; }).length);
+  const colors = activeBuckets.map(b => b.min >= 0 ? 'rgba(0,208,132,0.75)' : 'rgba(255,77,77,0.75)');
+  if (!counts.length) { ctx.canvas.parentElement.innerHTML = '<div class="empty" style="height:148px;display:flex;align-items:center;justify-content:center">No trade data yet</div>'; return; }
   pnlDistChartObj = new Chart(ctx, {
     type:'bar',
-    data:{ labels: BUCKETS.map(b=>b.label), datasets:[{ data:counts, backgroundColor:colors, borderRadius:3, borderSkipped:false }] },
+    data:{ labels: activeBuckets.map(b=>b.label), datasets:[{ data:counts, backgroundColor:colors, borderRadius:3, borderSkipped:false }] },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:c=>c.parsed.y+' trade'+(c.parsed.y!==1?'s':'') } } }, scales:{ x:{grid:{display:false},ticks:{color:'#666',font:{size:9}}}, y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:10},stepSize:1},border:{display:false}} } }
   });
 }
@@ -5292,7 +5296,7 @@ function renderSetupRadar(T) {
     setupMap[s].n++; if (calcPnL(t)>0) setupMap[s].wins++;
   }));
   const entries = Object.entries(setupMap).filter(([,v])=>v.n>=1);
-  if (entries.length < 2) { ctx.canvas.parentElement.innerHTML = '<div class="empty" style="padding:20px;text-align:center">Need 2+ setups tagged to render radar</div>'; return; }
+  if (entries.length < 1) { ctx.canvas.parentElement.innerHTML = '<div class="empty" style="padding:20px;text-align:center">Tag trades with setups to render radar</div>'; return; }
   const labels = entries.map(([s])=>s);
   const data = entries.map(([,v])=>Math.round(v.wins/v.n*100));
   setupRadarChartObj = new Chart(ctx, {
