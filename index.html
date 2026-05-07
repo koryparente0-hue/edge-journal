@@ -481,7 +481,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .upgrade-modal-overlay.open{display:flex}
 .upgrade-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);padding:0;width:460px;max-width:94vw;overflow:hidden}
 .upgrade-hero{background:linear-gradient(135deg,#0a0a0b 0%,#111113 100%);border-bottom:1px solid var(--border);padding:32px 32px 24px;text-align:center;position:relative}
-.upgrade-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),#4a9eff,var(--amber))}
+.upgrade-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),#4a9eff,var(--amber))}
 .upgrade-price{font-size:48px;font-weight:800;font-family:'Geist Mono',monospace;color:var(--text);letter-spacing:-2px;line-height:1}
 .upgrade-price span{font-size:18px;font-weight:400;color:var(--muted);letter-spacing:0}
 .upgrade-body{padding:24px 32px 28px}
@@ -926,7 +926,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <span class="card-title">Trade details</span>
         <div style="display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:2px;gap:2px">
-          <button id="mode-quick" onclick="setLogMode('quick')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:var(--green);color:#000;transition:all .15s">Quick</button>
+          <button id="mode-quick" onclick="setLogMode('quick')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:var(--accent);color:#000;transition:all .15s">Quick</button>
           <button id="mode-detailed" onclick="setLogMode('detailed')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s">Detailed</button>
         </div>
       </div>
@@ -2589,7 +2589,7 @@ For flags add specific warnings relevant to this trade only.`;
 function buildReviewCard(d, idx) {
   const grade=d.grade||'?';
   const baseLetter = grade.replace(/[^A-F]/g,'')[0] || 'C'; // strip +/- for CSS
-  const gradeColors={A:'#00d084',B:'#4a9eff',C:'#f5a623',D:'#ff6432',F:'#ff4d4d'};
+  const gradeColors={A:'#7C5CFC',B:'#4a9eff',C:'#f5a623',D:'#ff6432',F:'#ff4d4d'};
   const col=gradeColors[baseLetter]||'#888';
   const autoTags=[
     ...(d.auto_setups||[]).map(s=>`<span class="auto-tag auto-tag-setup">${s}</span>`),
@@ -3100,7 +3100,7 @@ Be specific with numbers and use ICT terminology (FVG, sweep, inversion, LRLR). 
     if(data.error){document.getElementById('insights-output').innerHTML=`<div class="empty"><strong>API Error</strong>${data.error.message}</div>`;return;}
     const text=data.content?.map(b=>b.text||'').join('')||'';
     const lines=text.split('\n').filter(l=>l.trim()&&(l.includes('[')));
-    const colorMap={STRENGTH:'#00d084',WEAKNESS:'#ff4d4d',PATTERN:'#4a9eff',COST:'#ff4d4d',ACTION:'#f5a623'};
+    const colorMap={STRENGTH:'#7C5CFC',WEAKNESS:'#ff4d4d',PATTERN:'#4a9eff',COST:'#ff4d4d',ACTION:'#f5a623'};
     document.getElementById('insights-output').innerHTML=lines.map(l=>{
       const tag=l.match(/\[(\w+)\]/)?.[1]||'';
       const col=colorMap[tag]||'var(--muted)';
@@ -3288,14 +3288,14 @@ function refreshPatternFeed() {
   T.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(calcPnL(t)>0)hourPnL[h].wins++;});
   const bestHour=Object.entries(hourPnL).sort((a,b)=>b[1].pnl-a[1].pnl)[0];
   const worstHour=Object.entries(hourPnL).sort((a,b)=>a[1].pnl-b[1].pnl)[0];
-  if(bestHour&&bestHour[1].n>=2)patterns.push({color:'#00d084',text:`Your best hour is <strong>${bestHour[0]}:00 EST</strong> — ${Math.round(bestHour[1].wins/bestHour[1].n*100)}% win rate, avg +$${Math.round(bestHour[1].pnl/bestHour[1].n)} per trade.`,badge:'+$'+Math.round(bestHour[1].pnl/bestHour[1].n)});
+  if(bestHour&&bestHour[1].n>=2)patterns.push({color:'#7C5CFC',text:`Your best hour is <strong>${bestHour[0]}:00 EST</strong> — ${Math.round(bestHour[1].wins/bestHour[1].n*100)}% win rate, avg +$${Math.round(bestHour[1].pnl/bestHour[1].n)} per trade.`,badge:'+$'+Math.round(bestHour[1].pnl/bestHour[1].n)});
   if(worstHour&&worstHour[1].n>=2&&worstHour[0]!==bestHour[0])patterns.push({color:'#ff4d4d',text:`You lose most at <strong>${worstHour[0]}:00 EST</strong> — avg $${Math.round(worstHour[1].pnl/worstHour[1].n)} per trade (${worstHour[1].n} trades). Consider skipping this hour.`,badge:'$'+Math.round(worstHour[1].pnl/worstHour[1].n)});
 
   // Setup win rates
   const setupStats={};
   T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(calcPnL(t)>0)setupStats[s].wins++;}));
   const setups=Object.entries(setupStats).filter(([,v])=>v.n>=2).sort((a,b)=>b[1].wins/b[1].n-a[1].wins/a[1].n);
-  if(setups.length)patterns.push({color:'#00d084',text:`Your best setup is <strong>${setups[0][0]}</strong> — ${Math.round(setups[0][1].wins/setups[0][1].n*100)}% win rate over ${setups[0][1].n} trades.`,badge:Math.round(setups[0][1].wins/setups[0][1].n*100)+'% WR'});
+  if(setups.length)patterns.push({color:'#7C5CFC',text:`Your best setup is <strong>${setups[0][0]}</strong> — ${Math.round(setups[0][1].wins/setups[0][1].n*100)}% win rate over ${setups[0][1].n} trades.`,badge:Math.round(setups[0][1].wins/setups[0][1].n*100)+'% WR'});
   if(setups.length>1){const worst=setups[setups.length-1];patterns.push({color:'#f5a623',text:`<strong>${worst[0]}</strong> is your weakest setup — only ${Math.round(worst[1].wins/worst[1].n*100)}% win rate. Consider reducing size or avoiding it.`,badge:Math.round(worst[1].wins/worst[1].n*100)+'% WR'});}
 
   // Mistake costs
@@ -3320,7 +3320,7 @@ function refreshPatternFeed() {
 
   // Win/loss after loss
   const afterLoss=T.filter((t,i)=>i>0&&calcPnL(T[i-1])<0);
-  if(afterLoss.length>=3){const wr=Math.round(afterLoss.filter(t=>calcPnL(t)>0).length/afterLoss.length*100);const dir=wr>=50;patterns.push({color:dir?'#00d084':'#ff4d4d',text:`After a losing trade, your win rate is <strong>${wr}%</strong> (${afterLoss.length} samples). ${wr<40?'Consider taking a break after losses.':wr>=60?'You bounce back well after losses.':'Mixed results after losses.'}`,badge:wr+'% after loss'});}
+  if(afterLoss.length>=3){const wr=Math.round(afterLoss.filter(t=>calcPnL(t)>0).length/afterLoss.length*100);const dir=wr>=50;patterns.push({color:dir?'#7C5CFC':'#ff4d4d',text:`After a losing trade, your win rate is <strong>${wr}%</strong> (${afterLoss.length} samples). ${wr<40?'Consider taking a break after losses.':wr>=60?'You bounce back well after losses.':'Mixed results after losses.'}`,badge:wr+'% after loss'});}
 
   // Revenge trading speed
   const quickEntries=T.filter((t,i)=>{if(i===0)return false;const prev=T[i-1];if(calcPnL(prev)>=0)return false;if(!prev.datetime||!t.datetime)return false;return (new Date(t.datetime)-new Date(prev.datetime))/60000<=5;});
@@ -3332,7 +3332,7 @@ function refreshPatternFeed() {
   const wins=T.filter(t=>calcPnL(t)>0);const losses=T.filter(t=>calcPnL(t)<0);
   const avgW=wins.length?wins.reduce((a,t)=>a+calcPnL(t),0)/wins.length:0;
   const avgL=losses.length?Math.abs(losses.reduce((a,t)=>a+calcPnL(t),0)/losses.length):0;
-  if(avgW&&avgL)patterns.push({color:avgW/avgL>=1.5?'#00d084':'#f5a623',text:`Your average win is <strong>$${Math.round(avgW)}</strong> and average loss is <strong>$${Math.round(avgL)}</strong> — a ${(avgW/avgL).toFixed(2)}:1 win/loss ratio. ${avgW/avgL>=2?'Excellent.':avgW/avgL>=1?'Acceptable, keep it above 1.5x.':'Your losses are too large relative to wins.'}`,badge:(avgW/avgL).toFixed(2)+'x W/L'});
+  if(avgW&&avgL)patterns.push({color:avgW/avgL>=1.5?'#7C5CFC':'#f5a623',text:`Your average win is <strong>$${Math.round(avgW)}</strong> and average loss is <strong>$${Math.round(avgL)}</strong> — a ${(avgW/avgL).toFixed(2)}:1 win/loss ratio. ${avgW/avgL>=2?'Excellent.':avgW/avgL>=1?'Acceptable, keep it above 1.5x.':'Your losses are too large relative to wins.'}`,badge:(avgW/avgL).toFixed(2)+'x W/L'});
 
   el.innerHTML=patterns.slice(0,6).map(p=>`
     <div class="pattern-feed-item">
@@ -3786,7 +3786,7 @@ function renderStreaks() {
     <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Routine done</div>
     <div style="display:flex;gap:6px">${days14.map(d=>`<div style="flex:1;height:18px;border-radius:3px;background:${routinedDays.has(d)?'var(--blue)':'var(--bg3)'}"></div>`).join('')}</div>
     <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--muted)">
-      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--green);display:inline-block"></span>Journaled / No FOMO / Routine</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span>Journaled / No FOMO / Routine</span>
       <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--red);display:inline-block"></span>FOMO trade taken</span>
       <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--blue);display:inline-block"></span>Routine complete</span>
     </div>`;
@@ -4536,7 +4536,7 @@ function renderPropAccountsSection() {
                   <span style="font-weight:700;color:var(--amber)">$${target.toLocaleString()} · ${Math.round(progPct)}%</span>
                 </div>
                 <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">
-                  <div style="height:100%;width:${progPct}%;background:linear-gradient(90deg,var(--green),#00ff9d);border-radius:3px;transition:width .5s ease;box-shadow:0 0 6px rgba(0,208,132,.4)"></div>
+                  <div style="height:100%;width:${progPct}%;background:linear-gradient(90deg,var(--accent),#00ff9d);border-radius:3px;transition:width .5s ease;box-shadow:0 0 6px rgba(0,208,132,.4)"></div>
                 </div>
               </div>` : ''}
 
@@ -4775,7 +4775,7 @@ function updateLogAccountOptions() {
   wrap.style.display = '';
   box.innerHTML = accounts.map((a,i) => `
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text)">
-      <input type="checkbox" id="pac-${i}" value="${a.name}" ${accounts.length===1?'checked':''} style="accent-color:var(--green);width:14px;height:14px">
+      <input type="checkbox" id="pac-${i}" value="${a.name}" ${accounts.length===1?'checked':''} style="accent-color:var(--accent);width:14px;height:14px">
       <span>${a.name}</span>
       <span style="font-size:10px;color:var(--muted);margin-left:auto">${a.status||''}</span>
     </label>`).join('');
@@ -5287,7 +5287,7 @@ function renderSetupLibrary() {
           <div style="font-size:12px;color:var(--text);line-height:1.7;white-space:pre-line">${s.confluences}</div>
         </div>` : ''}
         ${s.aplus ? `<div>
-          <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--green);text-transform:uppercase;margin-bottom:6px">A+ Conditions</div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:.06em;color:var(--accent);text-transform:uppercase;margin-bottom:6px">A+ Conditions</div>
           <div style="font-size:12px;color:var(--text);line-height:1.7;white-space:pre-line">${s.aplus}</div>
         </div>` : ''}
         ${s.disqualifiers ? `<div>
@@ -5823,11 +5823,11 @@ function renderCalendar() {
       const isToday = isThisMo && todayDate.getDate() === day;
       const isSel   = calSelectedDay === day;
       const dow     = new Date(calYear, calMonth, day).getDay();
-      cell.style.cssText = `background:${isSel?'rgba(0,208,132,.08)':'var(--bg2)'};border:${isToday?'2px solid var(--green)':isSel?'1px solid var(--green)':'1px solid var(--border)'};border-radius:var(--r);min-height:88px;padding:8px 9px;cursor:${trades.length?'pointer':'default'};position:relative;display:flex;flex-direction:column;box-sizing:border-box;transition:border-color .15s;${!trades.length&&(dow===0||dow===6)?'opacity:.35':''}`;
+      cell.style.cssText = `background:${isSel?'rgba(124,92,252,.1)':'var(--bg2)'};border:${isToday?'2px solid var(--accent)':isSel?'1px solid var(--green)':'1px solid var(--border)'};border-radius:var(--r);min-height:88px;padding:8px 9px;cursor:${trades.length?'pointer':'default'};position:relative;display:flex;flex-direction:column;box-sizing:border-box;transition:border-color .15s;${!trades.length&&(dow===0||dow===6)?'opacity:.35':''}`;
 
       const numDiv = document.createElement('div');
       numDiv.style.cssText = 'font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:3px';
-      if (isToday) { const pip = document.createElement('span'); pip.style.cssText='width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0'; numDiv.appendChild(pip); }
+      if (isToday) { const pip = document.createElement('span'); pip.style.cssText='width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0'; numDiv.appendChild(pip); }
       numDiv.appendChild(document.createTextNode(day));
       cell.appendChild(numDiv);
 
@@ -5940,7 +5940,7 @@ function renderStatsExtras(T) {
             <div style="display:flex;align-items:center;gap:4px;padding:0 8px">
               <div style="flex:1;height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;display:flex">
                 <div style="width:${100-wr}%;background:var(--red);opacity:.65"></div>
-                <div style="width:${wr}%;background:var(--green);opacity:.8"></div>
+                <div style="width:${wr}%;background:var(--accent);opacity:.8"></div>
               </div>
             </div>
             <div style="font-size:10px;color:var(--muted);text-align:right">${group.length}</div>
