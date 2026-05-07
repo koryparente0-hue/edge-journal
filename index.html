@@ -62,8 +62,9 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .nav-item.active svg{opacity:1}
 
 .main{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);min-width:0;height:100vh}
-.page{display:none;padding:24px}
-.page.active{display:block}
+.page{display:none;padding:24px;opacity:0;transform:translateY(6px);transition:opacity .22s ease,transform .22s ease}
+.page.active{display:block;animation:pageIn .22s ease forwards}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
 .page-title{font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.3px;font-family:'Geist',sans-serif}
@@ -87,7 +88,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .metric-val.amber{color:var(--amber)}
 .metric-sub{font-size:11px;color:var(--dim);margin-top:4px;font-family:'Geist',sans-serif}
 
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:18px;margin-bottom:16px}
+.card{background:rgba(17,17,19,0.72);border:1px solid var(--border);border-radius:var(--r2);padding:18px;margin-bottom:16px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:box-shadow .25s,border-color .25s,transform .2s}
+.card:hover{box-shadow:0 4px 24px rgba(0,0,0,0.35),0 0 0 1px rgba(255,255,255,0.04);border-color:var(--border2);transform:translateY(-1px)}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .card-title{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.1px;font-family:'Geist',sans-serif}
 .card-sub{font-size:11px;color:var(--muted);font-family:'Geist',sans-serif}
@@ -182,7 +184,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-.stat-card{background:var(--bg3);border-radius:var(--r);padding:12px;text-align:center}
+.stat-card{background:rgba(24,24,28,0.8);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center;backdrop-filter:blur(8px);transition:all .2s;cursor:default}
+.stat-card:hover{border-color:var(--border2);box-shadow:0 2px 16px rgba(0,0,0,0.3);transform:translateY(-1px)}
 .stat-card-val{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-1px;margin-bottom:3px}
 .stat-card-label{font-size:10px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
 
@@ -527,6 +530,90 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .rtab{font-size:11px;font-weight:600;padding:10px 14px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--display);transition:all .15s;white-space:nowrap}
 .rtab:hover{color:var(--text)}
 .rtab-active{border-bottom-color:var(--green)!important;color:var(--green)!important}
+/* ── DYNAMIC BACKGROUND ───────────────────────────────────────────────────── */
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.45}
+#app-shell{position:relative;z-index:1}
+
+/* ── ENHANCED BUTTON HOVER STATES ─────────────────────────────────────────── */
+.btn{transition:all .18s cubic-bezier(.4,0,.2,1)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.btn:active{transform:translateY(0);box-shadow:none}
+.btn-green{transition:all .18s cubic-bezier(.4,0,.2,1)}
+.btn-green:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(0,208,132,0.35)}
+.btn-green:active{transform:translateY(0)}
+
+/* ── NAV ITEM HOVER ───────────────────────────────────────────────────────── */
+.nav-item{transition:all .18s cubic-bezier(.4,0,.2,1)}
+.nav-item:hover{transform:translateX(2px)}
+
+/* ── METRIC CARDS ─────────────────────────────────────────────────────────── */
+.metric-card{transition:all .22s cubic-bezier(.4,0,.2,1)}
+.metric-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.metric-card.glow-green{box-shadow:0 0 0 1px rgba(0,208,132,.25),0 4px 24px rgba(0,208,132,.12);border-color:rgba(0,208,132,.3)}
+.metric-card.glow-red{box-shadow:0 0 0 1px rgba(255,77,77,.2),0 4px 20px rgba(255,77,77,.1);border-color:rgba(255,77,77,.25)}
+
+/* ── COUNTING ANIMATION ───────────────────────────────────────────────────── */
+@keyframes countUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.metric-val{animation:countUp .4s ease forwards}
+.metric-val.animated{transition:color .3s}
+
+/* ── POSITIVE PULSE ───────────────────────────────────────────────────────── */
+@keyframes positivePulse{0%,100%{box-shadow:0 0 0 0 rgba(0,208,132,0)}50%{box-shadow:0 0 0 4px rgba(0,208,132,0.12)}}
+.pulse-green{animation:positivePulse 2.5s ease-in-out 1}
+
+/* ── GLOW HIGH BADGE ──────────────────────────────────────────────────────── */
+.new-high-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#000;background:var(--green);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle;animation:badgePop .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes badgePop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ── STREAK FLAME ─────────────────────────────────────────────────────────── */
+.streak-flame{display:inline-block;animation:flamePulse 1.4s ease-in-out infinite}
+@keyframes flamePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15) rotate(3deg)}}
+.streak-glow{border:1px solid rgba(0,208,132,.4);box-shadow:0 0 16px rgba(0,208,132,.15);animation:streakGlow 2s ease-in-out infinite}
+@keyframes streakGlow{0%,100%{box-shadow:0 0 16px rgba(0,208,132,.12)}50%{box-shadow:0 0 28px rgba(0,208,132,.28)}}
+
+/* ── ACHIEVEMENT BADGE ────────────────────────────────────────────────────── */
+.achievement-toast{position:fixed;bottom:24px;right:24px;background:rgba(17,17,19,0.96);border:1px solid var(--green-border);border-radius:var(--r2);padding:14px 18px;display:flex;align-items:center;gap:12px;z-index:9999;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(0,208,132,.15);animation:toastIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes toastIn{from{transform:translateY(20px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+.achievement-icon{font-size:28px;line-height:1}
+.achievement-title{font-size:12px;font-weight:700;color:var(--green)}
+.achievement-desc{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── TRADE CARD HOVER (gallery) ───────────────────────────────────────────── */
+.gallery-card{transition:all .2s cubic-bezier(.4,0,.2,1)}
+.gallery-card:hover{transform:translateY(-2px) scale(1.005);box-shadow:0 8px 28px rgba(0,0,0,0.4);border-color:var(--border2)}
+
+/* ── TABLE ROW HOVER ──────────────────────────────────────────────────────── */
+.trades-table tbody tr{transition:background .15s}
+
+/* ── MODAL OPEN ANIMATION ─────────────────────────────────────────────────── */
+.modal-overlay.open .modal{animation:modalIn .28s cubic-bezier(.34,1.2,.64,1)}
+@keyframes modalIn{from{transform:scale(.97) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+/* ── EQUITY DRAWDOWN SHADE ────────────────────────────────────────────────── */
+.drawdown-indicator{font-size:11px;color:var(--red);display:flex;align-items:center;gap:4px;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── LIVE CLOCK PULSE ─────────────────────────────────────────────────────── */
+.session-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);animation:livePulse 1.4s ease-in-out infinite;margin-right:4px;vertical-align:middle}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* ── GLASS PANEL OVERRIDE ─────────────────────────────────────────────────── */
+.sidebar{background:rgba(8,8,10,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.modal-box,.modal{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.chat-panel{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+
+/* ── SCROLL BAR ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+
+/* ── TAG PILL HOVER ───────────────────────────────────────────────────────── */
+.tag-pill{transition:all .15s;cursor:default}
+.tag-pill:hover{transform:scale(1.04)}
+
+/* ── SPARKLINE IN METRIC CARD ─────────────────────────────────────────────── */
+.metric-sparkline{display:block;width:100%;height:28px;margin-top:6px;opacity:.7}
 </style>
 </head>
 <body>
@@ -803,6 +890,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 <div class="page active" id="page-dashboard">
   <div class="page-header">
     <div><div class="page-title">Dashboard</div><div class="page-sub" id="dash-date"></div></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="live-session-status" style="display:flex;align-items:center;gap:4px"></div>
     <div style="display:flex;gap:8px;align-items:center">
       <select id="dash-period" class="btn" style="padding:8px 14px" onchange="renderDashboard()">
         <option value="all">All time</option>
@@ -815,8 +904,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 
   <div class="metrics">
-    <div class="metric"><div class="metric-label">Total P&amp;L</div><div class="metric-val" id="m-pnl">$0</div><div class="metric-sub" id="m-pnl-sub">0 trades</div></div>
-    <div class="metric"><div class="metric-label">Win Rate</div><div class="metric-val" id="m-wr">—</div><div class="metric-sub" id="m-wr-sub">0W / 0L</div></div>
+    <div class="metric"><div class="metric-label">Total P&amp;L</div><div class="metric-val" id="m-pnl">$0</div><div class="metric-sub" id="m-pnl-sub">0 trades</div><canvas id="spark-pnl" class="metric-sparkline"></canvas></div>
+    <div class="metric"><div class="metric-label">Win Rate</div><div class="metric-val" id="m-wr">—</div><div class="metric-sub" id="m-wr-sub">0W / 0L</div><canvas id="spark-wr" class="metric-sparkline"></canvas></div>
     <div class="metric"><div class="metric-label">Avg Win</div><div class="metric-val pos" id="m-avgw">—</div><div class="metric-sub" id="m-avgl-sub">avg loss —</div></div>
     <div class="metric"><div class="metric-label">Avg R:R</div><div class="metric-val" id="m-rr">—</div><div class="metric-sub">planned</div></div>
     <div class="metric"><div class="metric-label">Max Drawdown</div><div class="metric-val neg" id="m-dd">—</div><div class="metric-sub">peak→trough</div></div>
@@ -2153,6 +2242,10 @@ function renderDashboard() {
   renderDashPropSummary();
   renderWLHeatmap(state.trades);
   renderDOWChart(state.trades);
+  // Visual upgrades
+  updateLiveClock();
+  renderMetricSparklines();
+  checkAchievements();
   setTimeout(()=>{ }, 100);
 }
 
@@ -5953,6 +6046,121 @@ function updateThemeBtn(isLight) {
   const saved = localStorage.getItem('edge-theme');
   if (saved === 'light') { document.body.classList.add('light-mode'); updateThemeBtn(true); }
 })();
+
+// ─── ANIMATED BACKGROUND ─────────────────────────────────────────────────────
+(function() {
+  const canvas = document.createElement('canvas');
+  canvas.id = 'bg-canvas';
+  document.body.insertBefore(canvas, document.body.firstChild);
+  const ctx = canvas.getContext('2d');
+  let W, H, dots = [];
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  function initDots() {
+    dots = [];
+    const count = Math.floor((W * H) / 22000);
+    for (let i = 0; i < count; i++)
+      dots.push({ x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.1+0.3, vx:(Math.random()-.5)*.15, vy:(Math.random()-.5)*.15, o:Math.random()*.28+.06 });
+  }
+  initDots();
+  let mx = W/2, my = H/2;
+  window.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='rgba(255,255,255,0.016)'; ctx.lineWidth=1;
+    const gs=90;
+    for(let x=0;x<W;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    dots.forEach(d => {
+      d.x+=d.vx; d.y+=d.vy;
+      if(d.x<0)d.x=W; if(d.x>W)d.x=0; if(d.y<0)d.y=H; if(d.y>H)d.y=0;
+      const dx=mx-d.x,dy=my-d.y,dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<120){d.x+=dx*.003;d.y+=dy*.003;}
+      ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,208,132,${d.o})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─── COUNT-UP ANIMATION ───────────────────────────────────────────────────────
+function animateCountUp(el, target, prefix, suffix, duration) {
+  if (!el) return;
+  prefix = prefix||''; suffix = suffix||''; duration = duration||700;
+  const isNeg = target < 0, abs = Math.abs(target), start = performance.now();
+  function step(now) {
+    const p = Math.min((now-start)/duration,1);
+    const ease = 1-Math.pow(1-p,3);
+    const val = abs >= 100 ? Math.round(abs*ease) : Math.round(abs*ease*10)/10;
+    el.textContent = (isNeg?'-':'')+prefix+val.toLocaleString()+suffix;
+    if(p<1) requestAnimationFrame(step);
+    else el.textContent = (isNeg?'-':'')+prefix+abs.toLocaleString()+suffix;
+  }
+  requestAnimationFrame(step);
+}
+
+// ─── ACHIEVEMENT SYSTEM ───────────────────────────────────────────────────────
+const ACHIEVEMENTS = [
+  { id:'first_trade',  label:'First Blood',      desc:'Logged your first trade',              icon:'🎯', check:s=>s.trades.length>=1 },
+  { id:'five_trades',  label:'Getting Started',  desc:'Logged 5 trades',                      icon:'📈', check:s=>s.trades.length>=5 },
+  { id:'green_day',    label:'Green Day',         desc:'Finished a day in profit',             icon:'💚', check:s=>{ const today=new Date().toISOString().slice(0,10); return s.trades.filter(t=>t.datetime?.slice(0,10)===today).reduce((a,t)=>a+calcPnL(t),0)>0; }},
+  { id:'clean_trade',  label:'Clean Execution',  desc:'Logged a trade with zero mistakes',    icon:'✨', check:s=>s.trades.some(t=>!(t.mistakes?.length)&&calcPnL(t)>0) },
+  { id:'five_green',   label:'Five Green Days',  desc:'5 profitable trading days achieved',   icon:'🔥', check:s=>{ const dm={}; s.trades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d){if(!dm[d])dm[d]=0;dm[d]+=calcPnL(t);}}); return Object.values(dm).filter(v=>v>0).length>=5; }},
+  { id:'win_streak_3', label:'On a Roll',        desc:'3 winning trades in a row',            icon:'⚡', check:s=>{ const l=s.trades.slice(-3); return l.length===3&&l.every(t=>calcPnL(t)>0); }},
+  { id:'no_revenge',   label:'Disciplined Mind', desc:'10 trades with no revenge trading',   icon:'🧘', check:s=>s.trades.length>=10&&!s.trades.slice(-10).some(t=>t.mistakes?.includes('Revenge Trade')) },
+];
+
+let _shownAch = JSON.parse(localStorage.getItem('edge-ach')||'[]');
+function checkAchievements() {
+  if (!state?.trades?.length) return;
+  ACHIEVEMENTS.forEach(a => {
+    if (_shownAch.includes(a.id)) return;
+    try { if (a.check(state)) { showAchievement(a); _shownAch.push(a.id); localStorage.setItem('edge-ach',JSON.stringify(_shownAch)); } } catch(e){}
+  });
+}
+function showAchievement(a) {
+  const el = document.createElement('div');
+  el.className='achievement-toast';
+  el.innerHTML=`<div class="achievement-icon">${a.icon}</div><div><div class="achievement-title">Achievement · ${a.label}</div><div class="achievement-desc">${a.desc}</div></div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>{ el.style.transition='all .4s ease'; el.style.opacity='0'; el.style.transform='translateY(10px)'; setTimeout(()=>el.remove(),400); },3500);
+}
+
+// ─── LIVE CLOCK ───────────────────────────────────────────────────────────────
+function updateLiveClock() {
+  const el = document.getElementById('live-session-status'); if (!el) return;
+  const est = new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  const h=est.getHours(), m=est.getMinutes(), pad=n=>String(n).padStart(2,'0');
+  const isSession=(h===9&&m>=30)||(h>=10&&h<16);
+  const isPremarket=h<9||(h===9&&m<30);
+  const [txt,col] = isSession?['NY Session Open','var(--green)']:isPremarket?['Pre-Market','var(--amber)']:['Closed','var(--muted)'];
+  el.innerHTML=`<span class="session-live-dot" style="background:${col}"></span><span style="font-size:11px;color:${col};font-weight:600">${txt}</span><span style="font-size:11px;color:var(--dim);margin-left:5px">${h}:${pad(m)} EST</span>`;
+}
+setInterval(updateLiveClock, 20000);
+
+// ─── SPARKLINES ───────────────────────────────────────────────────────────────
+function drawSparkline(canvas, data, color) {
+  if(!canvas||!data||data.length<2) return;
+  const W=canvas.width=canvas.offsetWidth||100, H=canvas.height=24;
+  const ctx=canvas.getContext('2d');
+  const mn=Math.min(...data), mx=Math.max(...data), rng=mx-mn||1;
+  const pts=data.map((v,i)=>({x:(i/(data.length-1))*(W-4)+2,y:H-((v-mn)/rng)*(H-4)-2}));
+  ctx.clearRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,color+'55'); g.addColorStop(1,'transparent');
+  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.lineTo(pts[pts.length-1].x,H); ctx.lineTo(pts[0].x,H); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
+}
+
+function renderMetricSparklines() {
+  if(!state?.trades?.length) return;
+  const sorted=[...state.trades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
+  let run=0; const pnlS=sorted.map(t=>{run+=calcPnL(t);return run;});
+  const wrS=sorted.map((_,i)=>{ const w=sorted.slice(Math.max(0,i-9),i+1); return Math.round(w.filter(t=>calcPnL(t)>0).length/w.length*100); });
+  const pc=document.getElementById('spark-pnl'); if(pc) drawSparkline(pc,pnlS,run>=0?'#00d084':'#ff4d4d');
+  const wc=document.getElementById('spark-wr');  if(wc) drawSparkline(wc,wrS,'#4a9eff');
+}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Set datetime to local time (not UTC)
