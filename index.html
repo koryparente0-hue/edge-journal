@@ -2141,7 +2141,8 @@ function renderDashboard() {
 }
 
 function renderEquity(T, pnls) {
-  const ctx = document.getElementById('equityChart').getContext('2d');
+  const canvas = document.getElementById('equityChart');
+  const ctx = canvas.getContext('2d');
   if (equityChartObj) { equityChartObj.destroy(); equityChartObj=null; }
   if (!T.length) { document.getElementById('equity-label').textContent='No trades yet'; return; }
 
@@ -2155,15 +2156,124 @@ function renderEquity(T, pnls) {
 
   const isPos = run >= 0;
   const hasRR = rData.some(v=>v!==0);
+  const lineColor = isPos ? '#00d084' : '#ff4d4d';
+
+  // Find peak and max drawdown indices
+  const peakIdx = data.reduce((mi,v,i)=>v>data[mi]?i:mi, 0);
+  const peakVal = data[peakIdx];
+
+  // Glow line plugin
+  const glowPlugin = {
+    id:'glowLine',
+    beforeDatasetsDraw(chart) {
+      const {ctx} = chart;
+      ctx.save();
+      ctx.shadowColor = isPos ? 'rgba(0,208,132,0.6)' : 'rgba(255,77,77,0.6)';
+      ctx.shadowBlur = 18;
+    },
+    afterDatasetsDraw(chart) { chart.ctx.restore(); }
+  };
+
+  // Peak annotation plugin
+  const peakPlugin = {
+    id:'peakDot',
+    afterDatasetsDraw(chart) {
+      if (peakVal <= 0) return;
+      const {ctx, scales:{x,y}} = chart;
+      const px = x.getPixelForValue(peakIdx);
+      const py = y.getPixelForValue(peakVal);
+      // Outer glow ring
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(px, py, 10, 0, Math.PI*2);
+      ctx.strokeStyle = isPos ? 'rgba(0,208,132,0.25)' : 'rgba(255,77,77,0.25)';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      // Inner dot
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI*2);
+      ctx.fillStyle = lineColor;
+      ctx.shadowColor = lineColor;
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      // Label
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = lineColor;
+      ctx.font = '600 10px Geist, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Peak '+pf(peakVal), px, py - 16);
+      ctx.restore();
+    }
+  };
+
   equityChartObj = new Chart(ctx, {
     type:'line',
+    plugins: [glowPlugin, peakPlugin],
     data:{ labels, datasets:[
-      { label:'P&L ($)', data, borderColor:isPos?'#00d084':'#ff4d4d', borderWidth:2, pointRadius:data.length>30?0:3, pointBackgroundColor:isPos?'#00d084':'#ff4d4d', fill:true, backgroundColor:(c)=>{ const g=c.chart.ctx.createLinearGradient(0,0,0,190); g.addColorStop(0,isPos?'rgba(0,208,132,0.2)':'rgba(255,77,77,0.2)'); g.addColorStop(1,'transparent'); return g; }, tension:0.4, yAxisID:'y' },
-      ...(hasRR ? [{ label:'Cumulative R', data:rData, borderColor:'rgba(99,179,237,0.8)', borderWidth:1.5, borderDash:[4,3], pointRadius:0, fill:false, tension:0.4, yAxisID:'y2' }] : [])
+      {
+        label:'P&L ($)', data,
+        borderColor: lineColor,
+        borderWidth: 2.5,
+        pointRadius: (ctx) => ctx.dataIndex === peakIdx ? 0 : (data.length > 30 ? 0 : 3),
+        pointBackgroundColor: lineColor,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: lineColor,
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+        fill: true,
+        backgroundColor:(c)=>{
+          const g=c.chart.ctx.createLinearGradient(0,0,0,190);
+          g.addColorStop(0, isPos?'rgba(0,208,132,0.22)':'rgba(255,77,77,0.22)');
+          g.addColorStop(0.6, isPos?'rgba(0,208,132,0.06)':'rgba(255,77,77,0.06)');
+          g.addColorStop(1,'transparent');
+          return g;
+        },
+        tension: 0.42,
+        yAxisID:'y'
+      },
+      ...(hasRR ? [{
+        label:'Cumulative R', data:rData,
+        borderColor:'rgba(99,179,237,0.7)', borderWidth:1.5,
+        borderDash:[5,4], pointRadius:0,
+        pointHoverRadius:4, pointHoverBackgroundColor:'rgba(99,179,237,0.9)',
+        fill:false, tension:0.42, yAxisID:'y2'
+      }] : [])
     ]},
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:hasRR, labels:{color:'#888',font:{size:10},boxWidth:16} }, tooltip:{ callbacks:{ label:c=>c.datasetIndex===0?'$'+c.parsed.y.toLocaleString():c.parsed.y.toFixed(1)+'R' } } },
-      scales:{ x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10},maxTicksLimit:10}}, y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#555',font:{size:10,family:'DM Mono'},callback:v=>'$'+v.toLocaleString()}}, ...(hasRR?{y2:{position:'right',grid:{display:false},ticks:{color:'rgba(99,179,237,0.6)',font:{size:10},callback:v=>v+'R'}}}:{}) }
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{ duration:900, easing:'easeInOutQuart' },
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:hasRR, labels:{color:'#888',font:{size:10},boxWidth:16} },
+        tooltip:{
+          backgroundColor:'rgba(10,10,11,0.92)',
+          borderColor: lineColor,
+          borderWidth:1,
+          padding:10,
+          titleColor:'#888',
+          bodyColor:'#f0f0f0',
+          callbacks:{
+            label: c => c.datasetIndex===0
+              ? ' P&L: $'+c.parsed.y.toLocaleString()
+              : ' R: '+c.parsed.y.toFixed(2)+'R'
+          }
+        }
+      },
+      scales:{
+        x:{
+          grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{color:'#555',font:{size:10},maxTicksLimit:10}
+        },
+        y:{
+          grid:{color:'rgba(255,255,255,0.04)'},
+          ticks:{color:'#555',font:{size:10,family:'DM Mono'},callback:v=>'$'+v.toLocaleString()}
+        },
+        ...(hasRR?{y2:{
+          position:'right',
+          grid:{display:false},
+          ticks:{color:'rgba(99,179,237,0.55)',font:{size:10},callback:v=>v+'R'}
+        }}:{})
+      }
     }
   });
 }
