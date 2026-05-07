@@ -18,6 +18,35 @@
   --r:8px;--r2:12px;--r3:16px;
   --mono:'Geist Mono',monospace;--display:'Geist',sans-serif;
 }
+body.light-mode{
+  --bg:#F5F6FA;--bg2:#FFFFFF;--bg3:#EDEEF3;--bg4:#E4E5EC;
+  --border:#00000010;--border2:#0000001a;--border3:#00000028;
+  --text:#111318;--muted:#6B7280;--dim:#C1C5D0;
+  --green:#00a86b;--green-dim:#00a86b18;--green-border:#00a86b35;
+  --red:#e03131;--red-dim:#e0313118;--red-border:#e0313135;
+  --amber:#d97706;--amber-dim:#d9770618;
+  --blue:#2563EB;--blue-dim:#2563EB18;
+}
+/* Light mode overrides for components that use hardcoded values */
+body.light-mode .card{box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+body.light-mode .sidebar{border-right:1px solid var(--border2)}
+body.light-mode .nav-item{color:var(--muted)}
+body.light-mode .nav-item:hover{background:var(--bg3);color:var(--text)}
+body.light-mode .nav-item.active{color:var(--green);border-left-color:var(--green);background:var(--green-dim)}
+body.light-mode .trades-table thead th{background:var(--bg3)}
+body.light-mode input,body.light-mode select,body.light-mode textarea{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+body.light-mode .btn{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+body.light-mode .btn:hover{background:var(--bg4)}
+body.light-mode .tag-pill{background:var(--bg4);color:var(--muted)}
+body.light-mode .chat-panel{background:var(--bg2);border-left:1px solid var(--border2)}
+body.light-mode .chat-bubble-ai{background:var(--bg3)}
+body.light-mode .modal-overlay{background:rgba(0,0,0,0.3)}
+body.light-mode .modal-box{background:var(--bg2)}
+body.light-mode .logo{color:var(--text)}
+body.light-mode .page-title{color:var(--text)}
+/* Theme toggle button */
+.theme-toggle{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:var(--r);cursor:pointer;border:1px solid var(--border2);background:var(--bg3);transition:all .2s;font-size:11px;color:var(--muted);font-family:var(--display);font-weight:500}
+.theme-toggle:hover{border-color:var(--green);color:var(--text)}
 html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--display)}
 #app-shell{width:100%;height:100vh;overflow:hidden}
 .shell{display:flex;height:100vh;width:100%;overflow:hidden}
@@ -750,11 +779,16 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 
   <div style="flex:1"></div>
+  <div style="padding:0 12px 10px">
+    <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" style="width:100%;justify-content:center">
+      <span id="theme-icon">☀️</span>
+      <span id="theme-label">Light mode</span>
+    </button>
+  </div>
   <div class="user-bar">
     <span class="sync-dot" id="sync-dot" title="Synced to cloud"></span>
     <img class="user-avatar" id="user-avatar" src="" alt="">
     <span class="user-name" id="user-name"></span>
-
     <button class="signout-btn" onclick="window._fbSignOut()">Out</button>
   </div>
 </div>
@@ -5625,6 +5659,25 @@ function renderStatsExtras(T) {
     set('ins-time-val','—','Log trades with timestamps');
   }
 }
+
+// ─── THEME TOGGLE ─────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('edge-theme', isLight ? 'light' : 'dark');
+  updateThemeBtn(isLight);
+  if (state.trades.length) renderDashboard();
+}
+function updateThemeBtn(isLight) {
+  const icon  = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
+  if (!icon) return;
+  icon.textContent  = isLight ? '🌙' : '☀️';
+  label.textContent = isLight ? 'Dark mode' : 'Light mode';
+}
+(function(){
+  const saved = localStorage.getItem('edge-theme');
+  if (saved === 'light') { document.body.classList.add('light-mode'); updateThemeBtn(true); }
+})();
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Set datetime to local time (not UTC)
