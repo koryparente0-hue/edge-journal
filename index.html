@@ -1854,12 +1854,26 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 </div>
 
 <div class="modal-overlay" id="trade-modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div class="modal-title" id="modal-title">Trade Review</div>
-      <button class="btn btn-sm" onclick="closeModal()">✕</button>
+  <div class="modal" style="max-width:820px;width:95vw;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;padding-bottom:14px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="modal-title" id="modal-title">Trade Review</div>
+        <span id="modal-grade-badge" style="font-size:22px;font-weight:800;letter-spacing:-1px"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-sm" id="modal-prev-btn" onclick="modalNavTrade(-1)" title="Previous trade">← Prev</button>
+        <button class="btn btn-sm" id="modal-next-btn" onclick="modalNavTrade(1)" title="Next trade">Next →</button>
+        <button class="btn btn-sm" onclick="closeModal()">✕</button>
+      </div>
     </div>
-    <div id="modal-body"></div>
+    <!-- TABS -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin:0 -24px;padding:0 24px;flex-shrink:0">
+      ${['overview','timeline','analysis','screenshots'].map((t,i)=>
+        `<button id="rtab-${t}" onclick="switchReviewTab('${t}')" style="font-size:11px;font-weight:600;padding:10px 14px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid ${i===0?'var(--green)':'transparent'};color:${i===0?'var(--green)':'var(--muted)'};font-family:var(--display);transition:all .15s;white-space:nowrap">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`
+      ).join('')}
+    </div>
+    <!-- TAB CONTENT -->
+    <div id="modal-body" style="flex:1;overflow-y:auto;padding-top:16px"></div>
   </div>
 </div>
 
@@ -2602,38 +2616,267 @@ function buildReviewCard(d, idx) {
 }
 
 // ─── MODAL ────────────────────────────────────────────────────────────────────
-function openTradeModal(idx,loading) {
-  const t=state.trades[idx]; if(!t)return;
-  const pnl=calcPnL(t); const rr=calcRR(t);
-  document.getElementById('modal-title').textContent=`${t.ticker} ${t.side.toUpperCase()} — ${t.datetime?t.datetime.slice(0,10):''}`;
-  document.getElementById('modal-body').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
-      <div class="stat-card"><div class="stat-card-val ${pnl>=0?'pnl-pos':'pnl-neg'}">${pf(pnl)}</div><div class="stat-card-label">P&L</div></div>
-      <div class="stat-card"><div class="stat-card-val">${t.plannedRR ? t.plannedRR+'R' : (rr?rr+'R':'—')}</div><div class="stat-card-label">Planned R:R</div></div>
-      <div class="stat-card"><div class="stat-card-val" style="${t.plannedRR && rr && parseFloat(rr) < parseFloat(t.plannedRR) ? 'color:var(--amber)' : ''}">${rr?rr+'R':'—'}</div><div class="stat-card-label">Realized R:R</div></div>
-      <div class="stat-card"><div class="stat-card-val grade-badge ${t.grade?'grade-'+(t.grade.replace(/[^A-F]/g,'')[0]||''):''}" style="font-size:48px;letter-spacing:-2px;line-height:1">${t.grade||'—'}</div><div class="stat-card-label">AI Grade</div></div>
-    </div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Execution</div>
-    <div style="font-size:13px;font-family:var(--mono);background:var(--bg3);border-radius:var(--r);padding:10px 12px;margin-bottom:12px;line-height:1.8">
-      Entry <strong>${t.entry?.toLocaleString()}</strong> → Exit <strong>${t.exit?.toLocaleString()}</strong> &nbsp;·&nbsp; Qty: ${t.qty} &nbsp;·&nbsp; Fees: $${t.fees||0}<br>
-      Stop: ${t.sl||'—'} &nbsp;·&nbsp; Target: ${t.tp||'—'} &nbsp;·&nbsp; ${t.datetime?t.datetime.replace('T',' ').slice(0,16):''}
-    </div>
-    ${t.setups?.length?`<div style="margin-bottom:8px">${t.setups.map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')}</div>`:''}
-    ${t.outcome?`<div style="margin-bottom:8px"><span class="tag-pill ${t.outcome==='win'?'setup-pill':t.outcome==='loss'?'mistake-pill':'amber-pill'}">${{win:'Win',loss:'Loss',be_win:'BE → Win',be_loss:'BE → Loss'}[t.outcome]||t.outcome}</span></div>`:''}
-    ${t.mistakes?.length?`<div style="margin-bottom:10px">${t.mistakes.map(m=>`<span class="tag-pill mistake-pill">${m}</span>`).join('')}</div>`:''}
-    ${t.notes?`<div style="font-size:13px;color:var(--muted);background:var(--bg3);border-radius:var(--r);padding:12px;margin-bottom:12px;line-height:1.6;border-left:3px solid var(--border2)">${t.notes}</div>`:''}
-    ${t.photos?.length?`<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:500">Chart${t.photos.length>1?'s':''}</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px">${t.photos.map((src,i)=>`<img src="${src}" alt="chart ${i+1}" style="width:100%;border-radius:var(--r);cursor:pointer;aspect-ratio:16/9;object-fit:cover" onclick="openPhotoViewer('${src}')">`).join('')}</div></div>`:''}
-    <div id="modal-review-${idx}">${
-      loading?'<div class="review-card" style="padding:18px;text-align:center;color:var(--muted);font-style:italic"><div style="font-size:13px;margin-bottom:4px">AI is reviewing your trade...</div><div style="font-size:11px">Analyzing your history, auto-tagging mistakes, generating grade</div></div>':
-      t.reviewData?buildReviewCard(t.reviewData,idx):
-      t.review?`<div class="ai-review-box">${t.review}</div>`:
-      `<button class="btn btn-green" onclick="reviewTrade(${idx})">Get AI review ↗</button>`
-    }</div>
-    <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn btn-sm btn-red" onclick="deleteTrade(${idx})">Delete trade</button>
-    </div>`;
+let currentModalIdx = null;
+
+function openTradeModal(idx, loading) {
+  const t = state.trades[idx]; if (!t) return;
+  currentModalIdx = idx;
+  const pnl = calcPnL(t);
+
+  // Header
+  document.getElementById('modal-title').textContent =
+    `${t.ticker} ${t.side.toUpperCase()} — ${t.datetime ? t.datetime.slice(0,10) : ''}`;
+  const gb = document.getElementById('modal-grade-badge');
+  if (t.grade) {
+    gb.textContent = t.grade;
+    gb.className = `grade-badge grade-${t.grade.replace(/[^A-F]/g,'')[0]||''}`;
+    gb.style.fontSize = '22px';
+  } else { gb.textContent = ''; }
+
+  // Nav buttons
+  document.getElementById('modal-prev-btn').disabled = idx <= 0;
+  document.getElementById('modal-next-btn').disabled = idx >= state.trades.length - 1;
+
+  // Reset tabs
+  switchReviewTab('overview', idx, loading);
   document.getElementById('trade-modal').classList.add('open');
 }
+
+function modalNavTrade(dir) {
+  if (currentModalIdx === null) return;
+  const next = currentModalIdx + dir;
+  if (next < 0 || next >= state.trades.length) return;
+  openTradeModal(next, false);
+}
+
+function switchReviewTab(tab, idx, loading) {
+  idx = idx !== undefined ? idx : currentModalIdx;
+  const t = state.trades[idx]; if (!t) return;
+
+  // Update tab styles
+  ['overview','timeline','analysis','screenshots'].forEach(tb => {
+    const btn = document.getElementById('rtab-'+tb);
+    if (!btn) return;
+    btn.style.borderBottom = tb === tab ? '2px solid var(--green)' : '2px solid transparent';
+    btn.style.color = tb === tab ? 'var(--green)' : 'var(--muted)';
+  });
+
+  const body = document.getElementById('modal-body');
+  const pnl  = calcPnL(t);
+  const rr   = calcRR(t);
+
+  if (tab === 'overview') {
+    // Execution score (0-100)
+    let score = 50, scoreNotes = [];
+    if (t.grade) {
+      const gMap = {'A+':100,'A':92,'A-':85,'B+':78,'B':70,'B-':62,'C+':55,'C':47,'C-':40,'D':28,'F':10};
+      score = gMap[t.grade] || 50;
+    }
+    if (t.mistakes?.length)   { score -= t.mistakes.length * 8; scoreNotes.push(`-${t.mistakes.length*8} pts for mistakes`); }
+    if (t.plannedRR && rr && parseFloat(rr) >= parseFloat(t.plannedRR)) { score += 10; scoreNotes.push('+10 hit planned R:R'); }
+    if (t.mistakes?.includes('Early Exit')) { score -= 10; }
+    score = Math.max(0, Math.min(100, score));
+    const scoreCol = score >= 75 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)';
+    const scoreLabel = score >= 75 ? 'Strong' : score >= 50 ? 'Acceptable' : 'Needs Work';
+
+    // Prop rules check
+    const propChecks = [];
+    if (t.mistakes?.includes('Sized Too Big')) propChecks.push({ pass:false, label:'Position sizing within rules' });
+    else propChecks.push({ pass:true, label:'Position sizing within rules' });
+    if (t.mistakes?.includes('Revenge Trade')) propChecks.push({ pass:false, label:'No revenge trading' });
+    else propChecks.push({ pass:true, label:'No revenge trading' });
+    if (t.mistakes?.includes('FOMO')) propChecks.push({ pass:false, label:'Planned entry (no FOMO)' });
+    else propChecks.push({ pass:true, label:'Planned entry (no FOMO)' });
+    if (pnl < -500) propChecks.push({ pass:false, label:'Within daily loss limit (~$500)' });
+    else propChecks.push({ pass:true, label:'Within daily loss limit' });
+    const propPass = propChecks.filter(c=>c.pass).length;
+
+    body.innerHTML = `
+      <!-- TOP METRICS -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+        <div class="stat-card"><div class="stat-card-val ${pnl>=0?'pnl-pos':'pnl-neg'}">${pf(pnl)}</div><div class="stat-card-label">P&L</div></div>
+        <div class="stat-card"><div class="stat-card-val">${t.plannedRR ? t.plannedRR+'R' : '—'}</div><div class="stat-card-label">Planned R:R</div></div>
+        <div class="stat-card"><div class="stat-card-val" style="${t.plannedRR&&rr&&parseFloat(rr)<parseFloat(t.plannedRR)?'color:var(--amber)':''}">${rr?rr+'R':'—'}</div><div class="stat-card-label">Realized R:R</div></div>
+        <div class="stat-card"><div class="stat-card-val">${t.holdMins!=null?t.holdMins+'m':'—'}</div><div class="stat-card-label">Hold Time</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <!-- EXECUTION SCORE -->
+        <div style="background:var(--bg3);border-radius:var(--r);padding:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Execution Score</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+            <div style="font-size:48px;font-weight:800;font-family:var(--mono);letter-spacing:-3px;color:${scoreCol};line-height:1">${score}</div>
+            <div style="font-size:13px;color:${scoreCol};font-weight:600">${scoreLabel}</div>
+          </div>
+          <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:8px">
+            <div style="width:${score}%;height:100%;background:${scoreCol};border-radius:3px;transition:width .6s ease"></div>
+          </div>
+          ${scoreNotes.map(n=>`<div style="font-size:10px;color:var(--muted);margin-top:2px">${n}</div>`).join('')}
+        </div>
+
+        <!-- PROP RULES CHECK -->
+        <div style="background:var(--bg3);border-radius:var(--r);padding:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Prop Rules Check</div>
+            <span style="font-size:11px;font-weight:700;color:${propPass===propChecks.length?'var(--green)':'var(--amber)'}">${propPass}/${propChecks.length} pass</span>
+          </div>
+          ${propChecks.map(c=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:14px">${c.pass?'✅':'❌'}</span>
+              <span style="font-size:11px;color:${c.pass?'var(--text)':'var(--red)'}">${c.label}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- SETUPS / MISTAKES / OUTCOME -->
+      ${t.setups?.length||t.mistakes?.length||t.outcome ? `
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        ${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')}
+        ${t.outcome?`<span class="tag-pill ${t.outcome==='win'?'setup-pill':t.outcome==='loss'?'mistake-pill':'amber-pill'}">${{win:'Win',loss:'Loss',be_win:'BE → Win',be_loss:'BE → Loss'}[t.outcome]||t.outcome}</span>`:''}
+        ${(t.mistakes||[]).map(m=>`<span class="tag-pill mistake-pill">${m}</span>`).join('')}
+      </div>` : ''}
+
+      <!-- NOTES -->
+      ${t.notes ? `<div style="font-size:13px;color:var(--muted);background:var(--bg3);border-radius:var(--r);padding:12px;margin-bottom:12px;line-height:1.7;border-left:3px solid var(--border2)"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:6px">Your notes</div>${t.notes}</div>` : ''}
+
+      <!-- AI REVIEW -->
+      <div id="modal-review-${idx}">${
+        loading ? '<div class="review-card" style="padding:18px;text-align:center;color:var(--muted)"><div style="font-size:13px;margin-bottom:4px">AI is reviewing your trade...</div></div>' :
+        t.reviewData ? buildReviewCard(t.reviewData, idx) :
+        t.review ? `<div class="ai-review-box">${t.review}</div>` :
+        `<button class="btn btn-green" onclick="reviewTrade(${idx})">Get AI review ↗</button>`
+      }</div>
+
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-sm" onclick="openEditTradeModal(${idx});closeModal()">Edit trade</button>
+        <button class="btn btn-sm btn-red" onclick="deleteTrade(${idx})">Delete</button>
+      </div>`;
+
+  } else if (tab === 'timeline') {
+    const events = [];
+    if (t.datetime) events.push({ time: t.datetime.slice(11,16), label: 'Entry', detail: t.entry ? `@ ${t.entry}` : 'Position opened', col: 'var(--blue)', icon: '🟢' });
+    if (t.setups?.length) events.push({ time: t.datetime?.slice(11,16)||'', label: 'Setup confirmed', detail: t.setups.join(', '), col: 'var(--green)', icon: '✅' });
+    if (t.mistakes?.includes('Chased Entry')) events.push({ time: '—', label: 'Chased entry ⚠', detail: 'Entered outside planned zone', col: 'var(--amber)', icon: '⚠️' });
+    if (t.mistakes?.includes('Moved to BE to Early')) events.push({ time: '—', label: 'Moved BE early', detail: 'Stop adjusted before target hit', col: 'var(--amber)', icon: '⚠️' });
+    if (t.mistakes?.includes('Early Exit')) events.push({ time: '—', label: 'Early exit ⚠', detail: `Left ${t.plannedRR?((parseFloat(t.plannedRR)-(parseFloat(rr)||0)).toFixed(2))+'R':'?'} on the table`, col: 'var(--red)', icon: '🚪' });
+    if (t.sl) events.push({ time: '—', label: 'Stop loss', detail: `Placed @ ${t.sl}`, col: 'var(--red)', icon: '🛑' });
+    if (t.tp) events.push({ time: '—', label: 'Target', detail: `Set @ ${t.tp}`, col: 'var(--green)', icon: '🎯' });
+    events.push({ time: t.datetime ? '—' : '—', label: pnl >= 0 ? 'Exit (Profit)' : 'Exit (Loss)', detail: t.exit ? `@ ${t.exit} · ${pf(pnl)}` : pf(pnl), col: pnl>=0?'var(--green)':'var(--red)', icon: pnl>=0?'💰':'📉' });
+
+    // Planned vs Actual comparison
+    const plannedR = parseFloat(t.plannedRR) || null;
+    const realizedR = parseFloat(rr) || null;
+    const leakage = plannedR && realizedR ? plannedR - realizedR : null;
+
+    body.innerHTML = `
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px">Execution Timeline</div>
+      <div style="position:relative;padding-left:28px;margin-bottom:24px">
+        <div style="position:absolute;left:9px;top:0;bottom:0;width:2px;background:var(--border2);border-radius:1px"></div>
+        ${events.map((e,i)=>`
+          <div style="position:relative;margin-bottom:${i<events.length-1?'16':'0'}px">
+            <div style="position:absolute;left:-23px;top:2px;width:12px;height:12px;border-radius:50%;background:${e.col};box-shadow:0 0 8px ${e.col}55;flex-shrink:0"></div>
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:10px;color:var(--dim);font-family:var(--mono);min-width:32px">${e.time}</span>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:${e.col}">${e.label}</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:1px">${e.detail}</div>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <!-- PLANNED VS ACTUAL -->
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Planned vs Actual</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:var(--bg3);border-radius:var(--r);padding:14px;border:1px solid var(--border)">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">📋 Planned</div>
+          <div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--blue)">${plannedR ? plannedR+'R' : '—'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Target R:R</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:14px;border:1px solid ${realizedR&&plannedR&&realizedR>=plannedR?'var(--green-border)':'var(--border)'}">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">⚡ Actual</div>
+          <div style="font-size:20px;font-weight:800;font-family:var(--mono);color:${realizedR&&plannedR?(realizedR>=plannedR?'var(--green)':'var(--amber)'):'var(--muted)'}">${realizedR ? realizedR+'R' : '—'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Realized R:R</div>
+        </div>
+      </div>
+      ${leakage !== null ? `
+        <div style="background:${leakage>0?'var(--amber-dim)':'var(--green-dim)'};border:1px solid ${leakage>0?'var(--amber-dim)':'var(--green-border)'};border-radius:var(--r);padding:12px;margin-bottom:12px">
+          <div style="font-size:12px;font-weight:700;color:${leakage>0?'var(--amber)':'var(--green)'};margin-bottom:4px">
+            ${leakage > 0.05 ? `⚠ You left ${leakage.toFixed(2)}R on the table` : '✅ You captured your planned R:R'}
+          </div>
+          <div style="font-size:11px;color:var(--muted)">${leakage > 0.05 ? 'Exited before reaching your target. Work on holding to target.' : 'Good execution — you followed your plan.'}</div>
+        </div>` : ''}
+      ${t.notes ? `<div style="font-size:13px;color:var(--muted);background:var(--bg3);border-radius:var(--r);padding:12px;line-height:1.7;border-left:3px solid var(--border2)"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:6px">Trade notes</div>${t.notes}</div>` : ''}`;
+
+  } else if (tab === 'analysis') {
+    // What I should've done + coaching insights
+    const improvements = [];
+    if (t.mistakes?.includes('Early Exit') && t.plannedRR) improvements.push({ title:'Hold to your target', body:`You planned ${t.plannedRR}R but only took ${rr||'?'}R. If the setup was valid, the stop should do the work — not your emotions.` });
+    if (t.mistakes?.includes('Chased Entry')) improvements.push({ title:'Wait for your level', body:'Chasing entries inflates your risk and reduces your R. Mark your zone before session open and only enter on a return to it.' });
+    if (t.mistakes?.includes('Sized Too Big')) improvements.push({ title:'Respect your size rules', body:'Oversizing creates emotional exits and blows prop accounts. Define max contracts per setup and stick to it.' });
+    if (t.mistakes?.includes('FOMO')) improvements.push({ title:'No setup = no trade', body:'FOMO trades almost always result in bad fills and early exits. If you missed the entry, wait for the next setup.' });
+    if (t.mistakes?.includes('Revenge Trade')) improvements.push({ title:'Walk away after losses', body:'Revenge trading compounds losses. After a max loss day, close the platform. The market will be there tomorrow.' });
+    if (t.mistakes?.includes('No Sponsorship')) improvements.push({ title:'Only trade with sponsorship', body:'ICT concepts require higher timeframe confluence. No 1H or 4H sponsorship = no trade, regardless of how good the 30s looks.' });
+    if (!improvements.length && pnl > 0) improvements.push({ title:'Good trade', body:'No major execution mistakes detected. Focus on replicating this process.' });
+
+    const winsBySetup = {};
+    state.trades.forEach(tr => (tr.setups||[]).forEach(s => {
+      if (!winsBySetup[s]) winsBySetup[s] = { w:0, n:0 };
+      winsBySetup[s].n++; if (calcPnL(tr)>0) winsBySetup[s].w++;
+    }));
+    const setupInsights = (t.setups||[]).map(s => {
+      const d = winsBySetup[s]; if (!d || d.n < 2) return null;
+      return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:12px">${s}</span><span style="font-size:12px;font-weight:700;color:${d.w/d.n>=0.6?'var(--green)':'var(--amber)'}">${Math.round(d.w/d.n*100)}% WR (${d.n} trades)</span></div>`;
+    }).filter(Boolean);
+
+    body.innerHTML = `
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:12px">What you should've done</div>
+      ${improvements.length ? improvements.map(imp=>`
+        <div style="background:var(--bg3);border-radius:var(--r);padding:14px;margin-bottom:10px;border-left:3px solid var(--green)">
+          <div style="font-size:13px;font-weight:700;margin-bottom:5px">${imp.title}</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.6">${imp.body}</div>
+        </div>`) .join('') : '<div style="color:var(--muted);font-size:13px;padding:12px 0">No specific improvements flagged for this trade.</div>'}
+
+      ${setupInsights.length ? `
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 10px">Your setup history</div>
+        <div style="background:var(--bg3);border-radius:var(--r);padding:0 12px">${setupInsights.join('')}</div>` : ''}
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 10px">Add reflection</div>
+      <textarea id="review-reflection-${idx}" placeholder="What would you do differently? What did the market teach you?" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:10px 12px;color:var(--text);font-size:12px;font-family:var(--display);resize:vertical;min-height:80px;line-height:1.6">${t.reflection||''}</textarea>
+      <button class="btn btn-sm btn-green" style="margin-top:8px" onclick="saveReflection(${idx})">Save reflection</button>
+      ${t.review||t.reviewData?`<div style="margin-top:14px" id="modal-review-${idx}">${t.reviewData?buildReviewCard(t.reviewData,idx):t.review?`<div class="ai-review-box">${t.review}</div>`:''}</div>`:`<div style="margin-top:14px"><button class="btn btn-green" onclick="reviewTrade(${idx})">Get AI review ↗</button></div>`}`;
+
+  } else if (tab === 'screenshots') {
+    const photos = t.photos || [];
+    body.innerHTML = photos.length ? `
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:12px">${photos.length} chart${photos.length>1?'s':''} attached</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+        ${photos.map((src,i)=>`
+          <div style="position:relative;cursor:pointer" onclick="openPhotoViewer('${src}')">
+            <img src="${src}" alt="Chart ${i+1}" style="width:100%;border-radius:var(--r);aspect-ratio:16/9;object-fit:cover;border:1px solid var(--border);transition:transform .15s" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px">Chart ${i+1}</div>
+          </div>`).join('')}
+      </div>
+      <div style="margin-top:14px;font-size:11px;color:var(--dim)">Click any chart to view full size</div>` :
+      `<div class="empty" style="padding:40px;text-align:center">
+        <div style="font-size:32px;margin-bottom:8px">📷</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px">No screenshots attached</div>
+        <div style="font-size:12px;color:var(--dim);margin-bottom:14px">Add charts when logging or editing trades</div>
+        <button class="btn btn-sm" onclick="openEditTradeModal(${idx});closeModal()">Add screenshots →</button>
+      </div>`;
+  }
+}
+
+function saveReflection(idx) {
+  const t = state.trades[idx]; if (!t) return;
+  const ta = document.getElementById('review-reflection-'+idx);
+  if (!ta) return;
+  t.reflection = ta.value;
+  save();
+  const btn = ta.nextElementSibling;
+  if (btn) { btn.textContent = 'Saved ✓'; btn.style.color = 'var(--green)'; setTimeout(()=>{ btn.textContent='Save reflection'; btn.style.color=''; }, 1500); }
+}
+
 function closeModal(){document.getElementById('trade-modal').classList.remove('open');}
 function deleteTrade(idx){if(!confirm('Delete this trade?'))return;state.trades.splice(idx,1);save();const modal=document.getElementById('trade-modal');if(modal.classList.contains('open'))closeModal();renderHistory();renderDashboard();}
 
