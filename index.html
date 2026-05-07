@@ -527,54 +527,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .rtab{font-size:11px;font-weight:600;padding:10px 14px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);font-family:var(--display);transition:all .15s;white-space:nowrap}
 .rtab:hover{color:var(--text)}
 .rtab-active{border-bottom-color:var(--green)!important;color:var(--green)!important}
-
-/* ── DYNAMIC BACKGROUND ───────────────────────────────────── */
-#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;opacity:.3}
-
-/* ── PAGE TRANSITIONS ─────────────────────────────────────── */
-@keyframes pageIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── GLASSMORPHISM CARDS ──────────────────────────────────── */
-.card{transition:box-shadow .22s,border-color .22s,transform .18s}
-.card:hover{box-shadow:0 4px 24px rgba(0,0,0,0.35),0 0 0 1px rgba(255,255,255,0.04);border-color:var(--border2);transform:translateY(-1px)}
-.stat-card{transition:all .18s}
-.stat-card:hover{border-color:var(--border2);box-shadow:0 2px 14px rgba(0,0,0,0.3);transform:translateY(-1px)}
-
-/* ── BUTTON HOVER ─────────────────────────────────────────── */
-.btn{transition:all .16s cubic-bezier(.4,0,.2,1)}
-.btn:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,0.28)}
-.btn:active{transform:translateY(0)}
-.btn-green:hover{box-shadow:0 4px 16px rgba(0,208,132,0.32)}
-.nav-item{transition:all .16s}
-.nav-item:hover{transform:translateX(2px)}
-.tag-pill{transition:transform .13s}
-.tag-pill:hover{transform:scale(1.05)}
-.gallery-card{transition:all .18s}
-.gallery-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.4);border-color:var(--border2)}
-
-/* ── MODAL ANIMATION ──────────────────────────────────────── */
-.modal-overlay.open .modal{animation:modalIn .26s cubic-bezier(.34,1.2,.64,1)}
-@keyframes modalIn{from{transform:scale(.97) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
-
-/* ── ACHIEVEMENTS ─────────────────────────────────────────── */
-.achievement-toast{position:fixed;bottom:24px;right:24px;background:rgba(17,17,19,0.96);border:1px solid var(--green-border);border-radius:var(--r2);padding:14px 18px;display:flex;align-items:center;gap:12px;z-index:9999;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:toastIn .4s cubic-bezier(.34,1.56,.64,1)}
-@keyframes toastIn{from{transform:translateY(20px) scale(.95);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
-.achievement-icon{font-size:26px}
-.achievement-title{font-size:12px;font-weight:700;color:var(--green)}
-.achievement-desc{font-size:11px;color:var(--muted);margin-top:2px}
-
-/* ── LIVE DOT ─────────────────────────────────────────────── */
-.session-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;animation:livePulse 1.4s ease-in-out infinite;margin-right:4px;vertical-align:middle}
-@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.75)}}
-
-/* ── SPARKLINE ────────────────────────────────────────────── */
-.metric-sparkline{display:block;width:100%;height:24px;margin-top:4px;opacity:.65}
-
-/* ── SCROLLBAR ────────────────────────────────────────────── */
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
 </style>
 </head>
 <body>
@@ -852,7 +804,6 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   <div class="page-header">
     <div><div class="page-title">Dashboard</div><div class="page-sub" id="dash-date"></div></div>
     <div style="display:flex;gap:8px;align-items:center">
-      <div id="live-session-status" style="display:flex;align-items:center;gap:4px;margin-right:4px"></div>
       <select id="dash-period" class="btn" style="padding:8px 14px" onchange="renderDashboard()">
         <option value="all">All time</option>
         <option value="today">Today</option>
@@ -864,8 +815,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </div>
 
   <div class="metrics">
-    <div class="metric"><div class="metric-label">Total P&amp;L</div><div class="metric-val" id="m-pnl">$0</div><div class="metric-sub" id="m-pnl-sub">0 trades</div><canvas id="spark-pnl" class="metric-sparkline"></canvas></div>
-    <div class="metric"><div class="metric-label">Win Rate</div><div class="metric-val" id="m-wr">—</div><div class="metric-sub" id="m-wr-sub">0W / 0L</div><canvas id="spark-wr" class="metric-sparkline"></canvas></div>
+    <div class="metric"><div class="metric-label">Total P&amp;L</div><div class="metric-val" id="m-pnl">$0</div><div class="metric-sub" id="m-pnl-sub">0 trades</div></div>
+    <div class="metric"><div class="metric-label">Win Rate</div><div class="metric-val" id="m-wr">—</div><div class="metric-sub" id="m-wr-sub">0W / 0L</div></div>
     <div class="metric"><div class="metric-label">Avg Win</div><div class="metric-val pos" id="m-avgw">—</div><div class="metric-sub" id="m-avgl-sub">avg loss —</div></div>
     <div class="metric"><div class="metric-label">Avg R:R</div><div class="metric-val" id="m-rr">—</div><div class="metric-sub">planned</div></div>
     <div class="metric"><div class="metric-label">Max Drawdown</div><div class="metric-val neg" id="m-dd">—</div><div class="metric-sub">peak→trough</div></div>
@@ -2115,7 +2066,7 @@ function go(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const pageEl = document.getElementById('page-'+page);
-  if (pageEl) { pageEl.classList.add('active'); pageEl.style.animation='none'; requestAnimationFrame(()=>{ pageEl.style.animation='pageIn .22s ease forwards'; }); }
+  if (pageEl) pageEl.classList.add('active');
   // Activate the correct nav item by ID
   const navEl = document.getElementById('nav-'+page);
   if (navEl) navEl.classList.add('active');
@@ -2202,9 +2153,7 @@ function renderDashboard() {
   renderDashPropSummary();
   renderWLHeatmap(state.trades);
   renderDOWChart(state.trades);
-  updateLiveClock();
-  renderMetricSparklines();
-  checkAchievements();
+  setTimeout(()=>{ }, 100);
 }
 
 function renderEquity(T, pnls) {
@@ -4505,57 +4454,129 @@ function renderPropAccountsSection() {
     return;
   }
 
-  // Group by firm
   const byFirm = {};
   accounts.forEach((a,i) => {
     if (!byFirm[a.firm]) byFirm[a.firm] = [];
     byFirm[a.firm].push({...a, _idx:i});
   });
 
-  const statusColor = {eval:'var(--amber)',funded:'var(--green)',passed:'var(--blue)',blown:'var(--red)',inactive:'var(--dim)'};
-  const statusLabel = {eval:'Eval',funded:'Funded',passed:'Passed',blown:'Blown',inactive:'Inactive'};
+  const statusColor = { eval:'var(--amber)', funded:'var(--green)', passed:'var(--blue)', blown:'var(--red)', inactive:'var(--dim)' };
+  const statusLabel = { eval:'Eval', funded:'Funded / PA', passed:'Passed', blown:'Blown ✕', inactive:'Inactive' };
+  const isPA = a => a.status === 'funded' || a.status === 'passed';
 
   section.innerHTML = Object.entries(byFirm).map(([firm, accs]) => {
-    const firmPnL = accs.reduce((s,a)=>s+(parseFloat(a.pnl)||0),0);
-    const firmPayouts = (state.propPayouts||[]).filter(p=>accs.some(a=>a.name===p.accountName)).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
-    const firmFees = accs.reduce((s,a)=>s+(parseFloat(a.fee)||0)+(parseFloat(a.activation)||0),0);
+    const firmPnL     = accs.reduce((s,a)=>s+(parseFloat(a.pnl)||0), 0);
+    const firmPayouts = (state.propPayouts||[]).filter(p=>accs.some(a=>a.name===p.accountName)).reduce((s,p)=>s+(parseFloat(p.amount)||0), 0);
+    const firmFees    = accs.reduce((s,a)=>s+(parseFloat(a.fee)||0)+(parseFloat(a.activation)||0), 0);
 
     return `<div class="card" style="margin-bottom:12px">
       <div class="card-header" style="margin-bottom:14px">
-        <div>
-          <span class="card-title">${firm}</span>
-          <span class="card-sub" style="margin-left:12px">${accs.length} account${accs.length>1?'s':''} · P&L: <span class="${firmPnL>=0?'pnl-pos':'pnl-neg'}">${firmPnL>=0?'+':'-'}$${Math.abs(firmPnL).toLocaleString()}</span> · Payouts: <span class="pnl-pos">+$${firmPayouts.toLocaleString()}</span> · Fees: <span class="pnl-neg">-$${firmFees.toLocaleString()}</span></span>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <span class="card-title" style="font-size:16px">${firm}</span>
+          <span class="card-sub">${accs.length} account${accs.length>1?'s':''}</span>
+          <span style="font-size:12px;font-weight:600;color:${firmPnL>=0?'var(--green)':'var(--red)'}">${firmPnL>=0?'+':'-'}$${Math.abs(firmPnL).toLocaleString()} P&L</span>
+          ${firmPayouts?`<span style="font-size:12px;color:var(--green)">+$${firmPayouts.toLocaleString()} paid out</span>`:''}
+          ${firmFees?`<span style="font-size:12px;color:var(--red)">-$${firmFees.toLocaleString()} fees</span>`:''}
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
         ${accs.map(a => {
-          const pnl = parseFloat(a.pnl)||0;
-          const progPct = a.target ? Math.min(100,Math.max(0,(pnl/a.target)*100)) : 0;
-          const ddPct = a.dd && pnl<0 ? Math.min(100,(Math.abs(pnl)/a.dd)*100) : 0;
+          const pnl       = parseFloat(a.pnl)||0;
+          const dd        = parseFloat(a.dd)||0;
+          const target    = parseFloat(a.target)||0;
+          const dll       = parseFloat(a.dll)||0;
           const acPayouts = (state.propPayouts||[]).filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
-          return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;position:relative">
-            <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${statusColor[a.status]||'var(--border)'};border-radius:var(--r) var(--r) 0 0"></div>
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;margin-top:4px">
-              <div>
-                <div style="font-size:13px;font-weight:600;color:var(--text)">${a.name||a.plan+' '+a.size}</div>
-                <div style="font-size:10px;color:var(--muted)">${a.plan} · ${a.size}</div>
+          const pa        = isPA(a);
+
+          // For PA: remaining drawdown = max_dd - |current_pnl if negative|
+          const ddUsed    = pnl < 0 ? Math.abs(pnl) : 0;
+          const ddRemaining = dd ? Math.max(0, dd - ddUsed) : null;
+          const ddPct     = dd ? Math.min(100, (ddUsed/dd)*100) : 0;
+          const ddSafe    = ddPct < 50 ? 'var(--green)' : ddPct < 80 ? 'var(--amber)' : 'var(--red)';
+
+          // Progress toward target (eval only)
+          const progPct   = !pa && target && pnl > 0 ? Math.min(100,(pnl/target)*100) : 0;
+
+          // Trades on this account
+          const acTrades  = state.trades.filter(t => t.propAccounts?.includes(a.name) || t.propFirm === a.firm);
+          const acWins    = acTrades.filter(t=>calcPnL(t)>0).length;
+          const acWR      = acTrades.length ? Math.round(acWins/acTrades.length*100) : null;
+
+          // Daily loss remaining — today's P&L on this account
+          const today = new Date().toISOString().slice(0,10);
+          const todayPnL = acTrades.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
+          const dllRemaining = dll ? Math.max(0, dll + Math.min(0, todayPnL)) : null;
+
+          const statusCol = statusColor[a.status]||'var(--dim)';
+
+          return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor='var(--border2)';this.style.transform='translateY(-1px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+            <!-- Status bar -->
+            <div style="height:3px;background:${statusCol};opacity:.8"></div>
+            <div style="padding:14px">
+              <!-- Header row -->
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:var(--text)">${a.name||a.plan}</div>
+                  <div style="font-size:10px;color:var(--muted);margin-top:1px">${a.plan||''} ${a.size?'· '+a.size:''}</div>
+                </div>
+                <span style="font-size:10px;font-weight:700;color:${statusCol};background:${statusCol}18;padding:3px 8px;border-radius:4px;white-space:nowrap">${statusLabel[a.status]||a.status}</span>
               </div>
-              <span style="font-size:10px;font-weight:600;color:${statusColor[a.status]||'var(--dim)'};background:${statusColor[a.status]||'var(--dim)'}20;padding:2px 8px;border-radius:4px">${statusLabel[a.status]||a.status}</span>
-            </div>
-            <div style="font-size:28px;font-weight:800;font-family:'Geist Mono',monospace;color:${pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--text)'};margin-bottom:6px">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;font-size:11px">
-              ${a.target?`<div><div style="color:var(--amber);font-weight:600">$${Number(a.target).toLocaleString()}</div><div style="color:var(--dim)">Target</div></div>`:'<div></div>'}
-              ${a.dd?`<div><div style="color:var(--red);font-weight:600">$${Number(a.dd).toLocaleString()}</div><div style="color:var(--dim)">Max DD</div></div>`:'<div></div>'}
-              ${acPayouts?`<div><div style="color:var(--green);font-weight:600">+$${acPayouts.toLocaleString()}</div><div style="color:var(--dim)">Paid out</div></div>`:'<div></div>'}
-            </div>
-            ${a.target && pnl>=0?`<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-bottom:3px"><span>Progress</span><span>${Math.round(progPct)}%</span></div><div style="height:3px;background:var(--bg4);border-radius:2px"><div style="height:100%;width:${progPct}%;background:var(--green);border-radius:2px;transition:width .4s"></div></div></div>`:''}
-            ${a.dd && pnl<0?`<div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-bottom:3px"><span>DD used</span><span style="color:var(--red)">${Math.round(ddPct)}%</span></div><div style="height:3px;background:var(--bg4);border-radius:2px"><div style="height:100%;width:${ddPct}%;background:var(--red);border-radius:2px;transition:width .4s"></div></div></div>`:''}
-            ${a.dll?`<div style="font-size:10px;color:var(--dim);margin-bottom:8px">DLL: <span style="color:var(--text)">$${Number(a.dll).toLocaleString()}</span>${a.ddType?` · ${a.ddType}`:''}</div>`:''}
-            ${a.notes?`<div style="font-size:11px;color:var(--muted);border-left:2px solid var(--border);padding-left:8px;margin-bottom:8px;line-height:1.5">${a.notes}</div>`:''}
-            <div style="display:flex;gap:6px">
-              <button class="btn btn-sm" onclick="quickUpdatePnL(${a._idx})" style="flex:1;justify-content:center">Update P&L</button>
-              <button class="btn btn-sm" onclick="openPropAccountModal(${a._idx})">Edit</button>
-              <button class="btn btn-sm" style="color:var(--red)" onclick="deletePropAccount(${a._idx})">✕</button>
+
+              <!-- P&L big number -->
+              <div style="font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1.5px;color:${pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)'};line-height:1;margin-bottom:12px">
+                ${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}
+              </div>
+
+              <!-- EVAL MODE: show profit target progress -->
+              ${!pa && target ? `
+              <div style="margin-bottom:10px">
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px">
+                  <span>Profit target</span>
+                  <span style="font-weight:700;color:var(--amber)">$${target.toLocaleString()} · ${Math.round(progPct)}%</span>
+                </div>
+                <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">
+                  <div style="height:100%;width:${progPct}%;background:linear-gradient(90deg,var(--green),#00ff9d);border-radius:3px;transition:width .5s ease;box-shadow:0 0 6px rgba(0,208,132,.4)"></div>
+                </div>
+              </div>` : ''}
+
+              <!-- DRAWDOWN METER (both eval and PA) -->
+              ${dd ? `
+              <div style="margin-bottom:10px">
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:4px">
+                  <span>Max drawdown</span>
+                  <span style="font-weight:700;color:${ddSafe}">${ddRemaining!==null?`$${ddRemaining.toLocaleString()} remaining`:''} · ${Math.round(ddPct)}% used</span>
+                </div>
+                <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">
+                  <div style="height:100%;width:${ddPct}%;background:${ddSafe};border-radius:3px;transition:width .5s ease"></div>
+                </div>
+              </div>` : ''}
+
+              <!-- DAILY LOSS LIMIT -->
+              ${dll ? `
+              <div style="margin-bottom:10px;background:var(--bg4);border-radius:var(--r);padding:8px 10px;display:flex;justify-content:space-between;align-items:center">
+                <div style="font-size:10px;color:var(--muted)">Daily loss limit</div>
+                <div style="font-size:12px;font-weight:700;color:${dllRemaining!==null&&dllRemaining<dll*0.3?'var(--red)':dllRemaining!==null&&dllRemaining<dll*0.6?'var(--amber)':'var(--green)'}">${dllRemaining!==null?`$${dllRemaining.toLocaleString()} left today`:`$${dll.toLocaleString()}`}</div>
+              </div>` : ''}
+
+              <!-- MINI STATS ROW -->
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">
+                ${acWR!==null?`<div style="text-align:center;background:var(--bg4);border-radius:var(--r);padding:6px 4px"><div style="font-size:13px;font-weight:700;color:${acWR>=60?'var(--green)':acWR>=45?'var(--amber)':'var(--red)'}">${acWR}%</div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:1px">Win Rate</div></div>`:'<div></div>'}
+                <div style="text-align:center;background:var(--bg4);border-radius:var(--r);padding:6px 4px"><div style="font-size:13px;font-weight:700;color:var(--muted)">${acTrades.length}</div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:1px">Trades</div></div>
+                ${acPayouts?`<div style="text-align:center;background:var(--bg4);border-radius:var(--r);padding:6px 4px"><div style="font-size:13px;font-weight:700;color:var(--green)">+$${acPayouts.toLocaleString()}</div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:1px">Paid Out</div></div>`:'<div></div>'}
+              </div>
+
+              <!-- TODAY'S P&L BADGE -->
+              ${todayPnL!==0?`<div style="margin-bottom:10px;font-size:11px;font-weight:600;color:${todayPnL>0?'var(--green)':'var(--red)'};background:${todayPnL>0?'var(--green-dim)':'var(--red-dim)'};border-radius:var(--r);padding:5px 10px;display:inline-block">Today: ${todayPnL>=0?'+':'-'}$${Math.abs(Math.round(todayPnL)).toLocaleString()}</div>`:''}
+
+              <!-- NOTES -->
+              ${a.notes?`<div style="font-size:10px;color:var(--muted);border-left:2px solid var(--border2);padding-left:8px;margin-bottom:10px;line-height:1.5">${a.notes}</div>`:''}
+
+              <!-- ACTIONS -->
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm" onclick="quickUpdatePnL(${a._idx})" style="flex:1;text-align:center;justify-content:center">Update P&L</button>
+                <button class="btn btn-sm" onclick="openPropAccountModal(${a._idx})">Edit</button>
+                <button class="btn btn-sm" style="color:var(--red)" onclick="deletePropAccount(${a._idx})">✕</button>
+              </div>
             </div>
           </div>`;
         }).join('')}
@@ -6004,98 +6025,6 @@ function updateThemeBtn(isLight) {
   const saved = localStorage.getItem('edge-theme');
   if (saved === 'light') { document.body.classList.add('light-mode'); updateThemeBtn(true); }
 })();
-
-
-// ─── ANIMATED BACKGROUND ──────────────────────────────────────────────────────
-(function() {
-  const cv = document.createElement('canvas');
-  cv.id = 'bg-canvas';
-  cv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:-1;opacity:.28';
-  document.body.appendChild(cv);
-  const ctx = cv.getContext('2d');
-  let W, H, dots = [];
-  function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
-  resize(); window.addEventListener('resize', resize);
-  const count = () => Math.floor((W * H) / 24000);
-  function init() { dots = []; for(let i=0;i<count();i++) dots.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1+0.3,vx:(Math.random()-.5)*.14,vy:(Math.random()-.5)*.14,o:Math.random()*.22+.05}); }
-  init();
-  let mx=W/2, my=H/2;
-  window.addEventListener('mousemove', e=>{mx=e.clientX;my=e.clientY;});
-  function draw() {
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='rgba(255,255,255,0.014)'; ctx.lineWidth=1;
-    for(let x=0;x<W;x+=88){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-    for(let y=0;y<H;y+=88){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-    dots.forEach(d=>{
-      d.x+=d.vx; d.y+=d.vy;
-      if(d.x<0)d.x=W; if(d.x>W)d.x=0; if(d.y<0)d.y=H; if(d.y>H)d.y=0;
-      const dx=mx-d.x,dy=my-d.y,dist=Math.sqrt(dx*dx+dy*dy);
-      if(dist<100){d.x+=dx*.003;d.y+=dy*.003;}
-      ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(0,208,132,${d.o})`;ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
-
-// ─── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
-const ACHIEVEMENTS = [
-  {id:'first_trade', label:'First Blood',      desc:'Logged your first trade',           icon:'🎯', check:s=>s.trades.length>=1},
-  {id:'five_trades', label:'Getting Started',  desc:'5 trades logged',                   icon:'📈', check:s=>s.trades.length>=5},
-  {id:'green_day',   label:'Green Day',        desc:'Profitable trading day',             icon:'💚', check:s=>{const d=new Date().toISOString().slice(0,10);return s.trades.filter(t=>t.datetime?.slice(0,10)===d).reduce((a,t)=>a+calcPnL(t),0)>0;}},
-  {id:'clean_trade', label:'Clean Execution',  desc:'Trade with zero mistakes logged',   icon:'✨', check:s=>s.trades.some(t=>!(t.mistakes?.length)&&calcPnL(t)>0)},
-  {id:'five_green',  label:'Five Green Days',  desc:'5 profitable days achieved',        icon:'🔥', check:s=>{const dm={};s.trades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d){if(!dm[d])dm[d]=0;dm[d]+=calcPnL(t);}});return Object.values(dm).filter(v=>v>0).length>=5;}},
-  {id:'streak_3',    label:'On a Roll',        desc:'3 winning trades in a row',         icon:'⚡', check:s=>{const l=s.trades.slice(-3);return l.length===3&&l.every(t=>calcPnL(t)>0);}},
-  {id:'no_revenge',  label:'Disciplined Mind', desc:'10 trades, no revenge trading',    icon:'🧘', check:s=>s.trades.length>=10&&!s.trades.slice(-10).some(t=>t.mistakes?.includes('Revenge Trade'))},
-];
-let _ach = JSON.parse(localStorage.getItem('edge-ach')||'[]');
-function checkAchievements() {
-  if(!state?.trades?.length) return;
-  ACHIEVEMENTS.forEach(a=>{
-    if(_ach.includes(a.id)) return;
-    try { if(a.check(state)){showAchievement(a);_ach.push(a.id);localStorage.setItem('edge-ach',JSON.stringify(_ach));} } catch(e){}
-  });
-}
-function showAchievement(a) {
-  const el=document.createElement('div'); el.className='achievement-toast';
-  el.innerHTML=`<div class="achievement-icon">${a.icon}</div><div><div class="achievement-title">Achievement · ${a.label}</div><div class="achievement-desc">${a.desc}</div></div>`;
-  document.body.appendChild(el);
-  setTimeout(()=>{el.style.transition='all .4s ease';el.style.opacity='0';el.style.transform='translateY(10px)';setTimeout(()=>el.remove(),400);},3500);
-}
-
-// ─── LIVE CLOCK ───────────────────────────────────────────────────────────────
-function updateLiveClock() {
-  const el=document.getElementById('live-session-status'); if(!el) return;
-  const est=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
-  const h=est.getHours(),m=est.getMinutes(),pad=n=>String(n).padStart(2,'0');
-  const isSession=(h===9&&m>=30)||(h>=10&&h<16), isPre=h<9||(h===9&&m<30);
-  const [txt,col]=isSession?['NY Session Open','var(--green)']:isPre?['Pre-Market','var(--amber)']:['Closed','var(--muted)'];
-  el.innerHTML=`<span class="session-live-dot" style="background:${col}"></span><span style="font-size:11px;color:${col};font-weight:600">${txt}</span><span style="font-size:11px;color:var(--dim);margin-left:5px">${h}:${pad(m)} EST</span>`;
-}
-setInterval(updateLiveClock, 20000);
-
-// ─── SPARKLINES ───────────────────────────────────────────────────────────────
-function drawSparkline(canvas, data, color) {
-  if(!canvas||!data||data.length<2) return;
-  const W=canvas.width=canvas.offsetWidth||100, H=canvas.height=24;
-  const ctx=canvas.getContext('2d');
-  const mn=Math.min(...data),mx=Math.max(...data),rng=mx-mn||1;
-  const pts=data.map((v,i)=>({x:(i/(data.length-1))*(W-4)+2,y:H-((v-mn)/rng)*(H-4)-2}));
-  ctx.clearRect(0,0,W,H);
-  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,color+'55');g.addColorStop(1,'transparent');
-  ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
-  ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.stroke();
-  ctx.lineTo(pts[pts.length-1].x,H);ctx.lineTo(pts[0].x,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();
-}
-function renderMetricSparklines() {
-  if(!state?.trades?.length) return;
-  const sorted=[...state.trades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
-  let run=0; const pnlS=sorted.map(t=>{run+=calcPnL(t);return run;});
-  const wrS=sorted.map((_,i)=>{const w=sorted.slice(Math.max(0,i-9),i+1);return Math.round(w.filter(t=>calcPnL(t)>0).length/w.length*100);});
-  const pc=document.getElementById('spark-pnl');if(pc)drawSparkline(pc,pnlS,run>=0?'#00d084':'#ff4d4d');
-  const wc=document.getElementById('spark-wr');if(wc)drawSparkline(wc,wrS,'#4a9eff');
-}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Set datetime to local time (not UTC)
