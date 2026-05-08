@@ -583,8 +583,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
   </nav>
 
   <!-- HERO -->
-  <div style="position:relative;overflow:hidden;width:100%;min-height:90vh;display:flex;justify-content:center;align-items:center">
-    <canvas id="heroBurst" style="position:absolute;top:0;right:0;width:70%;height:100%;pointer-events:none;z-index:0;display:block"></canvas>
+  <div style="position:relative;overflow:hidden;width:100%;min-height:90vh;display:flex;justify-content:center;align-items:center;background:#080810">
+    <canvas id="heroBurst" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;display:block"></canvas>
   <div class="lp-hero" style="position:relative;z-index:1">
     <div class="lp-eyebrow">AI-Powered Trading Journal</div>
     <h1 class="lp-headline">Stop guessing.<br><span>Start knowing</span> why<br>you lose.</h1>
@@ -5512,59 +5512,166 @@ function renderGallery() {
   setInterval(tick, 1000);
 })();
 
-// ─── HERO BLOB ANIMATION ──────────────────────────────────────────────────────
+// ─── HERO PARTICLE ANIMATION ──────────────────────────────────────────────────
 (function(){
-  function initBlob() {
+  function initParticles(){
     const canvas = document.getElementById('heroBurst');
-    if (!canvas) return;
+    if(!canvas) return;
     const ctx = canvas.getContext('2d');
-    let W, H, t = 0, enterT = 0, entering = true;
+    let W, H;
+
     function resize(){
-      const parent = canvas.parentElement;
-      W = parent.offsetWidth * 0.70;
-      H = parent.offsetHeight || window.innerHeight * 0.9;
-      canvas.width = W;
-      canvas.height = H;
+      W = canvas.parentElement.offsetWidth || window.innerWidth;
+      H = canvas.parentElement.offsetHeight || Math.round(window.innerHeight * 0.9);
+      canvas.width = W; canvas.height = H;
     }
-    resize(); window.addEventListener('resize', resize);
-    const layers = [
-      {color:'#010c06'},{color:'#021408'},{color:'#031e0b'},
-      {color:'#042a0e'},{color:'#053812'},{color:'#064a16'},
-      {color:'#07611b'},{color:'#087a22'},{color:'#09922a'},
-      {color:'#00a832'},{color:'#00bf3a'},{color:'#00d084'},
-      {color:'#00c4a0'},{color:'#00b8b8'},{color:'#009fa8'}
-    ];
-    function easeOutBack(x){ const c1=1.70158,c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); }
-    function easeOutExpo(x){ return x===1?1:1-Math.pow(2,-10*x); }
-    function buildSharpPath(d,time,sX,sY,oX,oY){
-      const ph=time*(0.0004+d*0.00003),shrink=1-d*0.040;
-      const aX=W*(1.08-d*0.008)*sX+oX,aY=H*(0.52+d*0.010)*sY+oY;
-      const rx=W*0.80*shrink*sX,ry=H*0.95*shrink*sY;
-      ctx.beginPath();
-      const pts=[];
-      for(let i=0;i<=280;i++){const a=(i/280)*Math.PI*2,nx=Math.cos(a),ny=Math.sin(a);const r=1+Math.sin(a*4+ph)*0.10+Math.sin(a*7.3+ph*1.6)*0.06+Math.sin(a*12.1+ph*0.9)*0.04+Math.sin(a*19.7+ph*2.1)*0.025+Math.sin(a*31.3+ph*1.4)*0.015;pts.push([aX+nx*rx*r,aY+ny*ry*r]);}
-      ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();
+    resize();
+    window.addEventListener('resize', resize);
+
+    const mouse = { x: -9999, y: -9999 };
+    let bursts = [];
+
+    window.addEventListener('mousemove', e => {
+      const r = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - r.left;
+      mouse.y = e.clientY - r.top;
+    });
+    // reset when leaving viewport
+    document.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
+    // click burst — fires on the hero wrapper; canvas is pointer-events:none so buttons still work
+    canvas.parentElement.addEventListener('click', e => {
+      const r = canvas.getBoundingClientRect();
+      bursts.push({ x: e.clientX - r.left, y: e.clientY - r.top });
+    });
+
+    // ── particles ───────────────────────────────────────────────────────────
+    const N = 130;
+    const pts = [];
+    function makeParticle(){
+      const bvx = (Math.random() - 0.5) * 0.45;
+      const bvy = (Math.random() - 0.5) * 0.45;
+      return { x: Math.random()*W, y: Math.random()*H,
+               vx: bvx, vy: bvy, bvx, bvy,
+               r: 0.8 + Math.random()*2.2,
+               a: 0.25 + Math.random()*0.5,
+               pulse: Math.random() < 0.08,
+               pp: Math.random()*Math.PI*2,
+               ps: 0.018 + Math.random()*0.03 };
     }
-    function draw(){
-      ctx.clearRect(0,0,W,H);
-      let sX=1,sY=1,oX=0,oY=0,gA=1;
-      if(entering){const p=Math.min(enterT/75,1),e=easeOutBack(p);sX=0.3+e*0.7;sY=0.3+e*0.7;oX=(1-e)*W*0.4;oY=(1-e)*H*0.1;gA=easeOutExpo(Math.min(enterT/40,1));enterT++;if(enterT>75)entering=false;}
-      ctx.globalAlpha=gA;
-      layers.forEach((layer,i)=>{buildSharpPath(i,t+i*600,sX,sY,oX,oY);ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=12;ctx.shadowOffsetX=-4;ctx.shadowOffsetY=6;ctx.fillStyle=layer.color;ctx.globalAlpha=gA*0.82;ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;ctx.strokeStyle='rgba(0,208,132,0.06)';ctx.lineWidth=0.9;ctx.stroke();ctx.globalAlpha=gA;});
-      layers.forEach((layer,i)=>{if(i%2!==0)return;const ph=(t+i*300)*0.0005*Math.PI*2;const cx=(W*(0.75+Math.sin(ph*1.1+i)*0.10))*sX+oX;const cy=(H*(0.08+i*0.065+Math.cos(ph*0.9+i)*0.025))*sY+oY;const r=(3+i*0.35)*sX;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=layer.color;ctx.shadowColor='rgba(0,208,132,0.6)';ctx.shadowBlur=14;ctx.globalAlpha=gA*0.9;ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=gA;});
-      ctx.globalAlpha=1;
-      const fade=ctx.createLinearGradient(0,0,W*0.55,0);
-      fade.addColorStop(0,'rgba(10,10,11,1)');fade.addColorStop(0.5,'rgba(10,10,11,0.85)');fade.addColorStop(1,'rgba(10,10,11,0)');
-      ctx.fillStyle=fade;ctx.globalCompositeOperation='destination-out';ctx.fillRect(0,0,W*0.55,H);
-      ctx.globalCompositeOperation='source-over';t+=1;requestAnimationFrame(draw);
+    for(let i=0;i<N;i++) pts.push(makeParticle());
+
+    const LINK = 130;   // max connection distance
+    const PULL = 165;   // mouse attraction radius
+    const PULL_F = 0.034;
+
+    // ── offscreen dot-grid (rebuilt on resize) ───────────────────────────────
+    let gridCanvas = null;
+    function buildGrid(){
+      gridCanvas = document.createElement('canvas');
+      gridCanvas.width = W; gridCanvas.height = H;
+      const gc = gridCanvas.getContext('2d');
+      gc.fillStyle = 'rgba(155,127,255,0.038)';
+      const GS = 30;
+      for(let gx=GS/2;gx<W;gx+=GS)
+        for(let gy=GS/2;gy<H;gy+=GS)
+          gc.fillRect(gx-0.75, gy-0.75, 1.5, 1.5);
     }
-    draw();
+    buildGrid();
+    window.addEventListener('resize', buildGrid);
+
+    // ── main loop ────────────────────────────────────────────────────────────
+    function tick(){
+      ctx.fillStyle = '#080810';
+      ctx.fillRect(0,0,W,H);
+
+      // dot grid
+      if(gridCanvas) ctx.drawImage(gridCanvas, 0, 0);
+
+      // mouse radial glow
+      const mx=mouse.x, my=mouse.y;
+      const inCanvas = mx>=0 && mx<=W && my>=0 && my<=H;
+      if(inCanvas){
+        const g = ctx.createRadialGradient(mx,my,0,mx,my,230);
+        g.addColorStop(0,'rgba(155,127,255,0.11)');
+        g.addColorStop(0.45,'rgba(155,127,255,0.04)');
+        g.addColorStop(1,'rgba(155,127,255,0)');
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      }
+
+      // apply click bursts (impulse only, then discard)
+      if(bursts.length){
+        bursts.forEach(b => {
+          pts.forEach(p => {
+            const dx=p.x-b.x, dy=p.y-b.y;
+            const d=Math.sqrt(dx*dx+dy*dy)||1;
+            const f=Math.max(0,(290-d)/290)*7.5;
+            p.vx+=dx/d*f; p.vy+=dy/d*f;
+          });
+        });
+        bursts=[];
+      }
+
+      // update particle physics
+      pts.forEach(p => {
+        if(inCanvas){
+          const mdx=mx-p.x, mdy=my-p.y;
+          const md=Math.sqrt(mdx*mdx+mdy*mdy);
+          if(md<PULL){ const pull=(1-md/PULL)*PULL_F; p.vx+=mdx*pull; p.vy+=mdy*pull; }
+        }
+        p.vx+=(p.bvx-p.vx)*0.018; p.vy+=(p.bvy-p.vy)*0.018;
+        const spd=Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+        if(spd>6){ p.vx=p.vx/spd*6; p.vy=p.vy/spd*6; }
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x<-12) p.x=W+12; else if(p.x>W+12) p.x=-12;
+        if(p.y<-12) p.y=H+12; else if(p.y>H+12) p.y=-12;
+      });
+
+      // connection lines
+      for(let i=0;i<N;i++){
+        const pi=pts[i];
+        const miD=inCanvas?Math.hypot(pi.x-mx,pi.y-my):9999;
+        for(let j=i+1;j<N;j++){
+          const pj=pts[j];
+          const d=Math.hypot(pi.x-pj.x,pi.y-pj.y);
+          if(d>LINK) continue;
+          const near=miD<PULL||(inCanvas&&Math.hypot(pj.x-mx,pj.y-my)<PULL);
+          const base=(1-d/LINK);
+          ctx.beginPath(); ctx.moveTo(pi.x,pi.y); ctx.lineTo(pj.x,pj.y);
+          ctx.strokeStyle=near?`rgba(155,127,255,${(base*0.58).toFixed(3)})`
+                               :`rgba(155,127,255,${(base*0.13).toFixed(3)})`;
+          ctx.lineWidth=near?1.5:0.5;
+          ctx.stroke();
+        }
+      }
+
+      // particles
+      pts.forEach(p=>{
+        let a=p.a;
+        if(p.pulse){
+          p.pp+=p.ps;
+          const pf=0.5+0.5*Math.sin(p.pp);
+          a=0.28+pf*0.72;
+          if(pf>0.55){
+            const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*7);
+            gr.addColorStop(0,`rgba(155,127,255,${(pf*0.42).toFixed(3)})`);
+            gr.addColorStop(1,'rgba(155,127,255,0)');
+            ctx.fillStyle=gr;
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r*7,0,6.283); ctx.fill();
+          }
+        }
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.283);
+        ctx.fillStyle=`rgba(155,127,255,${a.toFixed(3)})`; ctx.fill();
+      });
+
+      requestAnimationFrame(tick);
+    }
+    tick();
   }
-  // Run immediately if login screen is visible, else wait
-  if (document.getElementById('login-screen') && document.getElementById('login-screen').style.display !== 'none') {
-    setTimeout(initBlob, 50);
+
+  if(document.getElementById('login-screen') && document.getElementById('login-screen').style.display !== 'none'){
+    setTimeout(initParticles, 50);
   } else {
-    window._initBlob = initBlob;
+    window._initBlob = initParticles;
   }
 })();
 
