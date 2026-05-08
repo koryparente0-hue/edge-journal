@@ -567,6 +567,182 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .insight-box:hover{border-left-color:var(--accent)}
 
 .pro-badge{background:linear-gradient(135deg,#f5a623,#ff6b35);letter-spacing:.05em}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TERMINAL AESTHETIC — Bloomberg terminal meets sci-fi
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* body becomes a stacking context so body::before at z-index:-1 paints
+   above body's own background but below all non-positioned children */
+body { isolation: isolate; }
+
+/* ── Animated dot-grid (pulses slowly) ───────────────────────────── */
+@keyframes termDotPulse { 0%,100%{opacity:.38} 50%{opacity:1} }
+body::before {
+  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background-image: radial-gradient(rgba(155,127,255,0.062) 1px, transparent 1px);
+  background-size: 28px 28px;
+  animation: termDotPulse 7s ease-in-out infinite;
+}
+
+/* ── Scanline texture overlay (very faint) ───────────────────────── */
+body::after {
+  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent, transparent 3px,
+    rgba(0,0,0,0.022) 3px, rgba(0,0,0,0.022) 4px
+  );
+}
+
+/* Transparent .main → dot-grid shows through page gaps between cards */
+.main { background: transparent !important; }
+
+/* ── Enhanced page-switch transition ─────────────────────────────── */
+@keyframes pageEnter {
+  from { opacity:0; transform:translateY(10px); filter:blur(1.5px); }
+  to   { opacity:1; transform:translateY(0);    filter:blur(0); }
+}
+.page.active { animation: pageEnter 0.28s cubic-bezier(0.16,1,0.3,1) both; }
+
+/* Extend card transition to include box-shadow + transform */
+.card { transition: border-color .2s var(--ease), box-shadow .22s var(--ease), transform .22s var(--ease); }
+.routine-block { transition: border-color .2s var(--ease), box-shadow .22s var(--ease); }
+
+/* ── Purple glow on card/panel hover ─────────────────────────────── */
+.card:hover {
+  border-color: rgba(155,127,255,0.28) !important;
+  box-shadow: 0 0 0 1px rgba(155,127,255,0.10),
+              0 4px 28px rgba(155,127,255,0.10),
+              0 2px 8px rgba(0,0,0,0.35);
+  transform: translateY(-1px);
+}
+.metric:hover {
+  border-color: rgba(155,127,255,0.22) !important;
+  box-shadow: 0 0 0 1px rgba(155,127,255,0.08),
+              0 4px 20px rgba(155,127,255,0.09),
+              0 2px 6px rgba(0,0,0,0.3);
+}
+.playbook-card:hover {
+  border-color: rgba(155,127,255,0.28) !important;
+  box-shadow: 0 0 0 1px rgba(155,127,255,0.10),
+              0 4px 24px rgba(155,127,255,0.10);
+}
+.streak-card:hover {
+  border-color: rgba(155,127,255,0.22) !important;
+  box-shadow: 0 0 0 1px rgba(155,127,255,0.08),
+              0 4px 20px rgba(155,127,255,0.08);
+}
+.gallery-card:hover {
+  border-color: rgba(155,127,255,0.25) !important;
+  box-shadow: 0 4px 20px rgba(155,127,255,0.08);
+}
+.routine-block:hover {
+  border-color: rgba(155,127,255,0.20) !important;
+  box-shadow: 0 0 16px rgba(155,127,255,0.07);
+}
+.lp-card:hover {
+  border-color: rgba(155,127,255,0.25) !important;
+  box-shadow: 0 4px 20px rgba(155,127,255,0.08);
+}
+
+/* ── Neon glow — positive (green) data values ────────────────────── */
+.metric-val.pos {
+  text-shadow: 0 0 10px rgba(0,208,132,0.70),
+               0 0 24px rgba(0,208,132,0.32),
+               0 0 48px rgba(0,208,132,0.12);
+}
+.pnl-pos {
+  text-shadow: 0 0 8px rgba(0,208,132,0.60), 0 0 18px rgba(0,208,132,0.25);
+}
+.grade-A {
+  text-shadow: 0 0 14px rgba(0,208,132,0.70), 0 0 30px rgba(0,208,132,0.28);
+}
+
+/* ── Neon glow — negative (red) data values ──────────────────────── */
+.metric-val.neg {
+  text-shadow: 0 0 10px rgba(255,77,77,0.70),
+               0 0 24px rgba(255,77,77,0.32),
+               0 0 48px rgba(255,77,77,0.12);
+}
+.pnl-neg {
+  text-shadow: 0 0 8px rgba(255,77,77,0.60), 0 0 18px rgba(255,77,77,0.25);
+}
+.grade-F {
+  text-shadow: 0 0 14px rgba(255,77,77,0.70), 0 0 30px rgba(255,77,77,0.28);
+}
+
+/* ── Active nav — glowing accent border ──────────────────────────── */
+.nav-item.active { text-shadow: 0 0 14px rgba(155,127,255,0.55); }
+
+/* ── Sidebar terminal chrome ─────────────────────────────────────── */
+.sidebar {
+  border-right: 1px solid rgba(155,127,255,0.12) !important;
+  box-shadow: 2px 0 24px rgba(0,0,0,0.45), inset -1px 0 0 rgba(155,127,255,0.06);
+}
+
+/* ── Input / field focus — glow ring ─────────────────────────────── */
+.filter-input:focus,
+.qe-field input:focus, .qe-field select:focus,
+.modal-field input:focus, .modal-field select:focus, .modal-field textarea:focus,
+.chat-input:focus,
+.routine-q input:focus, .routine-q select:focus, .routine-q textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(155,127,255,0.18),
+              0 0 14px rgba(155,127,255,0.10) !important;
+}
+
+/* ── Primary button glow ─────────────────────────────────────────── */
+.btn-green {
+  box-shadow: 0 2px 16px rgba(155,127,255,0.35), 0 0 30px rgba(155,127,255,0.10);
+}
+.btn-green:hover {
+  box-shadow: 0 4px 28px rgba(155,127,255,0.48), 0 0 50px rgba(155,127,255,0.16) !important;
+}
+
+/* ── Ambient glow on accent-bordered panels ──────────────────────── */
+.quick-entry {
+  box-shadow: 0 0 0 1px rgba(155,127,255,0.06),
+              inset 0 0 40px rgba(155,127,255,0.022);
+}
+.copilot-wrap {
+  box-shadow: 0 0 24px rgba(155,127,255,0.07), 0 0 0 1px rgba(155,127,255,0.08);
+}
+
+/* ── Logo accent glow ────────────────────────────────────────────── */
+.logo span, .lp-logo span {
+  text-shadow: 0 0 16px rgba(155,127,255,0.55), 0 0 32px rgba(155,127,255,0.20);
+}
+
+/* ── Streak values — purple tint ─────────────────────────────────── */
+.streak-val {
+  text-shadow: 0 0 20px rgba(155,127,255,0.30), 0 0 40px rgba(155,127,255,0.12);
+}
+
+/* ── Trades table row hover — sharper terminal highlight ────────────*/
+.trades-table tbody tr:hover td { background: rgba(155,127,255,0.055) !important; }
+
+/* ── Light-mode: suppress heavy terminal effects ─────────────────── */
+body.light-mode::before { opacity: 0.30; }
+body.light-mode::after  { opacity: 0; }
+body.light-mode .main   { background: var(--bg) !important; }
+body.light-mode .sidebar {
+  box-shadow: none !important;
+  border-right: 1px solid var(--border2) !important;
+}
+body.light-mode .metric-val.pos,
+body.light-mode .metric-val.neg,
+body.light-mode .pnl-pos,
+body.light-mode .pnl-neg,
+body.light-mode .grade-A,
+body.light-mode .grade-F,
+body.light-mode .streak-val,
+body.light-mode .logo span,
+body.light-mode .lp-logo span,
+body.light-mode .nav-item.active { text-shadow: none; }
+body.light-mode .btn-green { box-shadow: 0 2px 14px rgba(155,127,255,0.25); }
+body.light-mode .quick-entry,
+body.light-mode .copilot-wrap { box-shadow: none; }
 </style>
 </head>
 <body>
