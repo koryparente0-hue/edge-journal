@@ -2679,6 +2679,17 @@ function renderDashboard() {
   const wrSub  = document.getElementById('m-wr-sub');  if(wrSub)  wrSub.textContent  = wins.length+'W / '+losses.length+'L';
   const avglSub= document.getElementById('m-avgl-sub');if(avglSub)avglSub.textContent= avgL ? 'avg loss $'+Math.round(avgL) : 'no losses';
   startHeroCanvas('dh-c');
+
+  renderEquity(T, pnls);
+  renderHourHeat(T);
+  renderRecent();
+  refreshPatternFeed();
+  renderDashPropSummary();
+  renderWLHeatmap(state.trades);
+  renderDOWChart(state.trades);
+  updateLiveClock();
+  renderMetricSparklines();
+  checkAchievements();
 }
 
 function renderEquity(T, pnls) {
