@@ -6755,14 +6755,6 @@ function getJournal() {
   if (!state.journal) state.journal = { goals:[], dailyEntries:{} };
   if (!state.journal.goals) state.journal.goals = [];
   if (!state.journal.dailyEntries) state.journal.dailyEntries = {};
-  // Fix any goals incorrectly marked done
-  state.journal.goals.forEach(g => {
-    if (g.status === 'done' && g.target && g.current !== undefined) {
-      const t = parseFloat(g.target), c = parseFloat(g.current) || parseFloat(g.startVal) || 0, s = parseFloat(g.startVal) || 0;
-      const actuallyDone = t < s ? c <= t : c >= t;
-      if (!actuallyDone) g.status = 'active';
-    }
-  });
   return state.journal;
 }
 
@@ -6905,7 +6897,7 @@ function renderGoalsTab() {
 function renderGoalCard(g) {
   const pct  = goalProgress(g);
   const col  = CAT_COLORS[g.category]||'#9B7FFF';
-  const done = g.status==='done';
+  const done = g.status==='done'||pct>=100;
   const dl   = daysLeft(g.deadline);
   const unit = g.unit||'';
   const milestones = (g.milestones||[]).map(m=>parseFloat(m)).filter(Boolean);
@@ -6960,7 +6952,7 @@ function openGoalDetail(idx) {
   const col = CAT_COLORS[g.category]||'#9B7FFF';
   const pct = goalProgress(g);
   const unit = g.unit||'';
-  const done = g.status==='done';
+  const done = g.status==='done'||pct>=100;
   const dl   = daysLeft(g.deadline);
   const milestones = (g.milestones||[]).map(m=>parseFloat(m)).filter(Boolean);
 
@@ -7131,12 +7123,9 @@ function saveGoal() {
   if(!title){alert('Please enter a goal title');return;}
   const ms=document.getElementById('gm-milestones').value.split(',').map(s=>s.trim()).filter(Boolean);
   const goal={title,category:document.getElementById('gm-category').value,target:document.getElementById('gm-target').value,unit:document.getElementById('gm-unit').value.trim(),startVal:document.getElementById('gm-start').value,current:document.getElementById('gm-current').value,startDate:document.getElementById('gm-startdate').value,deadline:document.getElementById('gm-deadline').value,desc:document.getElementById('gm-desc').value.trim(),milestones:ms,status:'active',createdAt:editingGoalIdx!==null?(j.goals[editingGoalIdx]?.createdAt||new Date().toISOString()):new Date().toISOString()};
-  if (goal.target && goal.current && goal.current !== '' && goal.current !== goal.startVal) {
+  if (goal.target && goal.current) {
     const t = parseFloat(goal.target), c = parseFloat(goal.current), s = parseFloat(goal.startVal)||0;
-    if (!isNaN(c) && (t < s ? c <= t : c >= t)) goal.status = 'done';
-    else goal.status = 'active';
-  } else {
-    goal.status = 'active';
+    if (t < s ? c <= t : c >= t) goal.status = 'done';
   }
   if(editingGoalIdx!==null) j.goals[editingGoalIdx]=goal; else j.goals.push(goal);
   state.journal=j; save(); closeGoalModal(); renderGoalsTab();
@@ -7422,6 +7411,62 @@ function renderCommandCenter(){
     if(ccRAF){cancelAnimationFrame(ccRAF);ccRAF=null;}
     ccTrail.length=0; ccNodes=[]; ccHovered=null; ccMouse.x=-9999; ccMouse.y=-9999;
   };
+}
+
+// ─── UTILITY FUNCTIONS (live clock, sparklines, achievements) ─────────────────
+function updateLiveClock() {
+  const el = document.getElementById('live-session-status'); if (!el) return;
+  const est = new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  const h=est.getHours(), m=est.getMinutes(), pad=n=>String(n).padStart(2,'0');
+  const isSession=(h===9&&m>=30)||(h>=10&&h<16), isPre=h<9||(h===9&&m<30);
+  const [txt,col]=isSession?['NY Session Open','var(--green)']:isPre?['Pre-Market','var(--amber)']:['Closed','var(--muted)'];
+  el.innerHTML=`<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${col};animation:livePulse 1.4s ease-in-out infinite;margin-right:4px;vertical-align:middle"></span><span style="font-size:11px;color:${col};font-weight:600">${txt}</span><span style="font-size:11px;color:var(--dim);margin-left:5px">${h}:${pad(m)} EST</span>`;
+}
+setInterval(updateLiveClock, 20000);
+
+function drawSparkline(canvas, data, color) {
+  if(!canvas||!data||data.length<2) return;
+  const W=canvas.width=canvas.offsetWidth||100, H=canvas.height=24;
+  const ctx=canvas.getContext('2d');
+  const mn=Math.min(...data),mx=Math.max(...data),rng=mx-mn||1;
+  const pts=data.map((v,i)=>({x:(i/(data.length-1))*(W-4)+2,y:H-((v-mn)/rng)*(H-4)-2}));
+  ctx.clearRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,color+'55');g.addColorStop(1,'transparent');
+  ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.stroke();
+  ctx.lineTo(pts[pts.length-1].x,H);ctx.lineTo(pts[0].x,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+}
+
+function renderMetricSparklines() {
+  if(!state?.trades?.length) return;
+  const sorted=[...state.trades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
+  let run=0; const pnlS=sorted.map(t=>{run+=calcPnL(t);return run;});
+  const wrS=sorted.map((_,i)=>{const w=sorted.slice(Math.max(0,i-9),i+1);return Math.round(w.filter(t=>calcPnL(t)>0).length/w.length*100);});
+  const pc=document.getElementById('spark-pnl');if(pc)drawSparkline(pc,pnlS,run>=0?'#00d084':'#ff4d4d');
+  const wc=document.getElementById('spark-wr');if(wc)drawSparkline(wc,wrS,'#9B7FFF');
+}
+
+const ACHIEVEMENTS=[
+  {id:'first_trade',label:'First Blood',desc:'Logged your first trade',icon:'🎯',check:s=>s.trades.length>=1},
+  {id:'five_trades',label:'Getting Started',desc:'5 trades logged',icon:'📈',check:s=>s.trades.length>=5},
+  {id:'green_day',label:'Green Day',desc:'Profitable trading day',icon:'💚',check:s=>{const d=new Date().toISOString().slice(0,10);return s.trades.filter(t=>t.datetime?.slice(0,10)===d).reduce((a,t)=>a+calcPnL(t),0)>0;}},
+  {id:'clean_trade',label:'Clean Execution',desc:'Trade with zero mistakes',icon:'✨',check:s=>s.trades.some(t=>!(t.mistakes?.length)&&calcPnL(t)>0)},
+  {id:'streak_3',label:'On a Roll',desc:'3 winning trades in a row',icon:'⚡',check:s=>{const l=s.trades.slice(-3);return l.length===3&&l.every(t=>calcPnL(t)>0);}},
+];
+let _ach=JSON.parse(localStorage.getItem('edge-ach')||'[]');
+function checkAchievements() {
+  if(!state?.trades?.length) return;
+  ACHIEVEMENTS.forEach(a=>{
+    if(_ach.includes(a.id)) return;
+    try{if(a.check(state)){showAchievement(a);_ach.push(a.id);localStorage.setItem('edge-ach',JSON.stringify(_ach));}}catch(e){}
+  });
+}
+function showAchievement(a) {
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;bottom:24px;right:24px;background:rgba(17,17,19,0.96);border:1px solid rgba(155,127,255,0.4);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;z-index:9999;backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:toastIn .4s cubic-bezier(.34,1.56,.64,1)';
+  el.innerHTML=`<div style="font-size:26px">${a.icon}</div><div><div style="font-size:12px;font-weight:700;color:var(--accent)">${a.label}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${a.desc}</div></div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>{el.style.transition='all .4s ease';el.style.opacity='0';el.style.transform='translateY(10px)';setTimeout(()=>el.remove(),400);},3500);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
