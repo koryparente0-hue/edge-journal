@@ -852,6 +852,11 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 .phero-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
 .phero-sub{font-size:10px;color:rgba(255,255,255,.3);margin-top:2px}
 @keyframes calDetailIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+body.light-mode .page-hero-banner{background:linear-gradient(135deg,#f0f0ff,#e8e8f8)!important;border-color:rgba(155,127,255,.25)!important}
+body.light-mode .phero-val{color:var(--text)!important}
+body.light-mode .phero-lbl{color:var(--muted)!important}
+body.light-mode .phero-sub{color:var(--dim)!important}
+body.light-mode .phero-stat[style*="rgba(255,255,255,.07)"]{border-color:rgba(0,0,0,0.08)!important}
 </style>
 </head>
 <body>
@@ -1145,7 +1150,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
     </div>
   </div>
 
-  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="dh-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s0">—</div><div class="phero-lbl">Total P&amp;L</div><div class="phero-sub" id="m-pnl-sub">0 trades</div></div>
@@ -1415,7 +1420,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
       <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
     </div>
   </div>
-  <div id="hi-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div id="hi-hero-banner" class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="hi-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="hi-s0">—</div><div class="phero-lbl">TOTAL TRADES</div></div>
@@ -1495,7 +1500,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
     </div>
   </div>
 
-  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="sp-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s0">—</div><div class="phero-lbl">SETUPS TRACKED</div></div>
@@ -1848,7 +1853,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
     <div><div class="page-title">AI Insights</div><div class="page-sub">Pattern coaching across your full trade history</div></div>
     <button class="btn btn-green" onclick="runInsights()">Run analysis ↗</button>
   </div>
-  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="ins-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ins-s0">—</div><div class="phero-lbl">TRADES ANALYZED</div></div>
@@ -2123,7 +2128,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
   <div class="page-header">
     <div><div class="page-title">Risk &amp; Mistakes</div><div class="page-sub">Sizing consistency and what's costing you money</div></div>
   </div>
-  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="ri-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ri-s0">—</div><div class="phero-lbl">CONSISTENCY</div></div>
@@ -2167,7 +2172,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
   <div class="page-header">
     <div><div class="page-title">Streaks &amp; Habits</div><div class="page-sub">Consistency is the edge</div></div>
   </div>
-  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="sk-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sk-s0">—</div><div class="phero-lbl">WIN STREAK</div></div>
@@ -6810,6 +6815,9 @@ function startHeroCanvas(id) {
     mx = e.clientX - r.left; my = e.clientY - r.top;
   });
   function draw() {
+    const isLight = document.body.classList.contains('light-mode');
+    const orbAlpha = isLight ? '0.07' : '0.18';
+    const gridAlpha = isLight ? 'rgba(155,127,255,0.08)' : 'rgba(155,127,255,0.06)';
     ctx.clearRect(0,0,canvas.width,canvas.height);
     orbs.forEach(o => {
       o.x += o.vx + (mx - o.x) * 0.004;
@@ -6817,11 +6825,11 @@ function startHeroCanvas(id) {
       if (o.x < 0 || o.x > canvas.width)  o.vx *= -1;
       if (o.y < 0 || o.y > canvas.height) o.vy *= -1;
       const g = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r*2);
-      g.addColorStop(0, o.col+'0.18)'); g.addColorStop(1, o.col+'0)');
+      g.addColorStop(0, o.col+orbAlpha+')'); g.addColorStop(1, o.col+'0)');
       ctx.beginPath(); ctx.arc(o.x,o.y,o.r*2,0,Math.PI*2);
       ctx.fillStyle=g; ctx.fill();
     });
-    ctx.strokeStyle='rgba(155,127,255,0.06)'; ctx.lineWidth=1;
+    ctx.strokeStyle=gridAlpha; ctx.lineWidth=1;
     for(let x=0;x<canvas.width;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
     for(let y=0;y<canvas.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
     _heroRaf = requestAnimationFrame(draw);
