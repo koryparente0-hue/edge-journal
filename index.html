@@ -24,18 +24,18 @@
   --shadow-sm:0 2px 8px rgba(0,0,0,.35),0 1px 2px rgba(0,0,0,.25);
   --shadow-md:0 4px 20px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.3);}
 body.light-mode{
-  --bg:#EEEEF5;--bg2:#FFFFFF;--bg3:#E8E8F2;--bg4:#DDDDE8;
+  --bg:#eeeef8;--bg2:#FFFFFF;--bg3:#f4f4fc;--bg4:#DDDDE8;
   --border:#00000012;--border2:#0000001f;--border3:#00000030;
-  --text:#0F1018;--muted:#555568;--dim:#B0B0C8;
+  --text:#0a0a14;--muted:#444460;--dim:#B0B0C8;
   --green:#00a86b;--green-dim:#00a86b18;--green-border:#00a86b35;
   --red:#e03131;--red-dim:#e0313118;--red-border:#e0313135;
   --amber:#d97706;--amber-dim:#d9770618;
   --blue:#2563EB;--blue-dim:#2563EB18;
 }
 /* Light mode overrides for components that use hardcoded values */
-body.light-mode .card{background:#FFFFFF!important;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 1px 4px rgba(0,0,0,0.08);border-color:#E2E2EC}
-body.light-mode .sidebar{background:#FFFFFF;border-right:1px solid #E0E0EA}
-body.light-mode .nav-item{color:#4A4A6A}
+body.light-mode .card{background:#FFFFFF!important;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 1px 6px rgba(0,0,0,0.1);border-color:#E2E2EC}
+body.light-mode .sidebar{background:#FFFFFF;border-right:1px solid #d8d8e8}
+body.light-mode .nav-item{color:#333350}
 body.light-mode .nav-item:hover{background:#F0F0F8;color:#111318}
 body.light-mode .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-dim)}
 body.light-mode .trades-table thead th{background:var(--bg3)}
@@ -859,7 +859,11 @@ body.light-mode .phero-sub{color:var(--dim)!important}
 body.light-mode .phero-stat[style*="rgba(255,255,255,.07)"]{border-color:rgba(0,0,0,0.08)!important}
 /* Landing page always dark */
 .lp-page{background:#080810!important;color:#EEEEF2!important}
-body.light-mode .lp-page{background:linear-gradient(135deg,#1a1a2e,#16213e)!important;color:#EEEEF2!important}
+body.light-mode #login-screen,body.light-mode .lp-page{background:#080810!important;color:#EEEEF2!important}
+body.light-mode .lp-page .lp-section-title,body.light-mode .lp-page .lp-card-title,body.light-mode .lp-page .lp-step-title,body.light-mode .lp-page .lp-plan-name{color:#EEEEF2!important}
+body.light-mode .lp-page .lp-card-body,body.light-mode .lp-page .lp-step-body,body.light-mode .lp-page .lp-plan-desc,body.light-mode .lp-page .lp-section-label{color:rgba(238,238,242,0.65)!important}
+.lp-page .lp-section.alt,.lp-page .lp-section{background:#080810!important}
+.lp-page .lp-section.alt{background:#0d0d18!important}
 /* Calendar container light mode */
 body.light-mode .cal-premium-wrap{background:var(--bg2)!important;border-color:rgba(155,127,255,.2)!important}
 /* Journal goal cards light mode */
@@ -868,6 +872,9 @@ body.light-mode .goal-card:hover{box-shadow:0 8px 32px rgba(0,0,0,0.12)!importan
 /* Journal hero banner light mode */
 body.light-mode .journal-hero-banner{background:linear-gradient(135deg,#e8e8f8,#f0f0ff)!important;border-color:rgba(155,127,255,0.3)!important}
 body.light-mode #journal-hero-canvas{opacity:.15}
+body.light-mode .trades-table tbody tr:nth-child(odd){background:#ffffff}
+body.light-mode .trades-table tbody tr:nth-child(even){background:#f8f8ff}
+body.light-mode .metric-val{color:#0a0a14}
 </style>
 </head>
 <body>
@@ -3371,8 +3378,8 @@ function renderHistory() {
   const hiWorst=hiPnls.length?Math.min(...hiPnls):0;
   const hiDays=new Set(state.trades.map(t=>t.datetime?.slice(0,10)).filter(Boolean)).size;
   setHeroStats('hi',
-    [state.trades.length, hiBest?('+$'+Math.abs(Math.round(hiBest))):'—', hiPnls.length?('-$'+Math.abs(Math.round(hiWorst))):'—', hiDays],
-    ['var(--accent)', 'var(--green)', 'var(--red)', 'var(--accent)']);
+    [state.trades.length, hiBest?('+$'+Math.abs(Math.round(hiBest))):'—', hiPnls.length?(hiWorst>=0?'+$'+Math.round(hiWorst):'-$'+Math.abs(Math.round(hiWorst))):'—', hiDays],
+    ['var(--accent)', 'var(--green)', hiPnls.length&&hiWorst>=0?'var(--green)':'var(--red)', 'var(--accent)']);
   startHeroCanvas('hi-c');
   const fSetupSel=document.getElementById('f-setup-filter');
   const fMistakeSel=document.getElementById('f-mistake-filter');
@@ -6753,7 +6760,8 @@ function renderStatsExtras(T) {
 // ─── THEME TOGGLE ─────────────────────────────────────────────────────────────
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light-mode');
-  localStorage.setItem('edge-theme', isLight ? 'light' : 'dark');
+  if (isLight) localStorage.setItem('edge-theme', 'light');
+  else localStorage.removeItem('edge-theme');
   updateThemeBtn(isLight);
   if (state.trades.length) renderDashboard();
 }
