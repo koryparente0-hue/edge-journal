@@ -857,11 +857,22 @@ body.light-mode .phero-val{color:var(--text)!important}
 body.light-mode .phero-lbl{color:var(--muted)!important}
 body.light-mode .phero-sub{color:var(--dim)!important}
 body.light-mode .phero-stat[style*="rgba(255,255,255,.07)"]{border-color:rgba(0,0,0,0.08)!important}
+/* Landing page always dark */
+.lp-page{background:#080810!important;color:#EEEEF2!important}
+body.light-mode .lp-page{background:linear-gradient(135deg,#1a1a2e,#16213e)!important;color:#EEEEF2!important}
+/* Calendar container light mode */
+body.light-mode .cal-premium-wrap{background:var(--bg2)!important;border-color:rgba(155,127,255,.2)!important}
+/* Journal goal cards light mode */
+body.light-mode .goal-card{background:rgba(255,255,255,0.9)!important;border-color:rgba(0,0,0,0.1)!important}
+body.light-mode .goal-card:hover{box-shadow:0 8px 32px rgba(0,0,0,0.12)!important}
+/* Journal hero banner light mode */
+body.light-mode .journal-hero-banner{background:linear-gradient(135deg,#e8e8f8,#f0f0ff)!important;border-color:rgba(155,127,255,0.3)!important}
+body.light-mode #journal-hero-canvas{opacity:.15}
 </style>
 </head>
 <body>
 <!-- LANDING PAGE / LOGIN SCREEN -->
-<div id="login-screen" style="display:flex">
+<div id="login-screen" class="lp-page" style="display:flex">
 
   <!-- NAV -->
   <nav class="lp-nav">
@@ -1468,7 +1479,7 @@ body.light-mode .phero-stat[style*="rgba(255,255,255,.07)"]{border-color:rgba(0,
     </div>
   </div>
   <div id="hist-cal-view" style="display:none">
-    <div style="position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#080810,#0d0d1a);border:1px solid rgba(155,127,255,.15)">
+    <div class="cal-premium-wrap" style="position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#080810,#0d0d1a);border:1px solid rgba(155,127,255,.15)">
       <canvas id="cal-hero-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
       <div style="position:relative;z-index:1;padding:24px">
         <div style="text-align:center;margin-bottom:22px">
@@ -1949,7 +1960,7 @@ body.light-mode .phero-stat[style*="rgba(255,255,255,.07)"]{border-color:rgba(0,
   <!-- GOALS TAB -->
   <div id="jtab-goals">
     <!-- Hero command center banner -->
-    <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14 0%,#111128 100%);border:1px solid rgba(155,127,255,0.2)">
+    <div class="journal-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14 0%,#111128 100%);border:1px solid rgba(155,127,255,0.2)">
       <canvas id="journal-hero-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
       <div style="position:relative;z-index:1;padding:24px 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:0">
         <div id="jstat-0" style="text-align:center;padding:8px;border-right:1px solid rgba(255,255,255,0.07)">
@@ -6511,6 +6522,7 @@ function renderCalendar() {
   const numWeeks  = Math.ceil((firstDow + daysInMo) / 7);
   const todayDate = new Date();
   const isThisMo  = todayDate.getFullYear() === calYear && todayDate.getMonth() === calMonth;
+  const isLM = document.body.classList.contains('light-mode');
   const wrap = document.getElementById('cal-grid-wrap');
   wrap.innerHTML = '';
   const grid = document.createElement('div');
@@ -6519,11 +6531,11 @@ function renderCalendar() {
   // Header row
   ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
     const h = document.createElement('div');
-    h.style.cssText = 'text-align:center;font-size:10px;font-weight:700;color:rgba(155,127,255,.45);letter-spacing:.08em;padding:6px 0 10px;text-transform:uppercase';
+    h.style.cssText = 'text-align:center;font-size:10px;font-weight:700;color:rgba(155,127,255,.55);letter-spacing:.08em;padding:6px 0 10px;text-transform:uppercase';
     h.textContent = d; grid.appendChild(h);
   });
   const wh = document.createElement('div');
-  wh.style.cssText = 'font-size:10px;font-weight:700;color:rgba(155,127,255,.28);letter-spacing:.08em;padding:6px 8px 10px;text-align:left;text-transform:uppercase';
+  wh.style.cssText = 'font-size:10px;font-weight:700;color:rgba(155,127,255,.38);letter-spacing:.08em;padding:6px 8px 10px;text-align:left;text-transform:uppercase';
   wh.textContent = 'Week'; grid.appendChild(wh);
 
   // Rows
@@ -6533,7 +6545,7 @@ function renderCalendar() {
       const day = w * 7 + d - firstDow + 1;
       const cell = document.createElement('div');
       if (day < 1 || day > daysInMo) {
-        cell.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;min-height:90px;opacity:.3;box-sizing:border-box';
+        cell.style.cssText = `background:var(--bg3);border:1px solid var(--border);border-radius:8px;min-height:90px;opacity:.3;box-sizing:border-box`;
         grid.appendChild(cell); continue;
       }
       const trades  = dayMap[day] || [];
@@ -6541,15 +6553,15 @@ function renderCalendar() {
       const isSel   = calSelectedDay === day;
       const dow     = new Date(calYear, calMonth, day).getDay();
       const pnl     = trades.length ? trades.reduce((a,t) => a+calcPnL(t), 0) : null;
-      const bgColor = isSel ? 'rgba(155,127,255,.13)' : pnl === null ? 'rgba(255,255,255,0.03)' : pnl > 0 ? 'rgba(0,208,132,0.1)' : pnl < 0 ? 'rgba(255,77,77,0.08)' : 'rgba(255,255,255,0.04)';
-      const borderBase = pnl === null ? (isToday ? '1px solid rgba(155,127,255,0)' : '1px solid rgba(255,255,255,0.06)') : pnl > 0 ? '1px solid rgba(0,208,132,0.2)' : pnl < 0 ? '1px solid rgba(255,77,77,0.18)' : '1px solid rgba(255,255,255,0.08)';
-      const borderL  = pnl !== null ? (pnl > 0 ? ';border-left:3px solid rgba(0,208,132,.55)' : pnl < 0 ? ';border-left:3px solid rgba(255,77,77,.5)' : ';border-left:3px solid rgba(255,255,255,.12)') : '';
+      const bgColor = isSel ? 'rgba(155,127,255,.13)' : pnl === null ? 'var(--bg3)' : pnl > 0 ? 'rgba(0,208,132,0.1)' : pnl < 0 ? 'rgba(255,77,77,0.08)' : 'var(--bg4)';
+      const borderBase = pnl === null ? (isToday ? '1px solid rgba(155,127,255,0)' : '1px solid var(--border)') : pnl > 0 ? '1px solid rgba(0,208,132,0.2)' : pnl < 0 ? '1px solid rgba(255,77,77,0.18)' : '1px solid var(--border)';
+      const borderL  = pnl !== null ? (pnl > 0 ? ';border-left:3px solid rgba(0,208,132,.55)' : pnl < 0 ? ';border-left:3px solid rgba(255,77,77,.5)' : ';border-left:3px solid rgba(155,127,255,.2)') : '';
       const baseShadow = isToday ? '0 0 0 1.5px rgba(155,127,255,.6),0 0 20px rgba(155,127,255,.1) inset' : isSel ? '0 0 0 1.5px rgba(155,127,255,.45)' : 'none';
       const wkendDim = !trades.length && (dow === 0 || dow === 6) ? ';opacity:.38' : '';
       cell.style.cssText = `background:${bgColor};border:${borderBase}${borderL};border-radius:8px;min-height:90px;padding:8px 9px;cursor:${trades.length?'pointer':'default'};position:relative;display:flex;flex-direction:column;box-sizing:border-box;transition:transform .15s cubic-bezier(0.23,1,.32,1),background .15s,box-shadow .15s;box-shadow:${baseShadow}${wkendDim}`;
 
       const numDiv = document.createElement('div');
-      numDiv.style.cssText = `font-size:11px;font-weight:700;color:${isToday?'var(--accent)':'rgba(255,255,255,.32)'};margin-bottom:4px;display:flex;align-items:center;gap:4px`;
+      numDiv.style.cssText = `font-size:11px;font-weight:700;color:${isToday?'var(--accent)':'var(--muted)'};margin-bottom:4px;display:flex;align-items:center;gap:4px`;
       if (isToday) { const pip = document.createElement('span'); pip.style.cssText='width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;box-shadow:0 0 7px rgba(155,127,255,.9)'; numDiv.appendChild(pip); }
       numDiv.appendChild(document.createTextNode(day));
       cell.appendChild(numDiv);
@@ -6558,14 +6570,14 @@ function renderCalendar() {
         const wins = trades.filter(t => calcPnL(t)>0).length;
         const wr   = Math.round(wins/trades.length*100);
         const col  = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
-        const glow = pnl>0?'0 0 14px rgba(0,208,132,.55)':pnl<0?'0 0 14px rgba(255,77,77,.5)':'none';
+        const glow = (!isLM && pnl>0)?'0 0 14px rgba(0,208,132,.55)':(!isLM && pnl<0)?'0 0 14px rgba(255,77,77,.5)':'none';
         const sign = pnl>=0?'+':'-'; const abs=Math.abs(pnl);
         const str  = abs>=1000 ? sign+'$'+(abs/1000).toFixed(2)+'K' : sign+'$'+abs.toFixed(2);
         const pDiv = document.createElement('div');
         pDiv.style.cssText = `font-size:16px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;color:${col};line-height:1.1;margin-top:auto;text-shadow:${glow}`;
         pDiv.textContent = str;
         const mDiv = document.createElement('div');
-        mDiv.style.cssText = 'font-size:9px;color:rgba(255,255,255,.28);margin-top:3px';
+        mDiv.style.cssText = 'font-size:9px;color:var(--dim);margin-top:3px';
         mDiv.textContent = `${trades.length}t · ${wr}%`;
         const bar = document.createElement('div');
         bar.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:0 0 8px 8px;overflow:hidden';
@@ -6574,7 +6586,7 @@ function renderCalendar() {
         cell.onclick = () => calClickDay(day, trades);
         cell.addEventListener('mouseover', () => {
           cell.style.transform = 'translateY(-2px)';
-          cell.style.boxShadow = pnl>0?'0 0 0 1px rgba(0,208,132,.45),0 8px 24px rgba(0,0,0,.35)':pnl<0?'0 0 0 1px rgba(255,77,77,.4),0 8px 24px rgba(0,0,0,.35)':'0 0 0 1px rgba(155,127,255,.35),0 8px 24px rgba(0,0,0,.35)';
+          cell.style.boxShadow = pnl>0?'0 0 0 1px rgba(0,208,132,.45),0 8px 24px rgba(0,0,0,.2)':pnl<0?'0 0 0 1px rgba(255,77,77,.4),0 8px 24px rgba(0,0,0,.2)':'0 0 0 1px rgba(155,127,255,.35),0 8px 24px rgba(0,0,0,.2)';
         });
         cell.addEventListener('mouseout', () => { cell.style.transform=''; cell.style.boxShadow=baseShadow; });
         wPnL += pnl; wTrades += trades.length;
@@ -6584,11 +6596,11 @@ function renderCalendar() {
     // Week summary sidebar
     const wCell = document.createElement('div');
     const wCol  = wPnL>0?'var(--green)':wPnL<0?'var(--red)':'var(--dim)';
-    const wGlow = wPnL>0?'0 0 12px rgba(0,208,132,.4)':wPnL<0?'0 0 12px rgba(255,77,77,.35)':'none';
+    const wGlow = (!isLM && wPnL>0)?'0 0 12px rgba(0,208,132,.4)':(!isLM && wPnL<0)?'0 0 12px rgba(255,77,77,.35)':'none';
     const wSign = wPnL>=0?'+':'-'; const wAbs=Math.abs(wPnL);
     const wStr  = wTrades ? wSign+'$'+wAbs.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
-    wCell.style.cssText = 'background:rgba(155,127,255,.05);border:1px solid rgba(155,127,255,.1);border-radius:8px;min-height:90px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box';
-    wCell.innerHTML = `<div style="font-size:9px;font-weight:700;letter-spacing:.07em;color:rgba(155,127,255,.38);text-transform:uppercase;margin-bottom:7px">Wk ${w+1}</div><div style="font-size:17px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;color:${wCol};text-shadow:${wGlow}">${wStr}</div><div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:4px">${wTrades} trade${wTrades!==1?'s':''}</div>`;
+    wCell.style.cssText = 'background:var(--bg3);border:1px solid rgba(155,127,255,.15);border-radius:8px;min-height:90px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box';
+    wCell.innerHTML = `<div style="font-size:9px;font-weight:700;letter-spacing:.07em;color:rgba(155,127,255,.55);text-transform:uppercase;margin-bottom:7px">Wk ${w+1}</div><div style="font-size:17px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;color:${wCol};text-shadow:${wGlow}">${wStr}</div><div style="font-size:10px;color:var(--dim);margin-top:4px">${wTrades} trade${wTrades!==1?'s':''}</div>`;
     grid.appendChild(wCell);
   }
   wrap.appendChild(grid);
@@ -6755,6 +6767,7 @@ function updateThemeBtn(isLight) {
 (function(){
   const saved = localStorage.getItem('edge-theme');
   if (saved === 'light') { document.body.classList.add('light-mode'); updateThemeBtn(true); }
+  else { document.body.classList.remove('light-mode'); updateThemeBtn(false); }
 })();
 
 // ─── JOURNAL ──────────────────────────────────────────────────────────────────
