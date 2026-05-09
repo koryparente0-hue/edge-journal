@@ -850,6 +850,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 .phero-stat{text-align:center;padding:8px}
 .phero-val{font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent)}
 .phero-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+.phero-sub{font-size:10px;color:rgba(255,255,255,.3);margin-top:2px}
 </style>
 </head>
 <body>
@@ -1145,20 +1146,13 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 
   <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="dh-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s0">—</div><div class="phero-lbl">NET P&amp;L</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s1">—</div><div class="phero-lbl">WIN RATE</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s2">—</div><div class="phero-lbl">TODAY'S P&amp;L</div></div>
-      <div class="phero-stat"><div class="phero-val" id="dh-s3">—</div><div class="phero-lbl">WIN STREAK</div></div>
+    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s0">—</div><div class="phero-lbl">Total P&amp;L</div><div class="phero-sub" id="m-pnl-sub">0 trades</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s1">—</div><div class="phero-lbl">Win Rate</div><div class="phero-sub" id="m-wr-sub">0W / 0L</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val pos" id="dh-s2">—</div><div class="phero-lbl">Avg Win</div><div class="phero-sub" id="m-avgl-sub">avg loss —</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s3">—</div><div class="phero-lbl">Avg R:R</div><div class="phero-sub">planned</div></div>
+      <div class="phero-stat"><div class="phero-val neg" id="dh-s4">—</div><div class="phero-lbl">Max Drawdown</div><div class="phero-sub">peak→trough</div></div>
     </div>
-  </div>
-
-  <div class="metrics">
-    <div class="metric"><div class="metric-label">Total P&amp;L</div><div class="metric-val" id="m-pnl">$0</div><div class="metric-sub" id="m-pnl-sub">0 trades</div></div>
-    <div class="metric"><div class="metric-label">Win Rate</div><div class="metric-val" id="m-wr">—</div><div class="metric-sub" id="m-wr-sub">0W / 0L</div></div>
-    <div class="metric"><div class="metric-label">Avg Win</div><div class="metric-val pos" id="m-avgw">—</div><div class="metric-sub" id="m-avgl-sub">avg loss —</div></div>
-    <div class="metric"><div class="metric-label">Avg R:R</div><div class="metric-val" id="m-rr">—</div><div class="metric-sub">planned</div></div>
-    <div class="metric"><div class="metric-label">Max Drawdown</div><div class="metric-val neg" id="m-dd">—</div><div class="metric-sub">peak→trough</div></div>
   </div>
 
   <!-- PROP FIRM SUMMARY ON DASHBOARD -->
@@ -2669,39 +2663,22 @@ function renderDashboard() {
   const rrs = T.filter(t=>calcRR(t)).map(t=>parseFloat(calcRR(t)));
   const avgRR = rrs.length ? (rrs.reduce((a,b)=>a+b,0)/rrs.length).toFixed(2) : null;
 
-  const pnlEl = document.getElementById('m-pnl');
-  pnlEl.textContent = (total>=0?'+':'') + '$'+Math.abs(Math.round(total)).toLocaleString();
-  pnlEl.className = 'metric-val '+(total>=0?'pos':'neg');
-  document.getElementById('m-pnl-sub').textContent = T.length+' trades';
-
-  const wrEl = document.getElementById('m-wr');
-  wrEl.textContent = T.length ? pct(wr) : '—';
-  wrEl.className = 'metric-val '+(wr>=50?'pos':'neg');
-  document.getElementById('m-wr-sub').textContent = wins.length+'W / '+losses.length+'L';
-
-  document.getElementById('m-avgw').textContent = avgW ? '$'+Math.round(avgW) : '—';
-  document.getElementById('m-avgl-sub').textContent = avgL ? 'avg loss $'+Math.round(avgL) : 'no losses';
-  document.getElementById('m-rr').textContent = avgRR ? avgRR+'R' : '—';
-  const ddEl = document.getElementById('m-dd');
-  ddEl.textContent = dd ? '-$'+Math.abs(Math.round(dd)).toLocaleString() : '—';
-
-  renderEquity(T, pnls);
-  renderHourHeat(T);
-  renderRecent();
-  refreshPatternFeed();
-  renderDashPropSummary();
-  renderWLHeatmap(state.trades);
-  renderDOWChart(state.trades);
-  const todayStr=new Date().toDateString();
-  const todayPnl=state.trades.filter(t=>new Date(t.datetime||t.date||'').toDateString()===todayStr).reduce((a,t)=>a+calcPnL(t),0);
-  let wStrk=0; for(let i=state.trades.length-1;i>=0&&calcPnL(state.trades[i])>0;i--)wStrk++;
-  setHeroStats('dh',
-    [(total>=0?'+':'')+'$'+Math.abs(Math.round(total)).toLocaleString(), Math.round(wr)+'%',
-     (todayPnl>=0?'+':'')+'$'+Math.abs(Math.round(todayPnl)).toLocaleString(), wStrk],
-    [total>=0?'var(--green)':'var(--red)', wr>=50?'var(--green)':'var(--amber)',
-     todayPnl>=0?'var(--green)':'var(--red)', 'var(--accent)']);
+  // Populate hero banner with the 5 real stats
+  const s0 = document.getElementById('dh-s0');
+  if (s0) { s0.textContent = (total>=0?'+':'')+'$'+Math.abs(Math.round(total)).toLocaleString(); s0.style.color = total>=0?'var(--green)':'var(--red)'; }
+  const s1 = document.getElementById('dh-s1');
+  if (s1) { s1.textContent = T.length ? pct(wr) : '—'; s1.style.color = wr>=50?'var(--green)':'var(--amber)'; }
+  const s2 = document.getElementById('dh-s2');
+  if (s2) { s2.textContent = avgW ? '$'+Math.round(avgW) : '—'; s2.style.color = 'var(--green)'; }
+  const s3 = document.getElementById('dh-s3');
+  if (s3) { s3.textContent = avgRR ? avgRR+'R' : '—'; s3.style.color = 'var(--accent)'; }
+  const s4 = document.getElementById('dh-s4');
+  if (s4) { s4.textContent = dd ? '-$'+Math.abs(Math.round(dd)).toLocaleString() : '—'; s4.style.color = dd ? 'var(--red)' : 'var(--muted)'; }
+  // Update subs
+  const pnlSub = document.getElementById('m-pnl-sub'); if(pnlSub) pnlSub.textContent = T.length+' trades';
+  const wrSub  = document.getElementById('m-wr-sub');  if(wrSub)  wrSub.textContent  = wins.length+'W / '+losses.length+'L';
+  const avglSub= document.getElementById('m-avgl-sub');if(avglSub)avglSub.textContent= avgL ? 'avg loss $'+Math.round(avgL) : 'no losses';
   startHeroCanvas('dh-c');
-  setTimeout(()=>{ }, 100);
 }
 
 function renderEquity(T, pnls) {
