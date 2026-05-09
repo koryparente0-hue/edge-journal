@@ -746,21 +746,91 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 /* ── JOURNAL ─────────────────────────────────────────────────────────── */
 .jtab{font-size:11px;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--muted);font-family:var(--display);transition:all .15s}
 .jtab-active{background:var(--accent)!important;color:#fff!important}
-.goal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:12px;transition:all .2s;position:relative;overflow:hidden}
-.goal-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
-.goal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.goal-progress-track{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin:10px 0}
-.goal-progress-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)}
-.milestone-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);background:var(--bg4);transition:all .2s;flex-shrink:0}
-.milestone-dot.reached{border-color:var(--accent);background:var(--accent);box-shadow:0 0 6px rgba(155,127,255,.5)}
+
+/* Goal card */
+.goal-card{
+  background:rgba(18,18,22,0.85);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:0;
+  transition:all .25s cubic-bezier(.4,0,.2,1);
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  backdrop-filter:blur(8px);
+}
+.goal-card::after{
+  content:'';position:absolute;inset:0;border-radius:14px;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(155,127,255,0.07) 0%, transparent 65%);
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.goal-card:hover{transform:translateY(-3px) scale(1.008);border-color:rgba(155,127,255,0.3);box-shadow:0 12px 40px rgba(0,0,0,0.4),0 0 0 1px rgba(155,127,255,0.15)}
+.goal-card:hover::after{opacity:1}
+
+/* Progress ring */
+.goal-ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
+.goal-ring-wrap svg{transform:rotate(-90deg)}
+.goal-ring-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}
+
+/* Progress bar */
+.goal-progress-track{height:6px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;margin:10px 0;position:relative}
+.goal-progress-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1);position:relative}
+.goal-progress-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:20px;background:inherit;filter:blur(6px);opacity:.7}
+
+/* Milestone pip */
+.milestone-pip{
+  position:absolute;top:50%;transform:translate(-50%,-50%);
+  width:10px;height:10px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.2);
+  background:rgba(255,255,255,0.05);
+  transition:all .3s;
+  z-index:2;
+}
+.milestone-pip.reached{border-color:var(--c,#9B7FFF);background:var(--c,#9B7FFF);box-shadow:0 0 8px var(--c,#9B7FFF)}
+
+/* Goal detail panel (full-page overlay) */
+.goal-detail-overlay{
+  position:fixed;inset:0;z-index:1200;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.goal-detail-overlay.open{opacity:1;pointer-events:all}
+.goal-detail-panel{
+  background:#0f0f14;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px;
+  width:min(740px,94vw);
+  max-height:88vh;
+  overflow-y:auto;
+  padding:32px;
+  position:relative;
+  transform:scale(.96) translateY(12px);
+  transition:transform .3s cubic-bezier(.34,1.2,.64,1);
+  box-shadow:0 40px 100px rgba(0,0,0,0.7);
+}
+.goal-detail-overlay.open .goal-detail-panel{transform:scale(1) translateY(0)}
+
+/* Mood buttons */
+.mood-btn{font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
 .mood-btn.selected{border-color:var(--accent)!important;background:var(--accent-dim)!important;color:var(--accent)!important}
+
+/* Daily entry */
 .daily-entry-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:all .15s}
 .daily-entry-item:hover{border-color:var(--border2)}
-.goal-checkin-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.goal-checkin-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);transition:background .1s}
+.goal-checkin-row:hover{background:var(--bg4)}
 .goal-checkin-row:last-child{border-bottom:none}
-.journal-stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;text-align:center}
-.journal-stat-val{font-size:26px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:var(--text)}
-.journal-stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+
+/* Journal stat cards */
+.journal-stat{background:rgba(18,18,22,0.85);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;text-align:center;transition:all .2s;backdrop-filter:blur(8px)}
+.journal-stat:hover{border-color:rgba(155,127,255,0.25);transform:translateY(-1px)}
+.journal-stat-val{font-size:28px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px}
+.journal-stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
+
+/* Command center canvas */
+#journal-hero-canvas{position:absolute;inset:0;pointer-events:none;z-index:0}
 </style>
 </head>
 <body>
@@ -1803,8 +1873,8 @@ body.light-mode .copilot-wrap { box-shadow: none; }
     </div>
     <div style="display:flex;gap:8px">
       <div style="display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:2px;gap:2px">
-        <button id="jtab-goals-btn"  onclick="switchJournalTab('goals')"  class="jtab jtab-active">Goals</button>
-        <button id="jtab-daily-btn"  onclick="switchJournalTab('daily')"  class="jtab">Daily Log</button>
+        <button id="jtab-goals-btn" onclick="switchJournalTab('goals')" class="jtab jtab-active">Goals</button>
+        <button id="jtab-daily-btn" onclick="switchJournalTab('daily')" class="jtab">Daily Log</button>
       </div>
       <button class="btn btn-green" id="journal-add-btn" onclick="journalAddAction()">+ Add Goal</button>
     </div>
@@ -1812,16 +1882,35 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 
   <!-- GOALS TAB -->
   <div id="jtab-goals">
-    <!-- Summary strip -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px" id="journal-summary-strip"></div>
+    <!-- Hero command center banner -->
+    <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14 0%,#111128 100%);border:1px solid rgba(155,127,255,0.2)">
+      <canvas id="journal-hero-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+      <div style="position:relative;z-index:1;padding:24px 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:0">
+        <div id="jstat-0" style="text-align:center;padding:8px;border-right:1px solid rgba(255,255,255,0.07)">
+          <div style="font-size:36px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:#9B7FFF" id="jstat-val-0">0</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Total Goals</div>
+        </div>
+        <div id="jstat-1" style="text-align:center;padding:8px;border-right:1px solid rgba(255,255,255,0.07)">
+          <div style="font-size:36px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:#4a9eff" id="jstat-val-1">0</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">In Progress</div>
+        </div>
+        <div id="jstat-2" style="text-align:center;padding:8px;border-right:1px solid rgba(255,255,255,0.07)">
+          <div style="font-size:36px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:#00d084" id="jstat-val-2">0%</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Avg Progress</div>
+        </div>
+        <div id="jstat-3" style="text-align:center;padding:8px">
+          <div style="font-size:36px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:#f5a623" id="jstat-val-3">0</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Days Journaled</div>
+        </div>
+      </div>
+    </div>
     <!-- Goals grid -->
     <div id="journal-goals-grid"></div>
-    <!-- Empty state -->
     <div id="journal-goals-empty" style="display:none" class="card">
-      <div class="empty" style="padding:40px;text-align:center">
-        <div style="font-size:40px;margin-bottom:12px">🎯</div>
-        <div style="font-size:15px;font-weight:700;margin-bottom:6px">No goals yet</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Add your first goal to start tracking progress</div>
+      <div class="empty" style="padding:48px;text-align:center">
+        <div style="font-size:48px;margin-bottom:14px">🎯</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">No goals yet</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Set your first goal and track your journey visually</div>
         <button class="btn btn-green" onclick="openGoalModal()">+ Add your first goal</button>
       </div>
     </div>
@@ -1829,37 +1918,31 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 
   <!-- DAILY LOG TAB -->
   <div id="jtab-daily" style="display:none">
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start">
-      <!-- Left: today's entry -->
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start">
       <div class="card" style="margin-bottom:0">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
           <div>
             <div style="font-size:15px;font-weight:700" id="daily-date-label"></div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">Today's journal entry</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Daily reflection</div>
           </div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <button class="btn btn-sm" onclick="dailyNavDay(-1)" id="daily-prev-btn">← Prev</button>
-            <button class="btn btn-sm" onclick="dailyNavDay(1)"  id="daily-next-btn">Next →</button>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm" onclick="dailyNavDay(-1)">← Prev</button>
+            <button class="btn btn-sm" onclick="dailyNavDay(1)" id="daily-next-btn">Next →</button>
           </div>
         </div>
-        <!-- Mood -->
         <div style="margin-bottom:14px">
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">How are you feeling?</div>
-          <div style="display:flex;gap:8px" id="daily-mood-row">
-            ${['😤 Frustrated','😐 Neutral','😊 Focused','🔥 Confident','😴 Tired'].map((m,i)=>`<button onclick="setDailyMood(${i})" class="mood-btn" data-mood="${i}" style="font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s">${m}</button>`).join('')}
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="daily-mood-row">
+            ${['😤','😐','😊','🔥','😴'].map((e,i)=>`<button onclick="setDailyMood(${i})" class="mood-btn" data-mood="${i}">${e} ${['Frustrated','Neutral','Focused','Confident','Tired'][i]}</button>`).join('')}
           </div>
         </div>
-        <!-- Freewrite -->
         <div style="margin-bottom:14px">
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Journal</div>
-          <textarea id="daily-notes" placeholder="What happened today? How did you trade? What's on your mind?" style="width:100%;min-height:130px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:12px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.7;box-sizing:border-box"></textarea>
+          <textarea id="daily-notes" placeholder="What happened today? How did you trade? What did you learn?" style="width:100%;min-height:120px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:12px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.7;box-sizing:border-box"></textarea>
         </div>
-        <!-- Goal check-ins -->
-        <div style="margin-bottom:14px" id="daily-goal-checkins"></div>
-        <!-- Save -->
-        <button class="btn btn-green" style="width:100%" onclick="saveDailyEntry()">Save entry</button>
+        <div id="daily-goal-checkins" style="margin-bottom:14px"></div>
+        <button class="btn btn-green" style="width:100%;justify-content:center" onclick="saveDailyEntry()">Save entry</button>
       </div>
-      <!-- Right: recent entries -->
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Recent entries</div>
         <div id="daily-history-list"></div>
@@ -1868,7 +1951,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
   </div>
 </div>
 
-<!-- GOAL MODAL -->
+<!-- GOAL MODAL (add/edit) -->
 <div class="modal-overlay" id="goal-modal" onclick="if(event.target===this)closeGoalModal()">
   <div class="modal" style="max-width:540px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
@@ -1879,18 +1962,14 @@ body.light-mode .copilot-wrap { box-shadow: none; }
       <div class="modal-field"><label class="modal-label">Goal title</label><input class="modal-input" id="gm-title" placeholder="e.g. Lower handicap by 6 strokes"></div>
       <div class="modal-field"><label class="modal-label">Category</label>
         <select class="modal-select" id="gm-category">
-          <option value="trading">📈 Trading</option>
-          <option value="fitness">💪 Fitness</option>
-          <option value="finance">💰 Finance</option>
-          <option value="learning">📚 Learning</option>
-          <option value="mindset">🧠 Mindset</option>
-          <option value="social">🤝 Social</option>
-          <option value="other">⭐ Other</option>
+          <option value="trading">📈 Trading</option><option value="fitness">💪 Fitness</option>
+          <option value="finance">💰 Finance</option><option value="learning">📚 Learning</option>
+          <option value="mindset">🧠 Mindset</option><option value="social">🤝 Social</option><option value="other">⭐ Other</option>
         </select>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="modal-field"><label class="modal-label">Target value <span style="color:var(--dim);font-weight:400">(number)</span></label><input class="modal-input" id="gm-target" type="number" placeholder="e.g. 100"></div>
-        <div class="modal-field"><label class="modal-label">Unit <span style="color:var(--dim);font-weight:400">(optional)</span></label><input class="modal-input" id="gm-unit" placeholder="e.g. trades, lbs, %"></div>
+        <div class="modal-field"><label class="modal-label">Target value</label><input class="modal-input" id="gm-target" type="number" placeholder="e.g. 100"></div>
+        <div class="modal-field"><label class="modal-label">Unit</label><input class="modal-input" id="gm-unit" placeholder="e.g. lbs, trades, %"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="modal-field"><label class="modal-label">Starting value</label><input class="modal-input" id="gm-start" type="number" placeholder="0"></div>
@@ -1900,14 +1979,19 @@ body.light-mode .copilot-wrap { box-shadow: none; }
         <div class="modal-field"><label class="modal-label">Start date</label><input class="modal-input" id="gm-startdate" type="date"></div>
         <div class="modal-field"><label class="modal-label">Deadline</label><input class="modal-input" id="gm-deadline" type="date"></div>
       </div>
-      <div class="modal-field"><label class="modal-label">Description / why this matters</label><textarea class="modal-input" id="gm-desc" rows="2" placeholder="Why is this goal important to you?" style="resize:vertical"></textarea></div>
-      <div class="modal-field"><label class="modal-label">Milestones <span style="color:var(--dim);font-weight:400">— comma separated values</span></label><input class="modal-input" id="gm-milestones" placeholder="e.g. 25, 50, 75 (% or units)"></div>
+      <div class="modal-field"><label class="modal-label">Why this matters</label><textarea class="modal-input" id="gm-desc" rows="2" placeholder="What will this unlock for you?" style="resize:vertical"></textarea></div>
+      <div class="modal-field"><label class="modal-label">Milestones <span style="color:var(--dim);font-weight:400">comma separated</span></label><input class="modal-input" id="gm-milestones" placeholder="e.g. 25, 50, 75"></div>
     </div>
     <div style="display:flex;gap:8px;margin-top:18px">
       <button class="btn btn-green" style="flex:1" onclick="saveGoal()">Save goal</button>
       <button class="btn btn-sm btn-red" id="gm-delete-btn" style="display:none" onclick="deleteGoal()">Delete</button>
     </div>
   </div>
+</div>
+
+<!-- GOAL DETAIL OVERLAY -->
+<div class="goal-detail-overlay" id="goal-detail-overlay" onclick="if(event.target===this)closeGoalDetail()">
+  <div class="goal-detail-panel" id="goal-detail-panel"></div>
 </div>
 
 <div class="page" id="page-routine">
@@ -6488,350 +6572,431 @@ function updateThemeBtn(isLight) {
 })();
 
 // ─── JOURNAL ──────────────────────────────────────────────────────────────────
-
-// State helpers — journal data lives in state.journal
 function getJournal() {
-  if (!state.journal) state.journal = { goals: [], dailyEntries: {} };
+  if (!state.journal) state.journal = { goals:[], dailyEntries:{} };
   if (!state.journal.goals) state.journal.goals = [];
   if (!state.journal.dailyEntries) state.journal.dailyEntries = {};
   return state.journal;
 }
 
 let journalTab = 'goals';
-let dailyViewDate = new Date().toISOString().slice(0, 10);
+let dailyViewDate = new Date().toISOString().slice(0,10);
 let editingGoalIdx = null;
 
 const CAT_COLORS = { trading:'#9B7FFF', fitness:'#00d084', finance:'#f5a623', learning:'#4a9eff', mindset:'#ff7eb3', social:'#00d4ff', other:'#aaa' };
 const CAT_ICONS  = { trading:'📈', fitness:'💪', finance:'💰', learning:'📚', mindset:'🧠', social:'🤝', other:'⭐' };
-const MOODS = ['😤 Frustrated','😐 Neutral','😊 Focused','🔥 Confident','😴 Tired'];
+const MOODS      = ['😤','😐','😊','🔥','😴'];
+const MOOD_NAMES = ['Frustrated','Neutral','Focused','Confident','Tired'];
 
 function renderJournalPage() {
   switchJournalTab(journalTab);
   updateJournalAddBtn();
 }
-
 function updateJournalAddBtn() {
   const btn = document.getElementById('journal-add-btn');
   if (!btn) return;
-  btn.textContent = journalTab === 'goals' ? '+ Add Goal' : '+ Today\'s Log';
+  btn.textContent = journalTab === 'goals' ? '+ Add Goal' : '+ Log Today';
   btn.onclick = journalTab === 'goals' ? openGoalModal : () => switchJournalTab('daily');
 }
-
 function switchJournalTab(tab) {
   journalTab = tab;
-  document.getElementById('jtab-goals').style.display  = tab === 'goals'  ? '' : 'none';
-  document.getElementById('jtab-daily').style.display  = tab === 'daily'  ? '' : 'none';
-  document.getElementById('jtab-goals-btn').classList.toggle('jtab-active', tab === 'goals');
-  document.getElementById('jtab-daily-btn').classList.toggle('jtab-active', tab === 'daily');
+  document.getElementById('jtab-goals').style.display  = tab==='goals' ? '' : 'none';
+  document.getElementById('jtab-daily').style.display  = tab==='daily' ? '' : 'none';
+  document.getElementById('jtab-goals-btn').classList.toggle('jtab-active', tab==='goals');
+  document.getElementById('jtab-daily-btn').classList.toggle('jtab-active', tab==='daily');
   updateJournalAddBtn();
-  if (tab === 'goals') renderGoalsTab();
+  if (tab==='goals') { renderGoalsTab(); startJournalHeroCanvas(); }
   else renderDailyTab();
 }
 
-// ── GOALS TAB ────────────────────────────────────────────────────────────────
+// ── HERO CANVAS (cursor-following orbs) ──────────────────────────────────────
+let _heroRaf = null;
+function startJournalHeroCanvas() {
+  const canvas = document.getElementById('journal-hero-canvas');
+  if (!canvas) return;
+  if (_heroRaf) cancelAnimationFrame(_heroRaf);
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width; canvas.height = rect.height;
+  let mx = rect.width/2, my = rect.height/2;
+  const orbs = [
+    { x:rect.width*.2, y:rect.height*.5, vx:.3, vy:.15, r:60, col:'rgba(155,127,255,' },
+    { x:rect.width*.8, y:rect.height*.3, vx:-.2, vy:.2,  r:50, col:'rgba(74,158,255,' },
+    { x:rect.width*.5, y:rect.height*.8, vx:.15, vy:-.25,r:45, col:'rgba(0,208,132,' },
+  ];
+  canvas.parentElement.addEventListener('mousemove', e => {
+    const r = canvas.getBoundingClientRect();
+    mx = e.clientX - r.left; my = e.clientY - r.top;
+  });
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    orbs.forEach(o => {
+      o.x += o.vx + (mx - o.x) * 0.004;
+      o.y += o.vy + (my - o.y) * 0.004;
+      if (o.x < 0 || o.x > canvas.width)  o.vx *= -1;
+      if (o.y < 0 || o.y > canvas.height) o.vy *= -1;
+      const g = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r*2);
+      g.addColorStop(0, o.col+'0.18)'); g.addColorStop(1, o.col+'0)');
+      ctx.beginPath(); ctx.arc(o.x,o.y,o.r*2,0,Math.PI*2);
+      ctx.fillStyle=g; ctx.fill();
+    });
+    // Grid lines
+    ctx.strokeStyle='rgba(155,127,255,0.06)'; ctx.lineWidth=1;
+    for(let x=0;x<canvas.width;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
+    for(let y=0;y<canvas.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
+    _heroRaf = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── GOALS TAB ─────────────────────────────────────────────────────────────────
+function goalProgress(g) {
+  const s=parseFloat(g.startVal)||0, t=parseFloat(g.target)||0, c=parseFloat(g.current)||0;
+  if(t===s) return g.status==='done'?100:0;
+  return Math.min(100,Math.max(0,Math.round((c-s)/(t-s)*100)));
+}
+function daysLeft(dl) {
+  if(!dl) return null;
+  return Math.ceil((new Date(dl)-new Date())/86400000);
+}
+
 function renderGoalsTab() {
   const j = getJournal();
   const goals = j.goals;
   const empty = document.getElementById('journal-goals-empty');
   const grid  = document.getElementById('journal-goals-grid');
-  const strip = document.getElementById('journal-summary-strip');
+  const daysJ = Object.keys(j.dailyEntries).filter(d=>j.dailyEntries[d].notes).length;
+  const avgProg = goals.length ? Math.round(goals.reduce((a,g)=>a+goalProgress(g),0)/goals.length) : 0;
 
-  // Summary strip
-  const active    = goals.filter(g => g.status !== 'done').length;
-  const completed = goals.filter(g => g.status === 'done').length;
-  const avgProg   = goals.length ? Math.round(goals.reduce((a,g) => a + goalProgress(g), 0) / goals.length) : 0;
-  const overdue   = goals.filter(g => g.deadline && g.status !== 'done' && new Date(g.deadline) < new Date()).length;
-  strip.innerHTML = [
-    { val: goals.length, lbl: 'Total Goals', col: 'var(--accent)' },
-    { val: active,       lbl: 'In Progress',  col: 'var(--blue)' },
-    { val: completed + '/' + goals.length, lbl: 'Completed', col: 'var(--green)' },
-    { val: overdue || '0', lbl: overdue ? '⚠ Overdue' : 'On Track', col: overdue ? 'var(--red)' : 'var(--green)' },
-  ].map(s => `<div class="journal-stat"><div class="journal-stat-val" style="color:${s.col}">${s.val}</div><div class="journal-stat-lbl">${s.lbl}</div></div>`).join('');
+  // Update hero stats with count-up
+  const vals = [goals.length, goals.filter(g=>g.status!=='done').length, avgProg+'%', daysJ];
+  const ids  = ['jstat-val-0','jstat-val-1','jstat-val-2','jstat-val-3'];
+  ids.forEach((id,i) => { const el=document.getElementById(id); if(el) el.textContent=vals[i]; });
 
-  if (!goals.length) { empty.style.display = ''; grid.innerHTML = ''; return; }
-  empty.style.display = 'none';
+  if(!goals.length) { empty.style.display=''; grid.innerHTML=''; return; }
+  empty.style.display='none';
 
-  // Group by category
   const byCat = {};
-  goals.forEach((g, i) => {
-    if (!byCat[g.category]) byCat[g.category] = [];
-    byCat[g.category].push({...g, _idx: i});
-  });
+  goals.forEach((g,i) => { if(!byCat[g.category])byCat[g.category]=[]; byCat[g.category].push({...g,_idx:i}); });
 
-  grid.innerHTML = Object.entries(byCat).map(([cat, gs]) => `
-    <div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${CAT_COLORS[cat]||'var(--muted)'};margin-bottom:10px;display:flex;align-items:center;gap:6px">
+  grid.innerHTML = Object.entries(byCat).map(([cat,gs]) => `
+    <div style="margin-bottom:24px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${CAT_COLORS[cat]||'var(--muted)'};margin-bottom:12px;display:flex;align-items:center;gap:6px">
         ${CAT_ICONS[cat]||'⭐'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}
         <span style="font-size:10px;color:var(--dim);font-weight:400">${gs.length} goal${gs.length>1?'s':''}</span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px">
-        ${gs.map(g => renderGoalCard(g)).join('')}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+        ${gs.map(g=>renderGoalCard(g)).join('')}
       </div>
     </div>`).join('');
-}
 
-function goalProgress(g) {
-  const start = parseFloat(g.startVal) || 0;
-  const target = parseFloat(g.target) || 0;
-  const current = parseFloat(g.current) || 0;
-  if (target === start) return g.status === 'done' ? 100 : 0;
-  return Math.min(100, Math.max(0, Math.round((current - start) / (target - start) * 100)));
-}
-
-function daysLeft(deadline) {
-  if (!deadline) return null;
-  const diff = Math.ceil((new Date(deadline) - new Date()) / 86400000);
-  return diff;
+  // Add mouse-follow glow to each card
+  grid.querySelectorAll('.goal-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
+      card.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
+    });
+  });
 }
 
 function renderGoalCard(g) {
-  const pct      = goalProgress(g);
-  const col      = CAT_COLORS[g.category] || 'var(--accent)';
-  const done     = g.status === 'done' || pct >= 100;
-  const dl       = daysLeft(g.deadline);
-  const dlText   = dl === null ? '' : dl < 0 ? `<span style="color:var(--red);font-size:10px;font-weight:600">⚠ ${Math.abs(dl)}d overdue</span>` : dl === 0 ? `<span style="color:var(--amber);font-size:10px">Due today</span>` : `<span style="font-size:10px;color:var(--muted)">${dl}d left</span>`;
-  const milestones = (g.milestones || []).map(m => parseFloat(m)).filter(Boolean);
-  const unit = g.unit || '';
+  const pct  = goalProgress(g);
+  const col  = CAT_COLORS[g.category]||'#9B7FFF';
+  const done = g.status==='done'||pct>=100;
+  const dl   = daysLeft(g.deadline);
+  const unit = g.unit||'';
+  const milestones = (g.milestones||[]).map(m=>parseFloat(m)).filter(Boolean);
+  const dlBadge = dl===null?'':dl<0?`<span style="font-size:10px;font-weight:700;color:var(--red);background:rgba(255,77,77,.12);padding:2px 7px;border-radius:4px">⚠ ${Math.abs(dl)}d overdue</span>`:dl===0?`<span style="font-size:10px;color:var(--amber)">Due today</span>`:`<span style="font-size:10px;color:var(--muted)">${dl}d left</span>`;
 
-  // Timeline bar with milestones
-  const milestoneDots = milestones.map(m => {
-    const mPct = Math.min(100, Math.max(0, ((m - (parseFloat(g.startVal)||0)) / ((parseFloat(g.target)||1) - (parseFloat(g.startVal)||0))) * 100));
-    const reached = parseFloat(g.current) >= m;
-    return `<div class="milestone-dot ${reached?'reached':''}" style="position:absolute;left:${mPct}%;transform:translateX(-50%);top:-1px" title="${m}${unit}"></div>`;
+  // SVG ring
+  const R=28, circ=2*Math.PI*R, dash=circ*(pct/100);
+  const ring = `<svg width="72" height="72" viewBox="0 0 72 72">
+    <circle cx="36" cy="36" r="${R}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="5"/>
+    <circle cx="36" cy="36" r="${R}" fill="none" stroke="${col}" stroke-width="5"
+      stroke-dasharray="${dash} ${circ}" stroke-linecap="round"
+      style="transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1);filter:drop-shadow(0 0 6px ${col}88)"/>
+    ${done?`<text x="36" y="41" text-anchor="middle" fill="${col}" font-size="18">✓</text>`:`<text x="36" y="40" text-anchor="middle" fill="${col}" font-size="13" font-weight="700" font-family="Geist Mono,monospace">${pct}%</text>`}
+  </svg>`;
+
+  const mipPips = milestones.map(m => {
+    const s=parseFloat(g.startVal)||0, t=parseFloat(g.target)||1;
+    const mPct=Math.min(100,Math.max(0,(m-s)/(t-s)*100));
+    const reached=parseFloat(g.current||0)>=m;
+    return `<div class="milestone-pip ${reached?'reached':''}" style="left:${mPct}%;--c:${col}" title="${m}${unit}"></div>`;
   }).join('');
 
-  // Weekly check-ins for this goal
-  const j = getJournal();
-  const recentCheckins = Object.entries(j.dailyEntries)
-    .filter(([d, e]) => e.goalCheckins && e.goalCheckins[g._idx] !== undefined)
-    .sort((a,b) => b[0].localeCompare(a[0]))
-    .slice(0, 3);
-
-  return `<div class="goal-card" onclick="openGoalModal(${g._idx})" style="cursor:pointer">
-    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col};opacity:${done?1:.7}"></div>
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px;margin-bottom:8px">
+  return `<div class="goal-card" onclick="openGoalDetail(${g._idx})" style="--c:${col}">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col};opacity:${done?1:.75};border-radius:14px 14px 0 0"></div>
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-top:4px">
+      <div class="goal-ring-wrap" style="flex-shrink:0">${ring}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:700;color:var(--text);${done?'text-decoration:line-through;opacity:.6':''}">${g.title}</div>
-        ${g.desc ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.desc}</div>` : ''}
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;${done?'opacity:.55;text-decoration:line-through':''}">${g.title}</div>
+        ${g.desc?`<div style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${g.desc}</div>`:''}
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          ${dlBadge}
+          ${done?'<span style="font-size:11px;color:var(--green);font-weight:700">✅ Complete</span>':''}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px">
+          <span><strong style="color:${col};font-family:\'Geist Mono\',monospace">${g.current||g.startVal||0}${unit}</strong></span>
+          <span>${g.target}${unit}</span>
+        </div>
+        <div class="goal-progress-track" style="position:relative">
+          <div class="goal-progress-fill" style="width:${pct}%;background:${done?'var(--green)':col};box-shadow:0 0 8px ${col}66"></div>
+          ${mipPips}
+        </div>
+        ${milestones.length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">${milestones.map(m=>{const r=parseFloat(g.current||0)>=m;return`<span style="font-size:9px;padding:1px 6px;border-radius:3px;font-weight:600;background:${r?col+'22':'rgba(255,255,255,0.04)'};color:${r?col:'var(--dim)'}">${m}${unit}</span>`;}).join('')}</div>`:''}
       </div>
-      <div style="display:flex;align-items:center;gap:6px;margin-left:10px;flex-shrink:0">
-        ${done ? '<span style="font-size:18px">✅</span>' : ''}
-        ${dlText}
-      </div>
     </div>
-
-    <!-- Progress numbers -->
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-      <div style="font-size:22px;font-weight:800;font-family:\'Geist Mono\',monospace;color:${col};letter-spacing:-1px">${g.current||g.startVal||0}<span style="font-size:12px;font-weight:500;color:var(--muted);margin-left:3px">${unit}</span></div>
-      <div style="font-size:12px;color:var(--muted)">of <strong style="color:var(--text)">${g.target}${unit}</strong> · <strong style="color:${col}">${pct}%</strong></div>
-    </div>
-
-    <!-- Progress bar with milestones -->
-    <div class="goal-progress-track" style="position:relative">
-      <div class="goal-progress-fill" style="width:${pct}%;background:${done?'var(--green)':col}${done?'':';box-shadow:0 0 8px '+col+'55'}"></div>
-      <div style="position:absolute;top:0;left:0;right:0;height:100%;display:flex;align-items:center">${milestoneDots}</div>
-    </div>
-
-    <!-- Milestone labels -->
-    ${milestones.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${milestones.map(m=>{const reached=parseFloat(g.current)>=m;return`<span style="font-size:9px;padding:1px 6px;border-radius:3px;font-weight:600;background:${reached?col+'22':'var(--bg4)'};color:${reached?col:'var(--dim)'};border:1px solid ${reached?col+'44':'transparent'}">${m}${unit}</span>`;}).join('')}</div>` : ''}
-
-    <!-- Timeline -->
-    ${g.startDate || g.deadline ? `<div style="display:flex;justify-content:space-between;margin-top:10px;font-size:10px;color:var(--dim)">
-      <span>Started: ${g.startDate || '—'}</span>
-      <span>Deadline: ${g.deadline || '—'}</span>
-    </div>` : ''}
-
-    <!-- Recent check-ins preview -->
-    ${recentCheckins.length ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:6px">Recent check-ins</div>
-      ${recentCheckins.map(([d,e])=>`<div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:2px"><span style="color:var(--dim)">${d}</span> — ${(e.goalCheckins[g._idx]||'').slice(0,60)}${(e.goalCheckins[g._idx]||'').length>60?'…':''}</div>`).join('')}
-    </div>` : ''}
   </div>`;
+}
+
+// ── GOAL DETAIL PANEL ─────────────────────────────────────────────────────────
+function openGoalDetail(idx) {
+  const j = getJournal();
+  const g = {...j.goals[idx], _idx:idx};
+  const col = CAT_COLORS[g.category]||'#9B7FFF';
+  const pct = goalProgress(g);
+  const unit = g.unit||'';
+  const done = g.status==='done'||pct>=100;
+  const dl   = daysLeft(g.deadline);
+  const milestones = (g.milestones||[]).map(m=>parseFloat(m)).filter(Boolean);
+
+  // Check-in history for this goal
+  const checkins = Object.entries(j.dailyEntries)
+    .filter(([,e])=>e.goalCheckins&&e.goalCheckins[idx]!==undefined)
+    .sort((a,b)=>b[0].localeCompare(a[0]));
+
+  // Build progress timeline dots (last 14 days)
+  const days14 = Array.from({length:14},(_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-(13-i));
+    return d.toISOString().slice(0,10);
+  });
+
+  const R=44, circ=2*Math.PI*R, dash=circ*(pct/100);
+  const bigRing = `<svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg)">
+    <circle cx="60" cy="60" r="${R}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="8"/>
+    <circle cx="60" cy="60" r="${R}" fill="none" stroke="${col}" stroke-width="8"
+      stroke-dasharray="${dash} ${circ}" stroke-linecap="round"
+      style="filter:drop-shadow(0 0 10px ${col}99);transition:stroke-dasharray 1s ease"/>
+  </svg>`;
+
+  const panel = document.getElementById('goal-detail-panel');
+  panel.innerHTML = `
+    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,${col},${col}44);border-radius:20px 20px 0 0"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;margin-top:8px">
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${col};margin-bottom:6px">${CAT_ICONS[g.category]||'⭐'} ${(g.category||'').charAt(0).toUpperCase()+(g.category||'').slice(1)}</div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);line-height:1.2;max-width:420px">${g.title}</div>
+        ${g.desc?`<div style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.5">${g.desc}</div>`:''}
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;margin-left:16px">
+        <button class="btn btn-sm" onclick="openGoalModal(${idx});closeGoalDetail()" style="font-size:11px">Edit</button>
+        <button class="btn btn-sm" onclick="closeGoalDetail()" style="font-size:18px;padding:4px 10px">✕</button>
+      </div>
+    </div>
+
+    <!-- Big ring + stats -->
+    <div style="display:grid;grid-template-columns:130px 1fr;gap:24px;align-items:center;margin-bottom:28px;background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,0.06)">
+      <div style="position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center">
+        ${bigRing}
+        <div style="position:absolute;display:flex;flex-direction:column;align-items:center">
+          <div style="font-size:26px;font-weight:800;font-family:\'Geist Mono\',monospace;color:${col};letter-spacing:-1px">${pct}%</div>
+          <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em">complete</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
+          <div style="font-size:22px;font-weight:800;font-family:\'Geist Mono\',monospace;color:${col}">${g.current||g.startVal||0}<span style="font-size:12px;color:var(--muted);font-weight:400"> ${unit}</span></div>
+          <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px">Current</div>
+        </div>
+        <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
+          <div style="font-size:22px;font-weight:800;font-family:\'Geist Mono\',monospace;color:var(--text)">${g.target}<span style="font-size:12px;color:var(--muted);font-weight:400"> ${unit}</span></div>
+          <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px">Target</div>
+        </div>
+        <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
+          <div style="font-size:22px;font-weight:800;font-family:\'Geist Mono\',monospace;color:${dl===null?'var(--muted)':dl<0?'var(--red)':dl<7?'var(--amber)':'var(--text)'}">${dl===null?'—':Math.abs(dl)}</div>
+          <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px">${dl===null?'No deadline':dl<0?'Days overdue':'Days left'}</div>
+        </div>
+        <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
+          <div style="font-size:22px;font-weight:800;font-family:\'Geist Mono\',monospace;color:var(--accent)">${checkins.length}</div>
+          <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px">Check-ins</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Milestones -->
+    ${milestones.length?`
+    <div style="margin-bottom:24px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Milestones</div>
+      <div style="position:relative;height:32px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:visible;margin:0 6px">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:${pct}%;background:linear-gradient(90deg,${col}44,${col}88);border-radius:8px;transition:width .8s ease"></div>
+        ${milestones.map(m=>{
+          const s=parseFloat(g.startVal)||0,t=parseFloat(g.target)||1;
+          const mPct=Math.min(100,Math.max(0,(m-s)/(t-s)*100));
+          const reached=parseFloat(g.current||0)>=m;
+          return `<div style="position:absolute;left:${mPct}%;top:-8px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px">
+            <div style="font-size:9px;font-weight:700;color:${reached?col:'var(--dim)'}">${m}${unit}</div>
+            <div style="width:3px;height:46px;background:${reached?col:'rgba(255,255,255,0.15)'};border-radius:2px;box-shadow:${reached?'0 0 6px '+col:'none'}"></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:''}
+
+    <!-- 14-day activity -->
+    <div style="margin-bottom:24px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Activity — last 14 days</div>
+      <div style="display:flex;gap:4px;align-items:flex-end">
+        ${days14.map(d=>{
+          const e=j.dailyEntries[d];
+          const hasNote=e&&e.goalCheckins&&e.goalCheckins[idx]!==undefined;
+          const hasVal=e&&e.goalValues&&e.goalValues[idx]!==undefined;
+          const active=hasNote||hasVal;
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+            <div style="width:100%;height:28px;border-radius:4px;background:${active?col+'99':'rgba(255,255,255,0.05)'};transition:all .2s;${active?'box-shadow:0 0 8px '+col+'44':''}" title="${d}${hasNote?' — '+e.goalCheckins[idx].slice(0,40):''}"></div>
+            <div style="font-size:8px;color:var(--dim)">${new Date(d+'T12:00').toLocaleDateString('en-US',{month:'numeric',day:'numeric'})}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Check-in log -->
+    ${checkins.length?`
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Check-in log</div>
+      <div style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+        ${checkins.map(([d,e])=>`<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 12px;border-left:3px solid ${col}66">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+            <span style="font-size:11px;font-weight:600;color:${col}">${new Date(d+'T12:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</span>
+            ${e.goalValues&&e.goalValues[idx]!==undefined?`<span style="font-size:11px;font-family:\'Geist Mono\',monospace;color:var(--text)">${e.goalValues[idx]} ${unit}</span>`:''}
+          </div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5">${e.goalCheckins[idx]||'—'}</div>
+        </div>`).join('')}
+      </div>
+    </div>`:`<div style="text-align:center;padding:20px;color:var(--dim);font-size:13px">No check-ins yet — log progress in the Daily Log tab</div>`}
+
+    <!-- Update value -->
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;align-items:flex-end">
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Update current value</div>
+        <input class="modal-input" id="detail-update-val" type="number" value="${g.current||g.startVal||0}" style="font-size:16px;font-weight:700;font-family:\'Geist Mono\',monospace">
+      </div>
+      <button class="btn btn-green" onclick="quickUpdateGoalVal(${idx})" style="height:38px">Update</button>
+    </div>`;
+
+  document.getElementById('goal-detail-overlay').classList.add('open');
+}
+
+function closeGoalDetail() {
+  document.getElementById('goal-detail-overlay').classList.remove('open');
+}
+
+function quickUpdateGoalVal(idx) {
+  const val = document.getElementById('detail-update-val')?.value;
+  if (val === '' || val === undefined) return;
+  const j = getJournal();
+  j.goals[idx].current = val;
+  if (parseFloat(val) >= parseFloat(j.goals[idx].target) && j.goals[idx].target) j.goals[idx].status = 'done';
+  state.journal = j; save();
+  closeGoalDetail();
+  renderGoalsTab();
 }
 
 // ── GOAL MODAL ────────────────────────────────────────────────────────────────
 function openGoalModal(idx) {
-  editingGoalIdx = idx !== undefined ? idx : null;
-  const j = getJournal();
-  const g = idx !== undefined ? j.goals[idx] : null;
+  editingGoalIdx = idx!==undefined ? idx : null;
+  const j=getJournal(), g=idx!==undefined?j.goals[idx]:null;
   document.getElementById('goal-modal-title').textContent = g ? 'Edit Goal' : 'Add Goal';
-  document.getElementById('gm-delete-btn').style.display = g ? '' : 'none';
-  document.getElementById('gm-title').value      = g?.title || '';
-  document.getElementById('gm-category').value   = g?.category || 'trading';
-  document.getElementById('gm-target').value     = g?.target || '';
-  document.getElementById('gm-unit').value       = g?.unit || '';
-  document.getElementById('gm-start').value      = g?.startVal || '';
-  document.getElementById('gm-current').value    = g?.current || '';
-  document.getElementById('gm-startdate').value  = g?.startDate || new Date().toISOString().slice(0,10);
-  document.getElementById('gm-deadline').value   = g?.deadline || '';
-  document.getElementById('gm-desc').value       = g?.desc || '';
-  document.getElementById('gm-milestones').value = (g?.milestones || []).join(', ');
+  document.getElementById('gm-delete-btn').style.display  = g ? '' : 'none';
+  document.getElementById('gm-title').value      = g?.title||'';
+  document.getElementById('gm-category').value   = g?.category||'trading';
+  document.getElementById('gm-target').value     = g?.target||'';
+  document.getElementById('gm-unit').value       = g?.unit||'';
+  document.getElementById('gm-start').value      = g?.startVal||'';
+  document.getElementById('gm-current').value    = g?.current||'';
+  document.getElementById('gm-startdate').value  = g?.startDate||new Date().toISOString().slice(0,10);
+  document.getElementById('gm-deadline').value   = g?.deadline||'';
+  document.getElementById('gm-desc').value       = g?.desc||'';
+  document.getElementById('gm-milestones').value = (g?.milestones||[]).join(', ');
   document.getElementById('goal-modal').classList.add('open');
 }
-
 function closeGoalModal() { document.getElementById('goal-modal').classList.remove('open'); }
-
 function saveGoal() {
-  const j = getJournal();
-  const title = document.getElementById('gm-title').value.trim();
-  if (!title) { alert('Please enter a goal title'); return; }
-  const milestoneRaw = document.getElementById('gm-milestones').value;
-  const milestones = milestoneRaw.split(',').map(s=>s.trim()).filter(Boolean);
-  const goal = {
-    title,
-    category:  document.getElementById('gm-category').value,
-    target:    document.getElementById('gm-target').value,
-    unit:      document.getElementById('gm-unit').value.trim(),
-    startVal:  document.getElementById('gm-start').value,
-    current:   document.getElementById('gm-current').value,
-    startDate: document.getElementById('gm-startdate').value,
-    deadline:  document.getElementById('gm-deadline').value,
-    desc:      document.getElementById('gm-desc').value.trim(),
-    milestones,
-    status:    'active',
-    createdAt: editingGoalIdx !== null ? (j.goals[editingGoalIdx]?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-  };
-  // Auto-mark done
-  if (parseFloat(goal.current) >= parseFloat(goal.target) && goal.target) goal.status = 'done';
-  if (editingGoalIdx !== null) j.goals[editingGoalIdx] = goal;
-  else j.goals.push(goal);
-  state.journal = j; save();
-  closeGoalModal(); renderGoalsTab();
+  const j=getJournal();
+  const title=document.getElementById('gm-title').value.trim();
+  if(!title){alert('Please enter a goal title');return;}
+  const ms=document.getElementById('gm-milestones').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const goal={title,category:document.getElementById('gm-category').value,target:document.getElementById('gm-target').value,unit:document.getElementById('gm-unit').value.trim(),startVal:document.getElementById('gm-start').value,current:document.getElementById('gm-current').value,startDate:document.getElementById('gm-startdate').value,deadline:document.getElementById('gm-deadline').value,desc:document.getElementById('gm-desc').value.trim(),milestones:ms,status:'active',createdAt:editingGoalIdx!==null?(j.goals[editingGoalIdx]?.createdAt||new Date().toISOString()):new Date().toISOString()};
+  if(parseFloat(goal.current)>=parseFloat(goal.target)&&goal.target) goal.status='done';
+  if(editingGoalIdx!==null) j.goals[editingGoalIdx]=goal; else j.goals.push(goal);
+  state.journal=j; save(); closeGoalModal(); renderGoalsTab();
 }
-
 function deleteGoal() {
-  if (!confirm('Delete this goal and all its check-ins?')) return;
-  const j = getJournal();
-  j.goals.splice(editingGoalIdx, 1);
-  state.journal = j; save();
-  closeGoalModal(); renderGoalsTab();
+  if(!confirm('Delete this goal?'))return;
+  const j=getJournal(); j.goals.splice(editingGoalIdx,1);
+  state.journal=j; save(); closeGoalModal(); renderGoalsTab();
 }
-
 function journalAddAction() {
-  if (journalTab === 'goals') openGoalModal();
-  else { dailyViewDate = new Date().toISOString().slice(0,10); renderDailyTab(); }
+  if(journalTab==='goals') openGoalModal(); else {dailyViewDate=new Date().toISOString().slice(0,10);renderDailyTab();}
 }
 
 // ── DAILY LOG TAB ─────────────────────────────────────────────────────────────
 function renderDailyTab() {
-  const j = getJournal();
-  const dateEl = document.getElementById('daily-date-label');
-  const entry  = j.dailyEntries[dailyViewDate] || {};
-  if (dateEl) {
-    const d = new Date(dailyViewDate + 'T12:00:00');
-    dateEl.textContent = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
-  }
-
-  // Notes
-  const ta = document.getElementById('daily-notes');
-  if (ta) ta.value = entry.notes || '';
-
-  // Mood
-  document.querySelectorAll('.mood-btn').forEach(btn => {
-    btn.classList.toggle('selected', parseInt(btn.dataset.mood) === entry.mood);
-  });
-
-  // Nav buttons
-  const prevBtn = document.getElementById('daily-prev-btn');
-  const nextBtn = document.getElementById('daily-next-btn');
-  const today   = new Date().toISOString().slice(0,10);
-  if (nextBtn) nextBtn.disabled = dailyViewDate >= today;
-
-  // Goal check-ins
-  const checkins = document.getElementById('daily-goal-checkins');
-  if (checkins && j.goals.length) {
-    checkins.innerHTML = `
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Check in on your goals</div>
+  const j=getJournal(), entry=j.dailyEntries[dailyViewDate]||{};
+  const el=document.getElementById('daily-date-label');
+  if(el){const d=new Date(dailyViewDate+'T12:00:00');el.textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});}
+  const ta=document.getElementById('daily-notes'); if(ta) ta.value=entry.notes||'';
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===entry.mood));
+  const nb=document.getElementById('daily-next-btn'); if(nb) nb.disabled=dailyViewDate>=new Date().toISOString().slice(0,10);
+  const cc=document.getElementById('daily-goal-checkins');
+  if(cc&&j.goals.length){
+    cc.innerHTML=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Goal check-ins</div>
       <div style="background:var(--bg3);border-radius:var(--r);padding:2px 0">
-        ${j.goals.filter(g=>g.status!=='done').map((g,i)=>`
-          <div class="goal-checkin-row">
-            <span style="font-size:14px">${CAT_ICONS[g.category]||'⭐'}</span>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.title}</div>
-              <input class="modal-input" style="margin-top:4px;padding:5px 8px;font-size:11px;width:100%;box-sizing:border-box" id="checkin-${j.goals.indexOf(g)}"
-                placeholder="Progress update or note..." value="${(entry.goalCheckins||{})[j.goals.indexOf(g)]||''}">
-            </div>
-            <div style="flex-shrink:0">
-              <input type="number" class="modal-input" style="width:70px;padding:5px 8px;font-size:11px;text-align:center" 
-                id="checkin-val-${j.goals.indexOf(g)}" placeholder="${g.current||g.startVal||0}" 
-                title="Update current value"
-                value="${(entry.goalValues||{})[j.goals.indexOf(g)]||''}">
-            </div>
-          </div>`).join('')}
+        ${j.goals.filter(g=>g.status!=='done').map((g,fi)=>{const i=j.goals.indexOf(g);return`<div class="goal-checkin-row">
+          <span style="font-size:14px">${CAT_ICONS[g.category]||'⭐'}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:600;color:var(--text)">${g.title}</div>
+            <input class="modal-input" style="margin-top:4px;padding:5px 8px;font-size:11px;width:100%;box-sizing:border-box" id="checkin-${i}" placeholder="Note..." value="${(entry.goalCheckins||{})[i]||''}">
+          </div>
+          <input type="number" class="modal-input" style="width:70px;padding:5px 8px;font-size:11px;text-align:center" id="checkin-val-${i}" placeholder="${g.current||0}" value="${(entry.goalValues||{})[i]||''}">
+        </div>`;}).join('')}
       </div>`;
-  } else if (checkins) {
-    checkins.innerHTML = '';
-  }
-
-  // Recent entries list
+  } else if(cc) cc.innerHTML='';
   renderDailyHistoryList();
 }
-
-function setDailyMood(idx) {
-  document.querySelectorAll('.mood-btn').forEach((btn,i) => btn.classList.toggle('selected', i === idx));
-}
-
+function setDailyMood(idx){document.querySelectorAll('.mood-btn').forEach((b,i)=>b.classList.toggle('selected',i===idx));}
 function saveDailyEntry() {
-  const j    = getJournal();
-  const mood = [...document.querySelectorAll('.mood-btn')].findIndex(b=>b.classList.contains('selected'));
-  const notes = document.getElementById('daily-notes')?.value || '';
-
-  // Collect goal check-ins and values
-  const goalCheckins = {}, goalValues = {};
-  j.goals.forEach((g, idx) => {
-    const cin = document.getElementById('checkin-'+idx);
-    const val = document.getElementById('checkin-val-'+idx);
-    if (cin && cin.value.trim()) goalCheckins[idx] = cin.value.trim();
-    if (val && val.value.trim()) {
-      goalValues[idx] = val.value.trim();
-      // Update goal current value
-      j.goals[idx].current = val.value.trim();
-      if (parseFloat(val.value) >= parseFloat(g.target) && g.target) j.goals[idx].status = 'done';
-    }
+  const j=getJournal();
+  const mood=[...document.querySelectorAll('.mood-btn')].findIndex(b=>b.classList.contains('selected'));
+  const notes=document.getElementById('daily-notes')?.value||'';
+  const goalCheckins={},goalValues={};
+  j.goals.forEach((g,idx)=>{
+    const ci=document.getElementById('checkin-'+idx),vl=document.getElementById('checkin-val-'+idx);
+    if(ci&&ci.value.trim())goalCheckins[idx]=ci.value.trim();
+    if(vl&&vl.value.trim()){goalValues[idx]=vl.value.trim();j.goals[idx].current=vl.value.trim();if(parseFloat(vl.value)>=parseFloat(g.target)&&g.target)j.goals[idx].status='done';}
   });
-
-  j.dailyEntries[dailyViewDate] = { notes, mood, goalCheckins, goalValues, savedAt: new Date().toISOString() };
-  state.journal = j; save();
-
-  const btn = document.querySelector('#jtab-daily button.btn-green') || document.querySelector('#jtab-daily .btn-green');
-  // Flash feedback on the save button
-  const saveBtn = [...document.querySelectorAll('#jtab-daily .btn')].find(b=>b.textContent.includes('Save'));
-  if (saveBtn) { saveBtn.textContent='Saved ✓'; saveBtn.style.background='var(--green)'; setTimeout(()=>{saveBtn.textContent='Save entry';saveBtn.style.background='';},1500); }
+  j.dailyEntries[dailyViewDate]={notes,mood,goalCheckins,goalValues,savedAt:new Date().toISOString()};
+  state.journal=j;save();
+  const saveBtn=[...document.querySelectorAll('#jtab-daily .btn')].find(b=>b.textContent.includes('Save'));
+  if(saveBtn){saveBtn.textContent='Saved ✓';saveBtn.style.background='var(--green)';setTimeout(()=>{saveBtn.textContent='Save entry';saveBtn.style.background='';},1500);}
   renderDailyHistoryList();
 }
-
-function dailyNavDay(dir) {
-  const d = new Date(dailyViewDate + 'T12:00:00');
-  d.setDate(d.getDate() + dir);
-  dailyViewDate = d.toISOString().slice(0,10);
-  renderDailyTab();
-}
-
-function renderDailyHistoryList() {
-  const j   = getJournal();
-  const el  = document.getElementById('daily-history-list');
-  if (!el) return;
-  const entries = Object.entries(j.dailyEntries)
-    .filter(([,e]) => e.notes || e.mood !== undefined)
-    .sort((a,b) => b[0].localeCompare(a[0]))
-    .slice(0, 14);
-  if (!entries.length) { el.innerHTML = '<div style="font-size:12px;color:var(--dim)">No entries yet</div>'; return; }
-  el.innerHTML = entries.map(([date, e]) => {
-    const d   = new Date(date + 'T12:00:00');
-    const lbl = d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
-    const mood = e.mood !== undefined ? MOODS[e.mood].split(' ')[0] : '';
-    const preview = (e.notes||'').slice(0,55) + ((e.notes||'').length>55?'…':'');
-    const checkins = Object.keys(e.goalCheckins||{}).length;
-    const isActive = date === dailyViewDate;
-    return `<div class="daily-entry-item" onclick="dailyViewDate='${date}';renderDailyTab()" style="border-color:${isActive?'var(--accent)':'var(--border)'}">
+function dailyNavDay(dir){const d=new Date(dailyViewDate+'T12:00:00');d.setDate(d.getDate()+dir);dailyViewDate=d.toISOString().slice(0,10);renderDailyTab();}
+function renderDailyHistoryList(){
+  const j=getJournal(),el=document.getElementById('daily-history-list');if(!el)return;
+  const entries=Object.entries(j.dailyEntries).filter(([,e])=>e.notes||e.mood!==undefined).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,14);
+  if(!entries.length){el.innerHTML='<div style="font-size:12px;color:var(--dim)">No entries yet</div>';return;}
+  el.innerHTML=entries.map(([date,e])=>{
+    const d=new Date(date+'T12:00:00'),lbl=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const mood=e.mood!==undefined?MOODS[e.mood]:'';
+    const preview=(e.notes||'').slice(0,55)+((e.notes||'').length>55?'…':'');
+    const ci=Object.keys(e.goalCheckins||{}).length;
+    const isActive=date===dailyViewDate;
+    return`<div class="daily-entry-item" onclick="dailyViewDate='${date}';renderDailyTab()" style="border-color:${isActive?'var(--accent)':'var(--border)'}">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
         <span style="font-size:12px;font-weight:600;color:${isActive?'var(--accent)':'var(--text)'}">${lbl}</span>
-        <div style="display:flex;gap:6px;align-items:center">
-          ${mood?`<span style="font-size:13px">${mood}</span>`:''}
-          ${checkins?`<span style="font-size:9px;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;font-weight:600">${checkins} goals</span>`:''}
-        </div>
-      </div>
-      ${preview?`<div style="font-size:11px;color:var(--muted);line-height:1.4">${preview}</div>`:''}
+        <div style="display:flex;gap:5px;align-items:center">${mood?`<span style="font-size:13px">${mood}</span>`:''}${ci?`<span style="font-size:9px;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;font-weight:600">${ci} goals</span>`:''}</div>
+      </div>${preview?`<div style="font-size:11px;color:var(--muted);line-height:1.4">${preview}</div>`:''}
     </div>`;
   }).join('');
 }
