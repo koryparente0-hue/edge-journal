@@ -847,6 +847,9 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 .cc-hud-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(155,127,255,.6);font-weight:700;margin-bottom:3px}
 .cc-hud-node{font-size:11px;color:rgba(255,255,255,.25);letter-spacing:.05em}
 .cc-corner{position:absolute;bottom:18px;right:22px;z-index:2;pointer-events:none;font-size:9px;color:rgba(255,255,255,.14);font-family:var(--mono);letter-spacing:.1em;text-align:right}
+.phero-stat{text-align:center;padding:8px}
+.phero-val{font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent)}
+.phero-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
 </style>
 </head>
 <body>
@@ -1140,6 +1143,16 @@ body.light-mode .copilot-wrap { box-shadow: none; }
     </div>
   </div>
 
+  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+    <canvas id="dh-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s0">—</div><div class="phero-lbl">NET P&amp;L</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s1">—</div><div class="phero-lbl">WIN RATE</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s2">—</div><div class="phero-lbl">TODAY'S P&amp;L</div></div>
+      <div class="phero-stat"><div class="phero-val" id="dh-s3">—</div><div class="phero-lbl">WIN STREAK</div></div>
+    </div>
+  </div>
+
   <div class="metrics">
     <div class="metric"><div class="metric-label">Total P&amp;L</div><div class="metric-val" id="m-pnl">$0</div><div class="metric-sub" id="m-pnl-sub">0 trades</div></div>
     <div class="metric"><div class="metric-label">Win Rate</div><div class="metric-val" id="m-wr">—</div><div class="metric-sub" id="m-wr-sub">0W / 0L</div></div>
@@ -1407,6 +1420,16 @@ body.light-mode .copilot-wrap { box-shadow: none; }
       <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
     </div>
   </div>
+  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+    <canvas id="hi-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="hi-s0">—</div><div class="phero-lbl">TOTAL TRADES</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="hi-s1">—</div><div class="phero-lbl">BEST TRADE</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="hi-s2">—</div><div class="phero-lbl">WORST TRADE</div></div>
+      <div class="phero-stat"><div class="phero-val" id="hi-s3">—</div><div class="phero-lbl">ACTIVE DAYS</div></div>
+    </div>
+  </div>
+
   <div id="hist-table-view">
     <!-- ROLLING 10-TRADE SPARKLINE + HOUR HEATMAP -->
     <div class="grid2" style="margin-bottom:12px">
@@ -1469,6 +1492,16 @@ body.light-mode .copilot-wrap { box-shadow: none; }
         <option value="week">This week</option>
         <option value="month">This month</option>
       </select>
+    </div>
+  </div>
+
+  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+    <canvas id="sp-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s0">—</div><div class="phero-lbl">SETUPS TRACKED</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s1">—</div><div class="phero-lbl">BEST WIN%</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s2">—</div><div class="phero-lbl">BEST SETUP P&amp;L</div></div>
+      <div class="phero-stat"><div class="phero-val" id="sp-s3">—</div><div class="phero-lbl">AVG R:R</div></div>
     </div>
   </div>
 
@@ -1815,6 +1848,15 @@ body.light-mode .copilot-wrap { box-shadow: none; }
     <div><div class="page-title">AI Insights</div><div class="page-sub">Pattern coaching across your full trade history</div></div>
     <button class="btn btn-green" onclick="runInsights()">Run analysis ↗</button>
   </div>
+  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+    <canvas id="ins-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ins-s0">—</div><div class="phero-lbl">TRADES ANALYZED</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ins-s1">—</div><div class="phero-lbl">SETUPS TRACKED</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ins-s2">—</div><div class="phero-lbl">LAST GRADE</div></div>
+      <div class="phero-stat"><div class="phero-val" id="ins-s3">—</div><div class="phero-lbl">TOP MISTAKE</div></div>
+    </div>
+  </div>
   <div id="insights-output"><div class="empty"><strong>No analysis yet</strong>Log at least 5 trades, then click "Run analysis" to get AI coaching on your patterns.</div></div>
 </div>
 
@@ -2081,6 +2123,16 @@ body.light-mode .copilot-wrap { box-shadow: none; }
   <div class="page-header">
     <div><div class="page-title">Risk &amp; Mistakes</div><div class="page-sub">Sizing consistency and what's costing you money</div></div>
   </div>
+  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+    <canvas id="ri-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ri-s0">—</div><div class="phero-lbl">CONSISTENCY</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ri-s1">—</div><div class="phero-lbl">MAX DRAWDOWN</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ri-s2">—</div><div class="phero-lbl">MISTAKES LOGGED</div></div>
+      <div class="phero-stat"><div class="phero-val" id="ri-s3">—</div><div class="phero-lbl">TRADES WITH ERRORS</div></div>
+    </div>
+  </div>
+
   <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
     <div class="metric"><div class="metric-label">Avg Risk / Trade</div><div class="metric-val" id="risk-avg">—</div><div class="metric-sub">pts × contracts</div></div>
     <div class="metric"><div class="metric-label">Risk Std Dev</div><div class="metric-val amber" id="risk-stddev">—</div><div class="metric-sub">consistency score</div></div>
@@ -2115,6 +2167,16 @@ body.light-mode .copilot-wrap { box-shadow: none; }
   <div class="page-header">
     <div><div class="page-title">Streaks &amp; Habits</div><div class="page-sub">Consistency is the edge</div></div>
   </div>
+  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+    <canvas id="sk-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sk-s0">—</div><div class="phero-lbl">WIN STREAK</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sk-s1">—</div><div class="phero-lbl">JOURNAL STREAK</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sk-s2">—</div><div class="phero-lbl">HABIT SCORE</div></div>
+      <div class="phero-stat"><div class="phero-val" id="sk-s3">—</div><div class="phero-lbl">DAYS ACTIVE</div></div>
+    </div>
+  </div>
+
   <div class="grid3" style="margin-bottom:16px">
     <div class="streak-card"><span class="streak-fire" id="s-icon-journal">📓</span><div class="streak-val" id="s-journal">0</div><div class="streak-label">Day journaling streak</div><div class="streak-sub" id="s-journal-sub"></div></div>
     <div class="streak-card"><span class="streak-fire" id="s-icon-rules">✅</span><div class="streak-val" id="s-rules">0</div><div class="streak-label">Days rules followed</div><div class="streak-sub" id="s-rules-sub"></div></div>
@@ -2536,6 +2598,7 @@ window._mergeCloudData = function(cloudData) {
 const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','insights','routine','risk','streaks','setuplibrary'];
 function go(page) {
   if (ccCleanup) { ccCleanup(); ccCleanup = null; }
+  if (_heroRaf) { cancelAnimationFrame(_heroRaf); _heroRaf = null; }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   const pageEl = document.getElementById('page-'+page);
@@ -2554,6 +2617,7 @@ function go(page) {
   if (page==='risk')           { renderRisk(); renderMistakeAnalytics(); }
   if (page==='streaks')        renderStreaks();
   if (page==='copilot')        renderCopilotPage();
+  if (page==='insights')       renderInsightsBanner();
   if (page==='commandcenter')  renderCommandCenter();
 }
 
@@ -2628,6 +2692,15 @@ function renderDashboard() {
   renderDashPropSummary();
   renderWLHeatmap(state.trades);
   renderDOWChart(state.trades);
+  const todayStr=new Date().toDateString();
+  const todayPnl=state.trades.filter(t=>new Date(t.datetime||t.date||'').toDateString()===todayStr).reduce((a,t)=>a+calcPnL(t),0);
+  let wStrk=0; for(let i=state.trades.length-1;i>=0&&calcPnL(state.trades[i])>0;i--)wStrk++;
+  setHeroStats('dh',
+    [(total>=0?'+':'')+'$'+Math.abs(Math.round(total)).toLocaleString(), Math.round(wr)+'%',
+     (todayPnl>=0?'+':'')+'$'+Math.abs(Math.round(todayPnl)).toLocaleString(), wStrk],
+    [total>=0?'var(--green)':'var(--red)', wr>=50?'var(--green)':'var(--amber)',
+     todayPnl>=0?'var(--green)':'var(--red)', 'var(--accent)']);
+  startHeroCanvas('dh-c');
   setTimeout(()=>{ }, 100);
 }
 
@@ -3281,6 +3354,14 @@ function deleteTrade(idx){if(!confirm('Delete this trade?'))return;state.trades.
 function renderHistory() {
   renderRolling10(state.trades);
   renderHistHourHeat(state.trades);
+  const hiPnls=state.trades.map(t=>calcPnL(t));
+  const hiBest=hiPnls.length?Math.max(...hiPnls):0;
+  const hiWorst=hiPnls.length?Math.min(...hiPnls):0;
+  const hiDays=new Set(state.trades.map(t=>t.datetime?.slice(0,10)).filter(Boolean)).size;
+  setHeroStats('hi',
+    [state.trades.length, hiBest?('+$'+Math.abs(Math.round(hiBest))):'—', hiPnls.length?('-$'+Math.abs(Math.round(hiWorst))):'—', hiDays],
+    ['var(--accent)', 'var(--green)', 'var(--red)', 'var(--accent)']);
+  startHeroCanvas('hi-c');
   const fSetupSel=document.getElementById('f-setup-filter');
   const fMistakeSel=document.getElementById('f-mistake-filter');
   if(fSetupSel){const pv=fSetupSel.value;fSetupSel.innerHTML='<option value="">All setups</option>'+state.setups.map(s=>`<option ${s===pv?'selected':''}>${s}</option>`).join('');}
@@ -4168,6 +4249,19 @@ Give 3-4 specific findings with exact numbers. Start each with [TILT], [RISK], o
 // ─── RISK CONSISTENCY ─────────────────────────────────────────────────────────
 let riskChartObj=null;
 function renderRisk() {
+  const riPnls=state.trades.map(t=>calcPnL(t));
+  let riPeak=0,riDD=0,riRun=0; for(const p of riPnls){riRun+=p;if(riRun>riPeak)riPeak=riRun;riDD=Math.min(riDD,riRun-riPeak);}
+  const riMistakes=state.trades.reduce((a,t)=>a+(t.mistakes?.length||0),0);
+  const riErrors=state.trades.filter(t=>(t.mistakes||[]).length>0).length;
+  const riRiskTrades=state.trades.filter(t=>t.sl&&t.entry&&t.sl!==t.entry);
+  const riRisks=riRiskTrades.map(t=>Math.abs(t.entry-t.sl)*(t.qty||1));
+  const riAvg=riRisks.length?riRisks.reduce((a,b)=>a+b,0)/riRisks.length:0;
+  const riSD=riRisks.length?Math.sqrt(riRisks.reduce((a,r)=>a+Math.pow(r-riAvg,2),0)/riRisks.length):0;
+  const riCons=riAvg?Math.max(0,Math.round((1-riSD/riAvg)*100)):0;
+  setHeroStats('ri',
+    [riRisks.length?riCons+'%':'—', riDD?'-$'+Math.abs(Math.round(riDD)):'—', riMistakes, riErrors],
+    [riCons>=70?'var(--green)':riCons>=40?'var(--amber)':'var(--red)', 'var(--red)', 'var(--amber)', 'var(--amber)']);
+  startHeroCanvas('ri-c');
   const T=state.trades.filter(t=>t.sl&&t.entry&&t.sl!==t.entry);
   if(!T.length){['risk-avg','risk-stddev','risk-max','risk-after-loss'].forEach(id=>document.getElementById(id).textContent='—');document.getElementById('risk-breakdown').innerHTML='<div class="empty">Log trades with stop losses to see risk analysis.</div>';return;}
 
@@ -4284,6 +4378,26 @@ function renderStreaks() {
       ${m.val?`<span style="font-size:12px;font-family:var(--mono);color:var(--muted)">${m.val}</span>`:''}
       ${m.hit?`<span style="font-size:11px;color:var(--accent);font-weight:700">DONE</span>`:''}
     </div>`).join('');
+  const sk14=[];for(let i=0;i<14;i++){const sk_d=new Date(today);sk_d.setDate(sk_d.getDate()-i);sk14.push(sk_d.toISOString().slice(0,10));}
+  const skHab=Math.round(sk14.filter(d=>tradedDays.has(d)||routinedDays.has(d)).length/14*100);
+  const skDays=new Set([...tradedDays,...routinedDays]).size;
+  setHeroStats('sk',[winStreak,journalStreak,skHab+'%',skDays],
+    ['var(--accent)','var(--green)',skHab>=70?'var(--green)':skHab>=40?'var(--amber)':'var(--red)','var(--accent)']);
+  startHeroCanvas('sk-c');
+}
+
+function renderInsightsBanner() {
+  const insSetups=new Set(state.trades.flatMap(t=>t.setups||[])).size;
+  const lastGraded=[...state.trades].reverse().find(t=>t.grade);
+  const gradeCol={A:'var(--green)',B:'var(--blue)',C:'var(--amber)',D:'var(--red)',F:'var(--red)'}[lastGraded?.grade?.[0]]||'var(--accent)';
+  const mistakeMap={};
+  state.trades.forEach(t=>(t.mistakes||[]).forEach(m=>{mistakeMap[m]=(mistakeMap[m]||0)+1;}));
+  const topMistake=Object.entries(mistakeMap).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+  const topShort=topMistake.length>8?topMistake.slice(0,8)+'…':topMistake;
+  setHeroStats('ins',
+    [state.trades.length, insSetups, lastGraded?.grade||'—', topShort],
+    ['var(--accent)', 'var(--accent)', gradeCol, 'var(--amber)']);
+  startHeroCanvas('ins-c');
 }
 
 // ─── AI CHAT PANEL ────────────────────────────────────────────────────────────
@@ -5304,6 +5418,21 @@ function renderSetupsPage() {
   renderWRTrendChart(T);
   renderRRTrendChart(T);
   renderSetupRadar(T);
+  const spSetups=new Set(state.trades.flatMap(t=>t.setups||[]));
+  const spStats={};
+  state.trades.forEach(t=>{(t.setups||[]).forEach(s=>{if(!spStats[s])spStats[s]={wins:0,n:0,pnl:0};const p=calcPnL(t);spStats[s].n++;spStats[s].pnl+=p;if(p>0)spStats[s].wins++;});});
+  const spActive=Object.entries(spStats).filter(([,v])=>v.n>=2);
+  let spBestWR='—', spBestPnL='—';
+  if(spActive.length){
+    const bWR=spActive.slice().sort((a,b)=>(b[1].wins/b[1].n)-(a[1].wins/a[1].n))[0];
+    spBestWR=Math.round(bWR[1].wins/bWR[1].n*100)+'%';
+    const bPnL=spActive.slice().sort((a,b)=>b[1].pnl-a[1].pnl)[0];
+    spBestPnL=(bPnL[1].pnl>=0?'+':'')+'$'+Math.abs(Math.round(bPnL[1].pnl));
+  }
+  const spRRs=T.filter(t=>calcRR(t)).map(t=>parseFloat(calcRR(t)));
+  const spAvgRR=spRRs.length?(spRRs.reduce((a,b)=>a+b,0)/spRRs.length).toFixed(2)+'R':'—';
+  setHeroStats('sp',[spSetups.size,spBestWR,spBestPnL,spAvgRR],['var(--accent)','var(--green)','var(--green)','var(--accent)']);
+  startHeroCanvas('sp-c');
   if (!T.length) return;
 
   const wins = t => ['win','be_win'].includes(t.outcome);
@@ -6648,8 +6777,8 @@ function switchJournalTab(tab) {
 
 // ── HERO CANVAS (cursor-following orbs) ──────────────────────────────────────
 let _heroRaf = null;
-function startJournalHeroCanvas() {
-  const canvas = document.getElementById('journal-hero-canvas');
+function startHeroCanvas(id) {
+  const canvas = document.getElementById(id);
   if (!canvas) return;
   if (_heroRaf) cancelAnimationFrame(_heroRaf);
   const ctx = canvas.getContext('2d');
@@ -6677,13 +6806,21 @@ function startJournalHeroCanvas() {
       ctx.beginPath(); ctx.arc(o.x,o.y,o.r*2,0,Math.PI*2);
       ctx.fillStyle=g; ctx.fill();
     });
-    // Grid lines
     ctx.strokeStyle='rgba(155,127,255,0.06)'; ctx.lineWidth=1;
     for(let x=0;x<canvas.width;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();}
     for(let y=0;y<canvas.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}
     _heroRaf = requestAnimationFrame(draw);
   }
   draw();
+}
+function startJournalHeroCanvas() { startHeroCanvas('journal-hero-canvas'); }
+function setHeroStats(prefix, vals, cols) {
+  vals.forEach((v, i) => {
+    const el = document.getElementById(prefix+'-s'+i);
+    if (!el) return;
+    el.textContent = v;
+    if (cols?.[i]) el.style.color = cols[i];
+  });
 }
 
 // ── GOALS TAB ─────────────────────────────────────────────────────────────────
