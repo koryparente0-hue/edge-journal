@@ -6755,6 +6755,14 @@ function getJournal() {
   if (!state.journal) state.journal = { goals:[], dailyEntries:{} };
   if (!state.journal.goals) state.journal.goals = [];
   if (!state.journal.dailyEntries) state.journal.dailyEntries = {};
+  // Fix any goals incorrectly marked done
+  state.journal.goals.forEach(g => {
+    if (g.status === 'done' && g.target && g.current !== undefined) {
+      const t = parseFloat(g.target), c = parseFloat(g.current) || parseFloat(g.startVal) || 0, s = parseFloat(g.startVal) || 0;
+      const actuallyDone = t < s ? c <= t : c >= t;
+      if (!actuallyDone) g.status = 'active';
+    }
+  });
   return state.journal;
 }
 
@@ -6897,7 +6905,7 @@ function renderGoalsTab() {
 function renderGoalCard(g) {
   const pct  = goalProgress(g);
   const col  = CAT_COLORS[g.category]||'#9B7FFF';
-  const done = g.status==='done'||pct>=100;
+  const done = g.status==='done';
   const dl   = daysLeft(g.deadline);
   const unit = g.unit||'';
   const milestones = (g.milestones||[]).map(m=>parseFloat(m)).filter(Boolean);
@@ -6952,7 +6960,7 @@ function openGoalDetail(idx) {
   const col = CAT_COLORS[g.category]||'#9B7FFF';
   const pct = goalProgress(g);
   const unit = g.unit||'';
-  const done = g.status==='done'||pct>=100;
+  const done = g.status==='done';
   const dl   = daysLeft(g.deadline);
   const milestones = (g.milestones||[]).map(m=>parseFloat(m)).filter(Boolean);
 
@@ -7123,9 +7131,12 @@ function saveGoal() {
   if(!title){alert('Please enter a goal title');return;}
   const ms=document.getElementById('gm-milestones').value.split(',').map(s=>s.trim()).filter(Boolean);
   const goal={title,category:document.getElementById('gm-category').value,target:document.getElementById('gm-target').value,unit:document.getElementById('gm-unit').value.trim(),startVal:document.getElementById('gm-start').value,current:document.getElementById('gm-current').value,startDate:document.getElementById('gm-startdate').value,deadline:document.getElementById('gm-deadline').value,desc:document.getElementById('gm-desc').value.trim(),milestones:ms,status:'active',createdAt:editingGoalIdx!==null?(j.goals[editingGoalIdx]?.createdAt||new Date().toISOString()):new Date().toISOString()};
-  if (goal.target && goal.current) {
+  if (goal.target && goal.current && goal.current !== '' && goal.current !== goal.startVal) {
     const t = parseFloat(goal.target), c = parseFloat(goal.current), s = parseFloat(goal.startVal)||0;
-    if (t < s ? c <= t : c >= t) goal.status = 'done';
+    if (!isNaN(c) && (t < s ? c <= t : c >= t)) goal.status = 'done';
+    else goal.status = 'active';
+  } else {
+    goal.status = 'active';
   }
   if(editingGoalIdx!==null) j.goals[editingGoalIdx]=goal; else j.goals.push(goal);
   state.journal=j; save(); closeGoalModal(); renderGoalsTab();

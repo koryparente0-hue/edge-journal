@@ -1,0 +1,39 @@
+use /emil-design-eng to help with this task.
+
+In index.html, on the History page there are two tabs: Table and Calendar. Make these changes:
+
+1. HIDE THE HERO BANNER on calendar tab only — the animated banner showing "Total Trades, Best Trade, Worst Trade, Active Days" should only show when the Table tab is active. When Calendar tab is active, hide it. The banner element is inside hist-table-view or just above it — check the HTML structure and conditionally show/hide it based on which tab is active in the setHistoryView() function.
+
+2. REDESIGN THE CALENDAR to look premium and immersive:
+
+BACKGROUND — wrap the entire calendar in a dark container with:
+- Same animated orb/aura canvas as the journal hero (use the existing startHeroCanvas() function or replicate the orb logic)
+- Background: linear-gradient(135deg, #080810, #0d0d1a)
+- Subtle purple grid lines
+- Border: 1px solid rgba(155,127,255,0.15)
+- Border-radius: 16px
+- Padding: 24px
+
+CALENDAR CELLS — make them feel layered and glassy:
+- Background: rgba(255,255,255,0.03) for empty days
+- Win days: background rgba(0,208,132,0.12), green left border 2px, green glow on the P&L number
+- Loss days: background rgba(255,77,77,0.1), red left border 2px
+- Today: purple accent border + subtle purple glow
+- Hover: lift with transform translateY(-2px), brighter background, border brightens
+- P&L numbers should be larger and bolder with a text-shadow glow matching the color
+
+WEEK SIDEBAR — style the week summary cards to match:
+- Same glassy background as cells
+- Weekly P&L in large bold monospace
+- Color matched to positive/negative
+
+MONTHLY P&L HEADER — make it bigger and more dramatic:
+- Font size 40px
+- Glow effect matching positive/negative color
+- Subtle animated underline or pulse
+
+NAVIGATION — style the prev/next buttons to match the purple accent
+
+DAY DETAIL PANEL (when you click a day) — make it appear with a smooth slide-up animation, dark glassy background, styled trade rows
+
+Keep all existing calendar functionality (calNav, calClickDay, renderCalendar, the weekly sidebar calculations) — only change the visual styling.
