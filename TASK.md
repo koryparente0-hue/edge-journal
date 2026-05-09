@@ -9,6 +9,10 @@
 
 *(nothing in progress)*
 
+## ✅ Completed (recent)
+
+- [x] Command Center page — full-viewport canvas node graph, cursor trail, HTML hover cards, nav link — 2026-05-09
+
 ---
 
 ## 📋 Backlog
