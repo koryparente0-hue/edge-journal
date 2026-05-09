@@ -743,6 +743,24 @@ body.light-mode .nav-item.active { text-shadow: none; }
 body.light-mode .btn-green { box-shadow: 0 2px 14px rgba(155,127,255,0.25); }
 body.light-mode .quick-entry,
 body.light-mode .copilot-wrap { box-shadow: none; }
+/* ── JOURNAL ─────────────────────────────────────────────────────────── */
+.jtab{font-size:11px;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--muted);font-family:var(--display);transition:all .15s}
+.jtab-active{background:var(--accent)!important;color:#fff!important}
+.goal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:12px;transition:all .2s;position:relative;overflow:hidden}
+.goal-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+.goal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.goal-progress-track{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden;margin:10px 0}
+.goal-progress-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.milestone-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);background:var(--bg4);transition:all .2s;flex-shrink:0}
+.milestone-dot.reached{border-color:var(--accent);background:var(--accent);box-shadow:0 0 6px rgba(155,127,255,.5)}
+.mood-btn.selected{border-color:var(--accent)!important;background:var(--accent-dim)!important;color:var(--accent)!important}
+.daily-entry-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.daily-entry-item:hover{border-color:var(--border2)}
+.goal-checkin-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.goal-checkin-row:last-child{border-bottom:none}
+.journal-stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;text-align:center}
+.journal-stat-val{font-size:26px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:var(--text)}
+.journal-stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
 </style>
 </head>
 <body>
@@ -976,6 +994,9 @@ body.light-mode .copilot-wrap { box-shadow: none; }
     <span class="more-chevron">▼</span>
   </div>
   <div class="more-submenu" id="more-submenu">
+    <div class="nav-item" id="nav-journal" onclick="go('journal')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5h5M5 8h5M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor" opacity=".2"/></svg>Journal
+    </div>
     <div class="nav-item" id="nav-routine" onclick="go('routine')">
       <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Daily Routine
     </div>
@@ -1773,6 +1794,122 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 </div>
 
 <!-- DAILY ROUTINE -->
+<!-- JOURNAL -->
+<div class="page" id="page-journal">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Journal</div>
+      <div class="page-sub">Goals, progress, and daily reflections</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div style="display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:2px;gap:2px">
+        <button id="jtab-goals-btn"  onclick="switchJournalTab('goals')"  class="jtab jtab-active">Goals</button>
+        <button id="jtab-daily-btn"  onclick="switchJournalTab('daily')"  class="jtab">Daily Log</button>
+      </div>
+      <button class="btn btn-green" id="journal-add-btn" onclick="journalAddAction()">+ Add Goal</button>
+    </div>
+  </div>
+
+  <!-- GOALS TAB -->
+  <div id="jtab-goals">
+    <!-- Summary strip -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px" id="journal-summary-strip"></div>
+    <!-- Goals grid -->
+    <div id="journal-goals-grid"></div>
+    <!-- Empty state -->
+    <div id="journal-goals-empty" style="display:none" class="card">
+      <div class="empty" style="padding:40px;text-align:center">
+        <div style="font-size:40px;margin-bottom:12px">🎯</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">No goals yet</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Add your first goal to start tracking progress</div>
+        <button class="btn btn-green" onclick="openGoalModal()">+ Add your first goal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY LOG TAB -->
+  <div id="jtab-daily" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start">
+      <!-- Left: today's entry -->
+      <div class="card" style="margin-bottom:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:15px;font-weight:700" id="daily-date-label"></div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Today's journal entry</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="btn btn-sm" onclick="dailyNavDay(-1)" id="daily-prev-btn">← Prev</button>
+            <button class="btn btn-sm" onclick="dailyNavDay(1)"  id="daily-next-btn">Next →</button>
+          </div>
+        </div>
+        <!-- Mood -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">How are you feeling?</div>
+          <div style="display:flex;gap:8px" id="daily-mood-row">
+            ${['😤 Frustrated','😐 Neutral','😊 Focused','🔥 Confident','😴 Tired'].map((m,i)=>`<button onclick="setDailyMood(${i})" class="mood-btn" data-mood="${i}" style="font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);cursor:pointer;transition:all .15s">${m}</button>`).join('')}
+          </div>
+        </div>
+        <!-- Freewrite -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Journal</div>
+          <textarea id="daily-notes" placeholder="What happened today? How did you trade? What's on your mind?" style="width:100%;min-height:130px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:12px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.7;box-sizing:border-box"></textarea>
+        </div>
+        <!-- Goal check-ins -->
+        <div style="margin-bottom:14px" id="daily-goal-checkins"></div>
+        <!-- Save -->
+        <button class="btn btn-green" style="width:100%" onclick="saveDailyEntry()">Save entry</button>
+      </div>
+      <!-- Right: recent entries -->
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Recent entries</div>
+        <div id="daily-history-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GOAL MODAL -->
+<div class="modal-overlay" id="goal-modal" onclick="if(event.target===this)closeGoalModal()">
+  <div class="modal" style="max-width:540px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div class="modal-title" id="goal-modal-title">Add Goal</div>
+      <button class="btn btn-sm" onclick="closeGoalModal()">✕</button>
+    </div>
+    <div style="display:grid;gap:12px">
+      <div class="modal-field"><label class="modal-label">Goal title</label><input class="modal-input" id="gm-title" placeholder="e.g. Lower handicap by 6 strokes"></div>
+      <div class="modal-field"><label class="modal-label">Category</label>
+        <select class="modal-select" id="gm-category">
+          <option value="trading">📈 Trading</option>
+          <option value="fitness">💪 Fitness</option>
+          <option value="finance">💰 Finance</option>
+          <option value="learning">📚 Learning</option>
+          <option value="mindset">🧠 Mindset</option>
+          <option value="social">🤝 Social</option>
+          <option value="other">⭐ Other</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-field"><label class="modal-label">Target value <span style="color:var(--dim);font-weight:400">(number)</span></label><input class="modal-input" id="gm-target" type="number" placeholder="e.g. 100"></div>
+        <div class="modal-field"><label class="modal-label">Unit <span style="color:var(--dim);font-weight:400">(optional)</span></label><input class="modal-input" id="gm-unit" placeholder="e.g. trades, lbs, %"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-field"><label class="modal-label">Starting value</label><input class="modal-input" id="gm-start" type="number" placeholder="0"></div>
+        <div class="modal-field"><label class="modal-label">Current value</label><input class="modal-input" id="gm-current" type="number" placeholder="0"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-field"><label class="modal-label">Start date</label><input class="modal-input" id="gm-startdate" type="date"></div>
+        <div class="modal-field"><label class="modal-label">Deadline</label><input class="modal-input" id="gm-deadline" type="date"></div>
+      </div>
+      <div class="modal-field"><label class="modal-label">Description / why this matters</label><textarea class="modal-input" id="gm-desc" rows="2" placeholder="Why is this goal important to you?" style="resize:vertical"></textarea></div>
+      <div class="modal-field"><label class="modal-label">Milestones <span style="color:var(--dim);font-weight:400">— comma separated values</span></label><input class="modal-input" id="gm-milestones" placeholder="e.g. 25, 50, 75 (% or units)"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button class="btn btn-green" style="flex:1" onclick="saveGoal()">Save goal</button>
+      <button class="btn btn-sm btn-red" id="gm-delete-btn" style="display:none" onclick="deleteGoal()">Delete</button>
+    </div>
+  </div>
+</div>
+
 <div class="page" id="page-routine">
   <div class="page-header">
     <div><div class="page-title">Daily Routine</div><div class="page-sub" id="routine-date-label"></div></div>
@@ -2291,6 +2428,7 @@ function go(page) {
   if (page==='dashboard') renderDashboard();
   if (page==='history')   { if (typeof histView !== 'undefined' && histView === 'calendar') renderCalendar(); else renderHistory(); }
   if (page==='log')       renderLogPage();
+  if (page==='journal')    renderJournalPage();
   if (page==='setuplibrary') renderSetupLibrary();
   if (page==='routine')   renderRoutinePage();
   if (page==='risk')      { renderRisk(); renderMistakeAnalytics(); }
@@ -6348,6 +6486,355 @@ function updateThemeBtn(isLight) {
   const saved = localStorage.getItem('edge-theme');
   if (saved === 'light') { document.body.classList.add('light-mode'); updateThemeBtn(true); }
 })();
+
+// ─── JOURNAL ──────────────────────────────────────────────────────────────────
+
+// State helpers — journal data lives in state.journal
+function getJournal() {
+  if (!state.journal) state.journal = { goals: [], dailyEntries: {} };
+  if (!state.journal.goals) state.journal.goals = [];
+  if (!state.journal.dailyEntries) state.journal.dailyEntries = {};
+  return state.journal;
+}
+
+let journalTab = 'goals';
+let dailyViewDate = new Date().toISOString().slice(0, 10);
+let editingGoalIdx = null;
+
+const CAT_COLORS = { trading:'#9B7FFF', fitness:'#00d084', finance:'#f5a623', learning:'#4a9eff', mindset:'#ff7eb3', social:'#00d4ff', other:'#aaa' };
+const CAT_ICONS  = { trading:'📈', fitness:'💪', finance:'💰', learning:'📚', mindset:'🧠', social:'🤝', other:'⭐' };
+const MOODS = ['😤 Frustrated','😐 Neutral','😊 Focused','🔥 Confident','😴 Tired'];
+
+function renderJournalPage() {
+  switchJournalTab(journalTab);
+  updateJournalAddBtn();
+}
+
+function updateJournalAddBtn() {
+  const btn = document.getElementById('journal-add-btn');
+  if (!btn) return;
+  btn.textContent = journalTab === 'goals' ? '+ Add Goal' : '+ Today\'s Log';
+  btn.onclick = journalTab === 'goals' ? openGoalModal : () => switchJournalTab('daily');
+}
+
+function switchJournalTab(tab) {
+  journalTab = tab;
+  document.getElementById('jtab-goals').style.display  = tab === 'goals'  ? '' : 'none';
+  document.getElementById('jtab-daily').style.display  = tab === 'daily'  ? '' : 'none';
+  document.getElementById('jtab-goals-btn').classList.toggle('jtab-active', tab === 'goals');
+  document.getElementById('jtab-daily-btn').classList.toggle('jtab-active', tab === 'daily');
+  updateJournalAddBtn();
+  if (tab === 'goals') renderGoalsTab();
+  else renderDailyTab();
+}
+
+// ── GOALS TAB ────────────────────────────────────────────────────────────────
+function renderGoalsTab() {
+  const j = getJournal();
+  const goals = j.goals;
+  const empty = document.getElementById('journal-goals-empty');
+  const grid  = document.getElementById('journal-goals-grid');
+  const strip = document.getElementById('journal-summary-strip');
+
+  // Summary strip
+  const active    = goals.filter(g => g.status !== 'done').length;
+  const completed = goals.filter(g => g.status === 'done').length;
+  const avgProg   = goals.length ? Math.round(goals.reduce((a,g) => a + goalProgress(g), 0) / goals.length) : 0;
+  const overdue   = goals.filter(g => g.deadline && g.status !== 'done' && new Date(g.deadline) < new Date()).length;
+  strip.innerHTML = [
+    { val: goals.length, lbl: 'Total Goals', col: 'var(--accent)' },
+    { val: active,       lbl: 'In Progress',  col: 'var(--blue)' },
+    { val: completed + '/' + goals.length, lbl: 'Completed', col: 'var(--green)' },
+    { val: overdue || '0', lbl: overdue ? '⚠ Overdue' : 'On Track', col: overdue ? 'var(--red)' : 'var(--green)' },
+  ].map(s => `<div class="journal-stat"><div class="journal-stat-val" style="color:${s.col}">${s.val}</div><div class="journal-stat-lbl">${s.lbl}</div></div>`).join('');
+
+  if (!goals.length) { empty.style.display = ''; grid.innerHTML = ''; return; }
+  empty.style.display = 'none';
+
+  // Group by category
+  const byCat = {};
+  goals.forEach((g, i) => {
+    if (!byCat[g.category]) byCat[g.category] = [];
+    byCat[g.category].push({...g, _idx: i});
+  });
+
+  grid.innerHTML = Object.entries(byCat).map(([cat, gs]) => `
+    <div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${CAT_COLORS[cat]||'var(--muted)'};margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        ${CAT_ICONS[cat]||'⭐'} ${cat.charAt(0).toUpperCase()+cat.slice(1)}
+        <span style="font-size:10px;color:var(--dim);font-weight:400">${gs.length} goal${gs.length>1?'s':''}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px">
+        ${gs.map(g => renderGoalCard(g)).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function goalProgress(g) {
+  const start = parseFloat(g.startVal) || 0;
+  const target = parseFloat(g.target) || 0;
+  const current = parseFloat(g.current) || 0;
+  if (target === start) return g.status === 'done' ? 100 : 0;
+  return Math.min(100, Math.max(0, Math.round((current - start) / (target - start) * 100)));
+}
+
+function daysLeft(deadline) {
+  if (!deadline) return null;
+  const diff = Math.ceil((new Date(deadline) - new Date()) / 86400000);
+  return diff;
+}
+
+function renderGoalCard(g) {
+  const pct      = goalProgress(g);
+  const col      = CAT_COLORS[g.category] || 'var(--accent)';
+  const done     = g.status === 'done' || pct >= 100;
+  const dl       = daysLeft(g.deadline);
+  const dlText   = dl === null ? '' : dl < 0 ? `<span style="color:var(--red);font-size:10px;font-weight:600">⚠ ${Math.abs(dl)}d overdue</span>` : dl === 0 ? `<span style="color:var(--amber);font-size:10px">Due today</span>` : `<span style="font-size:10px;color:var(--muted)">${dl}d left</span>`;
+  const milestones = (g.milestones || []).map(m => parseFloat(m)).filter(Boolean);
+  const unit = g.unit || '';
+
+  // Timeline bar with milestones
+  const milestoneDots = milestones.map(m => {
+    const mPct = Math.min(100, Math.max(0, ((m - (parseFloat(g.startVal)||0)) / ((parseFloat(g.target)||1) - (parseFloat(g.startVal)||0))) * 100));
+    const reached = parseFloat(g.current) >= m;
+    return `<div class="milestone-dot ${reached?'reached':''}" style="position:absolute;left:${mPct}%;transform:translateX(-50%);top:-1px" title="${m}${unit}"></div>`;
+  }).join('');
+
+  // Weekly check-ins for this goal
+  const j = getJournal();
+  const recentCheckins = Object.entries(j.dailyEntries)
+    .filter(([d, e]) => e.goalCheckins && e.goalCheckins[g._idx] !== undefined)
+    .sort((a,b) => b[0].localeCompare(a[0]))
+    .slice(0, 3);
+
+  return `<div class="goal-card" onclick="openGoalModal(${g._idx})" style="cursor:pointer">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${col};opacity:${done?1:.7}"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px;margin-bottom:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;color:var(--text);${done?'text-decoration:line-through;opacity:.6':''}">${g.title}</div>
+        ${g.desc ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.desc}</div>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-left:10px;flex-shrink:0">
+        ${done ? '<span style="font-size:18px">✅</span>' : ''}
+        ${dlText}
+      </div>
+    </div>
+
+    <!-- Progress numbers -->
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+      <div style="font-size:22px;font-weight:800;font-family:\'Geist Mono\',monospace;color:${col};letter-spacing:-1px">${g.current||g.startVal||0}<span style="font-size:12px;font-weight:500;color:var(--muted);margin-left:3px">${unit}</span></div>
+      <div style="font-size:12px;color:var(--muted)">of <strong style="color:var(--text)">${g.target}${unit}</strong> · <strong style="color:${col}">${pct}%</strong></div>
+    </div>
+
+    <!-- Progress bar with milestones -->
+    <div class="goal-progress-track" style="position:relative">
+      <div class="goal-progress-fill" style="width:${pct}%;background:${done?'var(--green)':col}${done?'':';box-shadow:0 0 8px '+col+'55'}"></div>
+      <div style="position:absolute;top:0;left:0;right:0;height:100%;display:flex;align-items:center">${milestoneDots}</div>
+    </div>
+
+    <!-- Milestone labels -->
+    ${milestones.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${milestones.map(m=>{const reached=parseFloat(g.current)>=m;return`<span style="font-size:9px;padding:1px 6px;border-radius:3px;font-weight:600;background:${reached?col+'22':'var(--bg4)'};color:${reached?col:'var(--dim)'};border:1px solid ${reached?col+'44':'transparent'}">${m}${unit}</span>`;}).join('')}</div>` : ''}
+
+    <!-- Timeline -->
+    ${g.startDate || g.deadline ? `<div style="display:flex;justify-content:space-between;margin-top:10px;font-size:10px;color:var(--dim)">
+      <span>Started: ${g.startDate || '—'}</span>
+      <span>Deadline: ${g.deadline || '—'}</span>
+    </div>` : ''}
+
+    <!-- Recent check-ins preview -->
+    ${recentCheckins.length ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:6px">Recent check-ins</div>
+      ${recentCheckins.map(([d,e])=>`<div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:2px"><span style="color:var(--dim)">${d}</span> — ${(e.goalCheckins[g._idx]||'').slice(0,60)}${(e.goalCheckins[g._idx]||'').length>60?'…':''}</div>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
+// ── GOAL MODAL ────────────────────────────────────────────────────────────────
+function openGoalModal(idx) {
+  editingGoalIdx = idx !== undefined ? idx : null;
+  const j = getJournal();
+  const g = idx !== undefined ? j.goals[idx] : null;
+  document.getElementById('goal-modal-title').textContent = g ? 'Edit Goal' : 'Add Goal';
+  document.getElementById('gm-delete-btn').style.display = g ? '' : 'none';
+  document.getElementById('gm-title').value      = g?.title || '';
+  document.getElementById('gm-category').value   = g?.category || 'trading';
+  document.getElementById('gm-target').value     = g?.target || '';
+  document.getElementById('gm-unit').value       = g?.unit || '';
+  document.getElementById('gm-start').value      = g?.startVal || '';
+  document.getElementById('gm-current').value    = g?.current || '';
+  document.getElementById('gm-startdate').value  = g?.startDate || new Date().toISOString().slice(0,10);
+  document.getElementById('gm-deadline').value   = g?.deadline || '';
+  document.getElementById('gm-desc').value       = g?.desc || '';
+  document.getElementById('gm-milestones').value = (g?.milestones || []).join(', ');
+  document.getElementById('goal-modal').classList.add('open');
+}
+
+function closeGoalModal() { document.getElementById('goal-modal').classList.remove('open'); }
+
+function saveGoal() {
+  const j = getJournal();
+  const title = document.getElementById('gm-title').value.trim();
+  if (!title) { alert('Please enter a goal title'); return; }
+  const milestoneRaw = document.getElementById('gm-milestones').value;
+  const milestones = milestoneRaw.split(',').map(s=>s.trim()).filter(Boolean);
+  const goal = {
+    title,
+    category:  document.getElementById('gm-category').value,
+    target:    document.getElementById('gm-target').value,
+    unit:      document.getElementById('gm-unit').value.trim(),
+    startVal:  document.getElementById('gm-start').value,
+    current:   document.getElementById('gm-current').value,
+    startDate: document.getElementById('gm-startdate').value,
+    deadline:  document.getElementById('gm-deadline').value,
+    desc:      document.getElementById('gm-desc').value.trim(),
+    milestones,
+    status:    'active',
+    createdAt: editingGoalIdx !== null ? (j.goals[editingGoalIdx]?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+  };
+  // Auto-mark done
+  if (parseFloat(goal.current) >= parseFloat(goal.target) && goal.target) goal.status = 'done';
+  if (editingGoalIdx !== null) j.goals[editingGoalIdx] = goal;
+  else j.goals.push(goal);
+  state.journal = j; save();
+  closeGoalModal(); renderGoalsTab();
+}
+
+function deleteGoal() {
+  if (!confirm('Delete this goal and all its check-ins?')) return;
+  const j = getJournal();
+  j.goals.splice(editingGoalIdx, 1);
+  state.journal = j; save();
+  closeGoalModal(); renderGoalsTab();
+}
+
+function journalAddAction() {
+  if (journalTab === 'goals') openGoalModal();
+  else { dailyViewDate = new Date().toISOString().slice(0,10); renderDailyTab(); }
+}
+
+// ── DAILY LOG TAB ─────────────────────────────────────────────────────────────
+function renderDailyTab() {
+  const j = getJournal();
+  const dateEl = document.getElementById('daily-date-label');
+  const entry  = j.dailyEntries[dailyViewDate] || {};
+  if (dateEl) {
+    const d = new Date(dailyViewDate + 'T12:00:00');
+    dateEl.textContent = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  }
+
+  // Notes
+  const ta = document.getElementById('daily-notes');
+  if (ta) ta.value = entry.notes || '';
+
+  // Mood
+  document.querySelectorAll('.mood-btn').forEach(btn => {
+    btn.classList.toggle('selected', parseInt(btn.dataset.mood) === entry.mood);
+  });
+
+  // Nav buttons
+  const prevBtn = document.getElementById('daily-prev-btn');
+  const nextBtn = document.getElementById('daily-next-btn');
+  const today   = new Date().toISOString().slice(0,10);
+  if (nextBtn) nextBtn.disabled = dailyViewDate >= today;
+
+  // Goal check-ins
+  const checkins = document.getElementById('daily-goal-checkins');
+  if (checkins && j.goals.length) {
+    checkins.innerHTML = `
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Check in on your goals</div>
+      <div style="background:var(--bg3);border-radius:var(--r);padding:2px 0">
+        ${j.goals.filter(g=>g.status!=='done').map((g,i)=>`
+          <div class="goal-checkin-row">
+            <span style="font-size:14px">${CAT_ICONS[g.category]||'⭐'}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.title}</div>
+              <input class="modal-input" style="margin-top:4px;padding:5px 8px;font-size:11px;width:100%;box-sizing:border-box" id="checkin-${j.goals.indexOf(g)}"
+                placeholder="Progress update or note..." value="${(entry.goalCheckins||{})[j.goals.indexOf(g)]||''}">
+            </div>
+            <div style="flex-shrink:0">
+              <input type="number" class="modal-input" style="width:70px;padding:5px 8px;font-size:11px;text-align:center" 
+                id="checkin-val-${j.goals.indexOf(g)}" placeholder="${g.current||g.startVal||0}" 
+                title="Update current value"
+                value="${(entry.goalValues||{})[j.goals.indexOf(g)]||''}">
+            </div>
+          </div>`).join('')}
+      </div>`;
+  } else if (checkins) {
+    checkins.innerHTML = '';
+  }
+
+  // Recent entries list
+  renderDailyHistoryList();
+}
+
+function setDailyMood(idx) {
+  document.querySelectorAll('.mood-btn').forEach((btn,i) => btn.classList.toggle('selected', i === idx));
+}
+
+function saveDailyEntry() {
+  const j    = getJournal();
+  const mood = [...document.querySelectorAll('.mood-btn')].findIndex(b=>b.classList.contains('selected'));
+  const notes = document.getElementById('daily-notes')?.value || '';
+
+  // Collect goal check-ins and values
+  const goalCheckins = {}, goalValues = {};
+  j.goals.forEach((g, idx) => {
+    const cin = document.getElementById('checkin-'+idx);
+    const val = document.getElementById('checkin-val-'+idx);
+    if (cin && cin.value.trim()) goalCheckins[idx] = cin.value.trim();
+    if (val && val.value.trim()) {
+      goalValues[idx] = val.value.trim();
+      // Update goal current value
+      j.goals[idx].current = val.value.trim();
+      if (parseFloat(val.value) >= parseFloat(g.target) && g.target) j.goals[idx].status = 'done';
+    }
+  });
+
+  j.dailyEntries[dailyViewDate] = { notes, mood, goalCheckins, goalValues, savedAt: new Date().toISOString() };
+  state.journal = j; save();
+
+  const btn = document.querySelector('#jtab-daily button.btn-green') || document.querySelector('#jtab-daily .btn-green');
+  // Flash feedback on the save button
+  const saveBtn = [...document.querySelectorAll('#jtab-daily .btn')].find(b=>b.textContent.includes('Save'));
+  if (saveBtn) { saveBtn.textContent='Saved ✓'; saveBtn.style.background='var(--green)'; setTimeout(()=>{saveBtn.textContent='Save entry';saveBtn.style.background='';},1500); }
+  renderDailyHistoryList();
+}
+
+function dailyNavDay(dir) {
+  const d = new Date(dailyViewDate + 'T12:00:00');
+  d.setDate(d.getDate() + dir);
+  dailyViewDate = d.toISOString().slice(0,10);
+  renderDailyTab();
+}
+
+function renderDailyHistoryList() {
+  const j   = getJournal();
+  const el  = document.getElementById('daily-history-list');
+  if (!el) return;
+  const entries = Object.entries(j.dailyEntries)
+    .filter(([,e]) => e.notes || e.mood !== undefined)
+    .sort((a,b) => b[0].localeCompare(a[0]))
+    .slice(0, 14);
+  if (!entries.length) { el.innerHTML = '<div style="font-size:12px;color:var(--dim)">No entries yet</div>'; return; }
+  el.innerHTML = entries.map(([date, e]) => {
+    const d   = new Date(date + 'T12:00:00');
+    const lbl = d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    const mood = e.mood !== undefined ? MOODS[e.mood].split(' ')[0] : '';
+    const preview = (e.notes||'').slice(0,55) + ((e.notes||'').length>55?'…':'');
+    const checkins = Object.keys(e.goalCheckins||{}).length;
+    const isActive = date === dailyViewDate;
+    return `<div class="daily-entry-item" onclick="dailyViewDate='${date}';renderDailyTab()" style="border-color:${isActive?'var(--accent)':'var(--border)'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+        <span style="font-size:12px;font-weight:600;color:${isActive?'var(--accent)':'var(--text)'}">${lbl}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          ${mood?`<span style="font-size:13px">${mood}</span>`:''}
+          ${checkins?`<span style="font-size:9px;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;font-weight:600">${checkins} goals</span>`:''}
+        </div>
+      </div>
+      ${preview?`<div style="font-size:11px;color:var(--muted);line-height:1.4">${preview}</div>`:''}
+    </div>`;
+  }).join('');
+}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Set datetime to local time (not UTC)
