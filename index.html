@@ -2572,7 +2572,8 @@ function save() {
       gradingCriteria: state.gradingCriteria || {},
       propAccounts: state.propAccounts || [],
       propPayouts: state.propPayouts || [],
-      setupLibrary: state.setupLibrary || []
+      setupLibrary: state.setupLibrary || [],
+      journal: state.journal || { goals: [], dailyEntries: {} }
     }).then(()=>{ if(dot) dot.className='sync-dot'; }).catch(()=>{ if(dot) dot.className='sync-dot'; });
   }
 }
@@ -2590,6 +2591,7 @@ window._mergeCloudData = function(cloudData) {
   state.propAccounts = cloudData.propAccounts || state.propAccounts || [];
   state.propPayouts = cloudData.propPayouts || state.propPayouts || [];
   state.setupLibrary = cloudData.setupLibrary || state.setupLibrary || [];
+  state.journal = cloudData.journal || state.journal || { goals: [], dailyEntries: {} };
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
   if (typeof updateProUI === 'function') updateProUI();
 };
