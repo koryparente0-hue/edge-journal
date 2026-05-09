@@ -1933,7 +1933,11 @@ body.light-mode .copilot-wrap { box-shadow: none; }
         <div style="margin-bottom:14px">
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">How are you feeling?</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap" id="daily-mood-row">
-            ${['😤','😐','😊','🔥','😴'].map((e,i)=>`<button onclick="setDailyMood(${i})" class="mood-btn" data-mood="${i}">${e} ${['Frustrated','Neutral','Focused','Confident','Tired'][i]}</button>`).join('')}
+            <button onclick="setDailyMood(0)" class="mood-btn" data-mood="0">😤 Frustrated</button>
+            <button onclick="setDailyMood(1)" class="mood-btn" data-mood="1">😐 Neutral</button>
+            <button onclick="setDailyMood(2)" class="mood-btn" data-mood="2">😊 Focused</button>
+            <button onclick="setDailyMood(3)" class="mood-btn" data-mood="3">🔥 Confident</button>
+            <button onclick="setDailyMood(4)" class="mood-btn" data-mood="4">😴 Tired</button>
           </div>
         </div>
         <div style="margin-bottom:14px">
@@ -6651,9 +6655,16 @@ function startJournalHeroCanvas() {
 
 // ── GOALS TAB ─────────────────────────────────────────────────────────────────
 function goalProgress(g) {
-  const s=parseFloat(g.startVal)||0, t=parseFloat(g.target)||0, c=parseFloat(g.current)||0;
-  if(t===s) return g.status==='done'?100:0;
-  return Math.min(100,Math.max(0,Math.round((c-s)/(t-s)*100)));
+  const s = parseFloat(g.startVal) || 0;
+  const t = parseFloat(g.target)   || 0;
+  const c = parseFloat(g.current)  || s;
+  if (t === s) return g.status === 'done' ? 100 : 0;
+  // Lower is better: target < start (e.g. handicap 19.4 → 10)
+  if (t < s) {
+    return Math.min(100, Math.max(0, Math.round((s - c) / (s - t) * 100)));
+  }
+  // Higher is better: target > start
+  return Math.min(100, Math.max(0, Math.round((c - s) / (t - s) * 100)));
 }
 function daysLeft(dl) {
   if(!dl) return null;
@@ -6897,6 +6908,8 @@ function quickUpdateGoalVal(idx) {
   const j = getJournal();
   j.goals[idx].current = val;
   if (parseFloat(val) >= parseFloat(j.goals[idx].target) && j.goals[idx].target) j.goals[idx].status = 'done';
+  const _g=j.goals[idx], _t=parseFloat(_g.target), _s=parseFloat(_g.startVal)||0, _c=parseFloat(val);
+  if(_g.target && (_t<_s ? _c<=_t : _c>=_t)) _g.status='done'; else if(_g.status==='done'&&_c>_t&&_t>_s) _g.status='active';
   state.journal = j; save();
   closeGoalDetail();
   renderGoalsTab();
@@ -6927,7 +6940,10 @@ function saveGoal() {
   if(!title){alert('Please enter a goal title');return;}
   const ms=document.getElementById('gm-milestones').value.split(',').map(s=>s.trim()).filter(Boolean);
   const goal={title,category:document.getElementById('gm-category').value,target:document.getElementById('gm-target').value,unit:document.getElementById('gm-unit').value.trim(),startVal:document.getElementById('gm-start').value,current:document.getElementById('gm-current').value,startDate:document.getElementById('gm-startdate').value,deadline:document.getElementById('gm-deadline').value,desc:document.getElementById('gm-desc').value.trim(),milestones:ms,status:'active',createdAt:editingGoalIdx!==null?(j.goals[editingGoalIdx]?.createdAt||new Date().toISOString()):new Date().toISOString()};
-  if(parseFloat(goal.current)>=parseFloat(goal.target)&&goal.target) goal.status='done';
+  if (goal.target && goal.current) {
+    const t = parseFloat(goal.target), c = parseFloat(goal.current), s = parseFloat(goal.startVal)||0;
+    if (t < s ? c <= t : c >= t) goal.status = 'done';
+  }
   if(editingGoalIdx!==null) j.goals[editingGoalIdx]=goal; else j.goals.push(goal);
   state.journal=j; save(); closeGoalModal(); renderGoalsTab();
 }
@@ -6973,7 +6989,7 @@ function saveDailyEntry() {
   j.goals.forEach((g,idx)=>{
     const ci=document.getElementById('checkin-'+idx),vl=document.getElementById('checkin-val-'+idx);
     if(ci&&ci.value.trim())goalCheckins[idx]=ci.value.trim();
-    if(vl&&vl.value.trim()){goalValues[idx]=vl.value.trim();j.goals[idx].current=vl.value.trim();if(parseFloat(vl.value)>=parseFloat(g.target)&&g.target)j.goals[idx].status='done';}
+    if(vl&&vl.value.trim()){goalValues[idx]=vl.value.trim();j.goals[idx].current=vl.value.trim();const _t=parseFloat(g.target),_c=parseFloat(vl.value),_s=parseFloat(g.startVal)||0;if(g.target&&(_t<_s?_c<=_t:_c>=_t))j.goals[idx].status='done';}
   });
   j.dailyEntries[dailyViewDate]={notes,mood,goalCheckins,goalValues,savedAt:new Date().toISOString()};
   state.journal=j;save();
