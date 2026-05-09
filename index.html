@@ -851,6 +851,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 .phero-val{font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent)}
 .phero-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
 .phero-sub{font-size:10px;color:rgba(255,255,255,.3);margin-top:2px}
+@keyframes calDetailIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -1414,7 +1415,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
       <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
     </div>
   </div>
-  <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div id="hi-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="hi-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="hi-s0">—</div><div class="phero-lbl">TOTAL TRADES</div></div>
@@ -1462,17 +1463,22 @@ body.light-mode .copilot-wrap { box-shadow: none; }
     </div>
   </div>
   <div id="hist-cal-view" style="display:none">
-    <div style="text-align:center;margin-bottom:14px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Monthly P/L</div>
-      <div id="cal-monthly-pnl" style="font-size:28px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px">$0.00</div>
+    <div style="position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#080810,#0d0d1a);border:1px solid rgba(155,127,255,.15)">
+      <canvas id="cal-hero-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+      <div style="position:relative;z-index:1;padding:24px">
+        <div style="text-align:center;margin-bottom:22px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.12em;color:rgba(155,127,255,.5);text-transform:uppercase;margin-bottom:10px">Monthly P&amp;L</div>
+          <div id="cal-monthly-pnl" style="font-size:44px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2.5px;line-height:1;color:var(--muted)">—</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <button onclick="calNav(-1)" style="background:rgba(155,127,255,.1);border:1px solid rgba(155,127,255,.2);color:rgba(155,127,255,.9);font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:7px 18px;border-radius:8px;cursor:pointer;transition:background .15s,border-color .15s" onmouseover="this.style.background='rgba(155,127,255,.2)';this.style.borderColor='rgba(155,127,255,.45)'" onmouseout="this.style.background='rgba(155,127,255,.1)';this.style.borderColor='rgba(155,127,255,.2)'">← Prev</button>
+          <div style="font-size:16px;font-weight:700;color:var(--text);font-family:'Geist',sans-serif;letter-spacing:-.2px" id="cal-month-label"></div>
+          <button onclick="calNav(1)" style="background:rgba(155,127,255,.1);border:1px solid rgba(155,127,255,.2);color:rgba(155,127,255,.9);font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:7px 18px;border-radius:8px;cursor:pointer;transition:background .15s,border-color .15s" onmouseover="this.style.background='rgba(155,127,255,.2)';this.style.borderColor='rgba(155,127,255,.45)'" onmouseout="this.style.background='rgba(155,127,255,.1)';this.style.borderColor='rgba(155,127,255,.2)'">Next →</button>
+        </div>
+        <div id="cal-grid-wrap"></div>
+        <div id="cal-day-detail" style="display:none;margin-top:16px"></div>
+      </div>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <button class="btn btn-sm" onclick="calNav(-1)">← Prev</button>
-      <div style="font-size:15px;font-weight:700;color:var(--text);font-family:'Geist',sans-serif" id="cal-month-label"></div>
-      <button class="btn btn-sm" onclick="calNav(1)">Next →</button>
-    </div>
-    <div id="cal-grid-wrap"></div>
-    <div id="cal-day-detail" style="display:none;margin-top:14px"></div>
   </div>
 </div>
 
@@ -6441,22 +6447,26 @@ let histView = 'table';
 
 function setHistoryView(v) {
   histView = v;
-  const tbl = document.getElementById('hist-table-view');
-  const cal = document.getElementById('hist-cal-view');
-  const tBtn = document.getElementById('hist-view-table');
-  const cBtn = document.getElementById('hist-view-cal');
+  const tbl    = document.getElementById('hist-table-view');
+  const cal    = document.getElementById('hist-cal-view');
+  const banner = document.getElementById('hi-hero-banner');
+  const tBtn   = document.getElementById('hist-view-table');
+  const cBtn   = document.getElementById('hist-view-cal');
   if (v === 'table') {
     tbl.style.display = ''; cal.style.display = 'none';
+    if (banner) banner.style.display = '';
     tBtn.style.background = 'var(--accent)'; tBtn.style.color = '#fff';
     cBtn.style.background = 'transparent'; cBtn.style.color = 'var(--muted)';
     renderHistory();
   } else {
     tbl.style.display = 'none'; cal.style.display = '';
+    if (banner) banner.style.display = 'none';
     cBtn.style.background = 'var(--accent)'; cBtn.style.color = '#fff';
     tBtn.style.background = 'transparent'; tBtn.style.color = 'var(--muted)';
     const last = [...state.trades].reverse().find(t => t.datetime);
     if (last) { const d = new Date(last.datetime); calYear = d.getFullYear(); calMonth = d.getMonth(); }
     renderCalendar();
+    startHeroCanvas('cal-hero-c');
   }
 }
 
@@ -6484,8 +6494,10 @@ function renderCalendar() {
   const monthPnL = Object.values(dayMap).flat().reduce((a, t) => a + calcPnL(t), 0);
   const mpEl = document.getElementById('cal-monthly-pnl');
   if (mpEl) {
-    mpEl.textContent = (monthPnL >= 0 ? '+' : '-') + '$' + Math.abs(monthPnL).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const hasTrades = Object.keys(dayMap).length > 0;
+    mpEl.textContent = hasTrades ? (monthPnL >= 0 ? '+' : '-') + '$' + Math.abs(monthPnL).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—';
     mpEl.style.color = monthPnL > 0 ? 'var(--green)' : monthPnL < 0 ? 'var(--red)' : 'var(--muted)';
+    mpEl.style.textShadow = monthPnL > 0 ? '0 0 30px rgba(0,208,132,.45),0 0 60px rgba(0,208,132,.18)' : monthPnL < 0 ? '0 0 30px rgba(255,77,77,.45),0 0 60px rgba(255,77,77,.18)' : 'none';
   }
   const firstDow  = new Date(calYear, calMonth, 1).getDay();
   const daysInMo  = new Date(calYear, calMonth + 1, 0).getDate();
@@ -6495,16 +6507,16 @@ function renderCalendar() {
   const wrap = document.getElementById('cal-grid-wrap');
   wrap.innerHTML = '';
   const grid = document.createElement('div');
-  grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr) 130px;gap:3px';
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr) 130px;gap:4px';
 
   // Header row
   ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
     const h = document.createElement('div');
-    h.style.cssText = 'text-align:center;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.05em;padding:5px 0;text-transform:uppercase';
+    h.style.cssText = 'text-align:center;font-size:10px;font-weight:700;color:rgba(155,127,255,.45);letter-spacing:.08em;padding:6px 0 10px;text-transform:uppercase';
     h.textContent = d; grid.appendChild(h);
   });
   const wh = document.createElement('div');
-  wh.style.cssText = 'font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.05em;padding:5px 8px;text-align:left;text-transform:uppercase';
+  wh.style.cssText = 'font-size:10px;font-weight:700;color:rgba(155,127,255,.28);letter-spacing:.08em;padding:6px 8px 10px;text-align:left;text-transform:uppercase';
   wh.textContent = 'Week'; grid.appendChild(wh);
 
   // Rows
@@ -6514,50 +6526,62 @@ function renderCalendar() {
       const day = w * 7 + d - firstDow + 1;
       const cell = document.createElement('div');
       if (day < 1 || day > daysInMo) {
-        cell.style.cssText = 'background:rgba(255,255,255,0.015);border:1px solid var(--border);border-radius:var(--r);min-height:88px;opacity:.4';
+        cell.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;min-height:90px;opacity:.3;box-sizing:border-box';
         grid.appendChild(cell); continue;
       }
       const trades  = dayMap[day] || [];
       const isToday = isThisMo && todayDate.getDate() === day;
       const isSel   = calSelectedDay === day;
       const dow     = new Date(calYear, calMonth, day).getDay();
-      cell.style.cssText = `background:${isSel?'rgba(155,127,255,.1)':'var(--bg2)'};border:${isToday?'2px solid var(--accent)':isSel?'1px solid var(--green)':'1px solid var(--border)'};border-radius:var(--r);min-height:88px;padding:8px 9px;cursor:${trades.length?'pointer':'default'};position:relative;display:flex;flex-direction:column;box-sizing:border-box;transition:border-color .15s;${!trades.length&&(dow===0||dow===6)?'opacity:.35':''}`;
+      const pnl     = trades.length ? trades.reduce((a,t) => a+calcPnL(t), 0) : null;
+      const bgColor = isSel ? 'rgba(155,127,255,.13)' : pnl === null ? 'rgba(255,255,255,0.03)' : pnl > 0 ? 'rgba(0,208,132,0.1)' : pnl < 0 ? 'rgba(255,77,77,0.08)' : 'rgba(255,255,255,0.04)';
+      const borderBase = pnl === null ? (isToday ? '1px solid rgba(155,127,255,0)' : '1px solid rgba(255,255,255,0.06)') : pnl > 0 ? '1px solid rgba(0,208,132,0.2)' : pnl < 0 ? '1px solid rgba(255,77,77,0.18)' : '1px solid rgba(255,255,255,0.08)';
+      const borderL  = pnl !== null ? (pnl > 0 ? ';border-left:3px solid rgba(0,208,132,.55)' : pnl < 0 ? ';border-left:3px solid rgba(255,77,77,.5)' : ';border-left:3px solid rgba(255,255,255,.12)') : '';
+      const baseShadow = isToday ? '0 0 0 1.5px rgba(155,127,255,.6),0 0 20px rgba(155,127,255,.1) inset' : isSel ? '0 0 0 1.5px rgba(155,127,255,.45)' : 'none';
+      const wkendDim = !trades.length && (dow === 0 || dow === 6) ? ';opacity:.38' : '';
+      cell.style.cssText = `background:${bgColor};border:${borderBase}${borderL};border-radius:8px;min-height:90px;padding:8px 9px;cursor:${trades.length?'pointer':'default'};position:relative;display:flex;flex-direction:column;box-sizing:border-box;transition:transform .15s cubic-bezier(0.23,1,.32,1),background .15s,box-shadow .15s;box-shadow:${baseShadow}${wkendDim}`;
 
       const numDiv = document.createElement('div');
-      numDiv.style.cssText = 'font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:3px';
-      if (isToday) { const pip = document.createElement('span'); pip.style.cssText='width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0'; numDiv.appendChild(pip); }
+      numDiv.style.cssText = `font-size:11px;font-weight:700;color:${isToday?'var(--accent)':'rgba(255,255,255,.32)'};margin-bottom:4px;display:flex;align-items:center;gap:4px`;
+      if (isToday) { const pip = document.createElement('span'); pip.style.cssText='width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;box-shadow:0 0 7px rgba(155,127,255,.9)'; numDiv.appendChild(pip); }
       numDiv.appendChild(document.createTextNode(day));
       cell.appendChild(numDiv);
 
       if (trades.length) {
-        const pnl  = trades.reduce((a,t) => a+calcPnL(t), 0);
         const wins = trades.filter(t => calcPnL(t)>0).length;
         const wr   = Math.round(wins/trades.length*100);
         const col  = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
+        const glow = pnl>0?'0 0 14px rgba(0,208,132,.55)':pnl<0?'0 0 14px rgba(255,77,77,.5)':'none';
         const sign = pnl>=0?'+':'-'; const abs=Math.abs(pnl);
         const str  = abs>=1000 ? sign+'$'+(abs/1000).toFixed(2)+'K' : sign+'$'+abs.toFixed(2);
         const pDiv = document.createElement('div');
-        pDiv.style.cssText = `font-size:15px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;color:${col};line-height:1.1;margin-top:auto`;
+        pDiv.style.cssText = `font-size:16px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;color:${col};line-height:1.1;margin-top:auto;text-shadow:${glow}`;
         pDiv.textContent = str;
         const mDiv = document.createElement('div');
-        mDiv.style.cssText = 'font-size:9px;color:var(--muted);margin-top:3px';
-        mDiv.textContent = `${trades.length} trade${trades.length>1?'s':''}`;
+        mDiv.style.cssText = 'font-size:9px;color:rgba(255,255,255,.28);margin-top:3px';
+        mDiv.textContent = `${trades.length}t · ${wr}%`;
         const bar = document.createElement('div');
-        bar.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:3px;border-radius:0 0 var(--r) var(--r);overflow:hidden';
-        bar.innerHTML = `<div style="width:${wr}%;height:100%;background:${col}"></div>`;
+        bar.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:0 0 8px 8px;overflow:hidden';
+        bar.innerHTML = `<div style="width:${wr}%;height:100%;background:${col};opacity:.65"></div>`;
         cell.appendChild(pDiv); cell.appendChild(mDiv); cell.appendChild(bar);
         cell.onclick = () => calClickDay(day, trades);
+        cell.addEventListener('mouseover', () => {
+          cell.style.transform = 'translateY(-2px)';
+          cell.style.boxShadow = pnl>0?'0 0 0 1px rgba(0,208,132,.45),0 8px 24px rgba(0,0,0,.35)':pnl<0?'0 0 0 1px rgba(255,77,77,.4),0 8px 24px rgba(0,0,0,.35)':'0 0 0 1px rgba(155,127,255,.35),0 8px 24px rgba(0,0,0,.35)';
+        });
+        cell.addEventListener('mouseout', () => { cell.style.transform=''; cell.style.boxShadow=baseShadow; });
         wPnL += pnl; wTrades += trades.length;
       }
       grid.appendChild(cell);
     }
-    // Week summary
+    // Week summary sidebar
     const wCell = document.createElement('div');
-    const wCol  = wPnL>0?'var(--green)':wPnL<0?'var(--red)':'var(--muted)';
+    const wCol  = wPnL>0?'var(--green)':wPnL<0?'var(--red)':'var(--dim)';
+    const wGlow = wPnL>0?'0 0 12px rgba(0,208,132,.4)':wPnL<0?'0 0 12px rgba(255,77,77,.35)':'none';
     const wSign = wPnL>=0?'+':'-'; const wAbs=Math.abs(wPnL);
-    const wStr  = wTrades ? wSign+'$'+wAbs.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '$0.00';
-    wCell.style.cssText = 'background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);min-height:88px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box';
-    wCell.innerHTML = `<div style="font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--dim);text-transform:uppercase;margin-bottom:5px">Week ${w+1}</div><div style="font-size:15px;font-weight:800;font-family:'Geist Mono',monospace;color:${wPnL!==0?wCol:'var(--muted)'}">${wStr}</div><div style="font-size:10px;color:var(--muted);margin-top:3px">${wTrades} trade${wTrades!==1?'s':''}</div>`;
+    const wStr  = wTrades ? wSign+'$'+wAbs.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    wCell.style.cssText = 'background:rgba(155,127,255,.05);border:1px solid rgba(155,127,255,.1);border-radius:8px;min-height:90px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center;box-sizing:border-box';
+    wCell.innerHTML = `<div style="font-size:9px;font-weight:700;letter-spacing:.07em;color:rgba(155,127,255,.38);text-transform:uppercase;margin-bottom:7px">Wk ${w+1}</div><div style="font-size:17px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;color:${wCol};text-shadow:${wGlow}">${wStr}</div><div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:4px">${wTrades} trade${wTrades!==1?'s':''}</div>`;
     grid.appendChild(wCell);
   }
   wrap.appendChild(grid);
@@ -6577,20 +6601,21 @@ function calClickDay(day, trades) {
   const col  = pnl>=0?'var(--green)':'var(--red)';
   const pStr = (pnl>=0?'+':'-')+'$'+Math.abs(pnl).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   detail.style.display='';
-  detail.innerHTML=`<div class="card" style="padding:0;overflow:hidden">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <div style="font-size:14px;font-weight:700">${MONTHS[calMonth]} ${day}, ${calYear}</div>
-      <span style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:${col}">${pStr}</span>
+  detail.style.animation='calDetailIn .22s cubic-bezier(0.23,1,0.32,1) both';
+  detail.innerHTML=`<div style="background:rgba(8,8,20,.95);border:1px solid rgba(155,127,255,.2);border-radius:12px;overflow:hidden;backdrop-filter:blur(16px)">
+    <div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="font-size:14px;font-weight:700;color:var(--text)">${MONTHS[calMonth]} ${day}, ${calYear}</div>
+      <span style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;color:${col};text-shadow:${pnl>=0?'0 0 16px rgba(0,208,132,.5)':'0 0 16px rgba(255,77,77,.5)'}">${pStr}</span>
       <span style="font-size:12px;color:var(--muted)">${trades.length} trade${trades.length>1?'s':''} · ${wr}% WR</span>
-      <button class="btn btn-sm" style="margin-left:auto" onclick="calSelectedDay=null;document.getElementById('cal-day-detail').style.display='none';renderCalendar()">✕</button>
+      <button style="margin-left:auto;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--muted);font-size:13px;width:28px;height:28px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:background .15s" onmouseover="this.style.background='rgba(255,77,77,.2)'" onmouseout="this.style.background='rgba(255,255,255,.07)'" onclick="calSelectedDay=null;document.getElementById('cal-day-detail').style.display='none';renderCalendar()">✕</button>
     </div>
-    ${trades.map(t=>{const tp=calcPnL(t);const idx=state.trades.indexOf(t);const tc=tp>=0?'var(--green)':'var(--red)';return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s" onclick="openTradeModal(${idx})" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+    ${trades.map(t=>{const tp=calcPnL(t);const idx=state.trades.indexOf(t);const tc=tp>=0?'var(--green)':'var(--red)';const tg=tp>=0?'0 0 10px rgba(0,208,132,.4)':'0 0 10px rgba(255,77,77,.4)';return`<div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .1s" onclick="openTradeModal(${idx})" onmouseover="this.style.background='rgba(155,127,255,.06)'" onmouseout="this.style.background=''">
       <span class="side-pill ${t.side==='long'?'long-pill':'short-pill'}">${t.side.toUpperCase()}</span>
-      <strong style="font-size:13px">${t.ticker}</strong>
+      <strong style="font-size:13px;color:var(--text)">${t.ticker}</strong>
       <span style="font-size:11px;color:var(--muted)">${t.datetime?t.datetime.slice(11,16):''}</span>
       ${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')}
       ${t.grade?`<span class="grade-badge grade-${t.grade.replace(/[^A-F]/g,'')[0]||''}" style="font-size:18px">${t.grade}</span>`:''}
-      <span style="margin-left:auto;font-weight:700;font-family:'Geist Mono',monospace;font-size:13px;color:${tc}">${tp>=0?'+':'-'}$${Math.abs(tp).toFixed(2)}</span>
+      <span style="margin-left:auto;font-weight:800;font-family:'Geist Mono',monospace;font-size:13px;color:${tc};text-shadow:${tg}">${tp>=0?'+':'-'}$${Math.abs(tp).toFixed(2)}</span>
     </div>`;}).join('')}
   </div>`;
 }
