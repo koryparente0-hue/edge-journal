@@ -2486,6 +2486,13 @@ window._fbSave = async (data) => {
     } catch(e) { console.error('Save failed', e); }
   }, 800);
 };
+window._fbSaveNow = async (data) => {
+  if (!currentUser) return;
+  clearTimeout(saveTimeout);
+  try {
+    await setDoc(doc(db, 'users', currentUser.uid), data);
+  } catch(e) { console.error('Immediate save failed', e); }
+};
 
 window._fbLoad = async () => {
   if (!currentUser) return null;
@@ -2580,26 +2587,31 @@ let state = {
 // Load from localStorage as fallback while Firebase initialises
 try { const s = localStorage.getItem(STORAGE_KEY); if(s) { const p = JSON.parse(s); state = {...state,...p}; } } catch(e){}
 
-function save() {
+function _buildSaveData() {
+  return {
+    trades: state.trades,
+    setups: state.setups,
+    mistakes: state.mistakes,
+    playbook: state.playbook,
+    rules: state.rules,
+    routines: state.routines,
+    gradingCriteria: state.gradingCriteria || {},
+    propAccounts: state.propAccounts || [],
+    propPayouts: state.propPayouts || [],
+    setupLibrary: state.setupLibrary || [],
+    journal: state.journal || { goals: [], dailyEntries: {} }
+  };
+}
+function save(immediate) {
   // Always mirror to localStorage for instant reads
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
-  // Sync to Firestore (debounced inside _fbSave)
+  // Sync to Firestore (debounced, or immediate for critical saves)
   const dot = document.getElementById('sync-dot');
   if (dot) dot.className = 'sync-dot syncing';
-  if (window._fbSave) {
-    window._fbSave({
-      trades: state.trades,
-      setups: state.setups,
-      mistakes: state.mistakes,
-      playbook: state.playbook,
-      rules: state.rules,
-      routines: state.routines,
-      gradingCriteria: state.gradingCriteria || {},
-      propAccounts: state.propAccounts || [],
-      propPayouts: state.propPayouts || [],
-      setupLibrary: state.setupLibrary || [],
-      journal: state.journal || { goals: [], dailyEntries: {} }
-    }).then(()=>{ if(dot) dot.className='sync-dot'; }).catch(()=>{ if(dot) dot.className='sync-dot'; });
+  const data = _buildSaveData();
+  const fn = immediate && window._fbSaveNow ? window._fbSaveNow : window._fbSave;
+  if (fn) {
+    fn(data).then(()=>{ if(dot) dot.className='sync-dot'; }).catch(()=>{ if(dot) dot.className='sync-dot'; });
   }
 }
 
@@ -7126,7 +7138,7 @@ function quickUpdateGoalVal(idx) {
   if (parseFloat(val) >= parseFloat(j.goals[idx].target) && j.goals[idx].target) j.goals[idx].status = 'done';
   const _g=j.goals[idx], _t=parseFloat(_g.target), _s=parseFloat(_g.startVal)||0, _c=parseFloat(val);
   if(_g.target && (_t<_s ? _c<=_t : _c>=_t)) _g.status='done'; else if(_g.status==='done'&&_c>_t&&_t>_s) _g.status='active';
-  state.journal = j; save();
+  state.journal = j; save(true);
   closeGoalDetail();
   renderGoalsTab();
 }
@@ -7162,12 +7174,12 @@ function saveGoal() {
     if (!isNaN(c) && !isNaN(t) && (t < s ? c <= t : c >= t)) goal.status = 'done';
   }
   if(editingGoalIdx!==null) j.goals[editingGoalIdx]=goal; else j.goals.push(goal);
-  state.journal=j; save(); closeGoalModal(); renderGoalsTab(); renderJournalPage();
+  state.journal=j; save(true); closeGoalModal(); renderGoalsTab();
 }
 function deleteGoal() {
   if(!confirm('Delete this goal?'))return;
   const j=getJournal(); j.goals.splice(editingGoalIdx,1);
-  state.journal=j; save(); closeGoalModal(); renderGoalsTab();
+  state.journal=j; save(true); closeGoalModal(); renderGoalsTab();
 }
 function journalAddAction() {
   if(journalTab==='goals') openGoalModal(); else {dailyViewDate=new Date().toISOString().slice(0,10);renderDailyTab();}
@@ -7209,7 +7221,7 @@ function saveDailyEntry() {
     if(vl&&vl.value.trim()){goalValues[idx]=vl.value.trim();j.goals[idx].current=vl.value.trim();const _t=parseFloat(g.target),_c=parseFloat(vl.value),_s=parseFloat(g.startVal)||0;if(g.target&&(_t<_s?_c<=_t:_c>=_t))j.goals[idx].status='done';}
   });
   j.dailyEntries[dailyViewDate]={notes,mood,goalCheckins,goalValues,savedAt:new Date().toISOString()};
-  state.journal=j;save();
+  state.journal=j;save(true);
   const saveBtn=[...document.querySelectorAll('#jtab-daily .btn')].find(b=>b.textContent.includes('Save'));
   if(saveBtn){saveBtn.textContent='Saved ✓';saveBtn.style.background='var(--green)';setTimeout(()=>{saveBtn.textContent='Save entry';saveBtn.style.background='';},1500);}
   renderDailyHistoryList();
