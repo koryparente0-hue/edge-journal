@@ -6817,7 +6817,7 @@ function updateJournalAddBtn() {
   const btn = document.getElementById('journal-add-btn');
   if (!btn) return;
   btn.textContent = journalTab === 'goals' ? '+ Add Goal' : '+ Log Today';
-  btn.onclick = journalTab === 'goals' ? openGoalModal : () => switchJournalTab('daily');
+  btn.onclick = journalTab === 'goals' ? () => openGoalModal() : () => switchJournalTab('daily');
 }
 function switchJournalTab(tab) {
   journalTab = tab;
