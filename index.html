@@ -814,6 +814,43 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 }
 .milestone-pip.reached{border-color:var(--c,#9B7FFF);background:var(--c,#9B7FFF);box-shadow:0 0 8px var(--c,#9B7FFF)}
 
+/* Habit check-in buttons on card */
+.habit-ci-btn{padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,0.04);color:var(--muted);cursor:pointer;font-size:11px;font-weight:600;transition:all .16s cubic-bezier(0.23,1,0.32,1);text-align:center}
+.habit-ci-btn:hover{background:rgba(255,255,255,.08);transform:translateY(-1px)}
+.habit-ci-btn:active{transform:scale(0.95)}
+
+/* Milestone checkbox styling */
+.ms-check-label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;padding:4px 0;border-radius:6px;transition:color .15s}
+.ms-check-label:hover{color:var(--text)}
+
+/* Mood buttons v2 (large emoji circle) */
+.mood-btn-v2{width:52px;height:52px;border-radius:50%;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);font-size:22px;cursor:pointer;transition:all .2s cubic-bezier(0.23,1,0.32,1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
+.mood-btn-v2:hover{transform:scale(1.1);border-color:rgba(155,127,255,.3)}
+.mood-btn-v2:active{transform:scale(0.95)}
+.mood-btn-v2.selected{transform:scale(1.18);border-color:var(--accent);box-shadow:0 0 18px rgba(155,127,255,.4),0 0 6px rgba(155,127,255,.3)}
+.mood-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);margin-top:2px;display:none}
+.mood-btn-v2.selected .mood-label{display:block;color:var(--accent)}
+
+/* Daily log slide transitions */
+@keyframes dlSlideInFromRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes dlSlideInFromLeft{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+.dl-slide-right{animation:dlSlideInFromRight .2s cubic-bezier(0.23,1,0.32,1)}
+.dl-slide-left{animation:dlSlideInFromLeft .2s cubic-bezier(0.23,1,0.32,1)}
+
+/* Redesigned daily entry cards */
+.daily-entry-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:11px 14px;margin-bottom:7px;cursor:pointer;transition:all .18s cubic-bezier(0.23,1,0.32,1)}
+.daily-entry-card:hover{border-color:rgba(155,127,255,.25);transform:translateX(2px)}
+.daily-entry-card:active{transform:scale(0.98)}
+.daily-entry-card.entry-active{border-color:var(--accent);border-left-width:3px;background:rgba(155,127,255,.05)}
+
+/* Auto trade summary pill in daily log */
+.daily-trade-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:600;font-family:'Geist Mono',monospace;border:1px solid}
+
+/* Goal type toggle section in modal */
+.gm-type-btn{padding:8px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:var(--bg3);color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;transition:all .18s cubic-bezier(0.23,1,0.32,1)}
+.gm-type-btn:hover{border-color:rgba(155,127,255,.3)}
+.gm-type-btn.gm-type-active{background:rgba(155,127,255,.15);border-color:var(--accent);color:var(--accent)}
+
 /* Goal detail panel (full-page overlay) */
 .goal-detail-overlay{
   position:fixed;inset:0;z-index:1200;
@@ -2033,36 +2070,38 @@ body.light-mode .metric-val{color:#0a0a14}
   <!-- DAILY LOG TAB -->
   <div id="jtab-daily" style="display:none">
     <div style="display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start">
-      <div class="card" style="margin-bottom:0">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <div>
-            <div style="font-size:15px;font-weight:700" id="daily-date-label"></div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">Daily reflection</div>
-          </div>
+      <!-- LEFT PANEL -->
+      <div class="card" style="margin-bottom:0;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div id="daily-date-label"></div>
           <div style="display:flex;gap:6px">
             <button class="btn btn-sm" onclick="dailyNavDay(-1)">← Prev</button>
             <button class="btn btn-sm" onclick="dailyNavDay(1)" id="daily-next-btn">Next →</button>
           </div>
         </div>
-        <div style="margin-bottom:14px">
-          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">How are you feeling?</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap" id="daily-mood-row">
-            <button onclick="setDailyMood(0)" class="mood-btn" data-mood="0">😤 Frustrated</button>
-            <button onclick="setDailyMood(1)" class="mood-btn" data-mood="1">😐 Neutral</button>
-            <button onclick="setDailyMood(2)" class="mood-btn" data-mood="2">😊 Focused</button>
-            <button onclick="setDailyMood(3)" class="mood-btn" data-mood="3">🔥 Confident</button>
-            <button onclick="setDailyMood(4)" class="mood-btn" data-mood="4">😴 Tired</button>
+        <div id="daily-main-content">
+          <div id="daily-trade-summary" style="margin-bottom:14px"></div>
+          <div style="margin-bottom:18px">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Mood</div>
+            <div style="display:flex;gap:10px" id="daily-mood-row">
+              <button onclick="setDailyMood(0)" class="mood-btn-v2" data-mood="0"><span>😤</span><span class="mood-label">Frustrated</span></button>
+              <button onclick="setDailyMood(1)" class="mood-btn-v2" data-mood="1"><span>😐</span><span class="mood-label">Neutral</span></button>
+              <button onclick="setDailyMood(2)" class="mood-btn-v2" data-mood="2"><span>😊</span><span class="mood-label">Focused</span></button>
+              <button onclick="setDailyMood(3)" class="mood-btn-v2" data-mood="3"><span>🔥</span><span class="mood-label">Confident</span></button>
+              <button onclick="setDailyMood(4)" class="mood-btn-v2" data-mood="4"><span>😴</span><span class="mood-label">Tired</span></button>
+            </div>
           </div>
+          <div style="margin-bottom:16px">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Journal</div>
+            <textarea id="daily-notes" placeholder="What happened today? How did you trade? What did you learn?" style="width:100%;min-height:140px;background:var(--bg3);border:1px solid var(--border2);border-left:2px solid var(--accent);border-radius:0 var(--r) var(--r) 0;padding:12px 14px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.75;box-sizing:border-box;transition:border-color .2s,box-shadow .2s"></textarea>
+          </div>
+          <div id="daily-goal-checkins" style="margin-bottom:16px"></div>
+          <button class="btn btn-green" style="width:100%;justify-content:center" onclick="saveDailyEntry()">Save entry</button>
         </div>
-        <div style="margin-bottom:14px">
-          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Journal</div>
-          <textarea id="daily-notes" placeholder="What happened today? How did you trade? What did you learn?" style="width:100%;min-height:120px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:12px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.7;box-sizing:border-box"></textarea>
-        </div>
-        <div id="daily-goal-checkins" style="margin-bottom:14px"></div>
-        <button class="btn btn-green" style="width:100%;justify-content:center" onclick="saveDailyEntry()">Save entry</button>
       </div>
+      <!-- RIGHT PANEL -->
       <div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Recent entries</div>
+        <div id="daily-journal-header" style="margin-bottom:10px"></div>
         <div id="daily-history-list"></div>
       </div>
     </div>
@@ -2083,37 +2122,89 @@ body.light-mode .metric-val{color:#0a0a14}
 
 <!-- GOAL MODAL (add/edit) -->
 <div class="modal-overlay" id="goal-modal" onclick="if(event.target===this)closeGoalModal()">
-  <div class="modal" style="max-width:540px">
+  <div class="modal" style="max-width:560px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
       <div class="modal-title" id="goal-modal-title">Add Goal</div>
-      <button class="btn btn-sm" onclick="closeGoalModal()">✕</button>
+      <button class="btn btn-sm" onclick="closeGoalModal()" style="font-size:18px;padding:4px 10px">✕</button>
     </div>
-    <div style="display:grid;gap:12px">
-      <div class="modal-field"><label class="modal-label">Goal title</label><input class="modal-input" id="gm-title" placeholder="e.g. Lower handicap by 6 strokes"></div>
+    <div style="display:grid;gap:14px">
+      <!-- Type selector -->
+      <div>
+        <div class="modal-label" style="margin-bottom:8px">Goal type</div>
+        <div style="display:flex;gap:8px">
+          <button class="gm-type-btn" id="gmt-numeric" onclick="setGoalType('numeric')">📊 Numeric</button>
+          <button class="gm-type-btn" id="gmt-habit"   onclick="setGoalType('habit')">🔁 Habit / Streak</button>
+          <button class="gm-type-btn" id="gmt-milestone" onclick="setGoalType('milestone')">✅ Milestones</button>
+        </div>
+      </div>
+
+      <!-- Title + Category (shared) -->
+      <div class="modal-field"><label class="modal-label">Goal title</label><input class="modal-input" id="gm-title" placeholder="What do you want to achieve?"></div>
       <div class="modal-field"><label class="modal-label">Category</label>
         <select class="modal-select" id="gm-category">
-          <option value="trading">📈 Trading</option><option value="fitness">💪 Fitness</option>
-          <option value="finance">💰 Finance</option><option value="learning">📚 Learning</option>
-          <option value="mindset">🧠 Mindset</option><option value="social">🤝 Social</option><option value="other">⭐ Other</option>
+          <option value="trading">📈 Trading</option>
+          <option value="money">💰 Money &amp; Business</option>
+          <option value="audience">📱 Audience &amp; Content</option>
+          <option value="fitness">💪 Fitness &amp; Health</option>
+          <option value="skills">🧠 Skills</option>
+          <option value="network">🤝 Network &amp; Life</option>
+          <option value="discipline">⚡ Discipline &amp; Systems</option>
+          <option value="other">⭐ Other</option>
         </select>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="modal-field"><label class="modal-label">Target value</label><input class="modal-input" id="gm-target" type="number" placeholder="e.g. 100"></div>
-        <div class="modal-field"><label class="modal-label">Unit</label><input class="modal-input" id="gm-unit" placeholder="e.g. lbs, trades, %"></div>
+
+      <!-- NUMERIC FIELDS -->
+      <div id="gm-numeric-fields">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="modal-field"><label class="modal-label">Starting value</label><input class="modal-input" id="gm-start" type="number" placeholder="0"></div>
+          <div class="modal-field"><label class="modal-label">Target value</label><input class="modal-input" id="gm-target" type="number" placeholder="e.g. 100"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="modal-field"><label class="modal-label">Current value</label><input class="modal-input" id="gm-current" type="number" placeholder="0"></div>
+          <div class="modal-field"><label class="modal-label">Unit</label><input class="modal-input" id="gm-unit" placeholder="lbs, $, trades, %"></div>
+        </div>
+        <div class="modal-field" style="margin-top:12px"><label class="modal-label">Progress milestones <span style="color:var(--dim);font-weight:400">comma separated</span></label><input class="modal-input" id="gm-milestones" placeholder="e.g. 25, 50, 75"></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="modal-field"><label class="modal-label">Starting value</label><input class="modal-input" id="gm-start" type="number" placeholder="0"></div>
-        <div class="modal-field"><label class="modal-label">Current value</label><input class="modal-input" id="gm-current" type="number" placeholder="0"></div>
+
+      <!-- HABIT FIELDS -->
+      <div id="gm-habit-fields" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="modal-field">
+            <label class="modal-label">Target</label>
+            <input class="modal-input" id="gm-habit-target" type="number" placeholder="e.g. 90">
+          </div>
+          <div class="modal-field">
+            <label class="modal-label">Frequency</label>
+            <select class="modal-select" id="gm-habit-freq">
+              <option value="daily">Daily</option>
+              <option value="weekdays">Weekdays only</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="gm-habit-pct" style="width:15px;height:15px;accent-color:var(--accent)">
+          Track as percentage of days (e.g. "75% of days") instead of total count
+        </label>
       </div>
+
+      <!-- MILESTONE FIELDS -->
+      <div id="gm-milestone-fields" style="display:none">
+        <div class="modal-field">
+          <label class="modal-label">Milestones / sub-goals <span style="color:var(--dim);font-weight:400">one per line</span></label>
+          <textarea class="modal-input" id="gm-milestone-list" rows="5" placeholder="Launch website&#10;Get first 10 customers&#10;Hit $1,000 revenue&#10;Hire first employee" style="resize:vertical;font-family:var(--display);line-height:1.6"></textarea>
+        </div>
+      </div>
+
+      <!-- Dates (shared) -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="modal-field"><label class="modal-label">Start date</label><input class="modal-input" id="gm-startdate" type="date"></div>
         <div class="modal-field"><label class="modal-label">Deadline</label><input class="modal-input" id="gm-deadline" type="date"></div>
       </div>
-      <div class="modal-field"><label class="modal-label">Why this matters</label><textarea class="modal-input" id="gm-desc" rows="2" placeholder="What will this unlock for you?" style="resize:vertical"></textarea></div>
-      <div class="modal-field"><label class="modal-label">Milestones <span style="color:var(--dim);font-weight:400">comma separated</span></label><input class="modal-input" id="gm-milestones" placeholder="e.g. 25, 50, 75"></div>
+      <div class="modal-field"><label class="modal-label">Why this matters</label><textarea class="modal-input" id="gm-desc" rows="2" placeholder="What will achieving this unlock for you?" style="resize:vertical;font-family:var(--display)"></textarea></div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:18px">
-      <button class="btn btn-green" style="flex:1" onclick="saveGoal()">Save goal</button>
+    <div style="display:flex;gap:8px;margin-top:20px">
+      <button class="btn btn-green" style="flex:1;justify-content:center" onclick="saveGoal()">Save goal</button>
       <button class="btn btn-sm btn-red" id="gm-delete-btn" style="display:none" onclick="deleteGoal()">Delete</button>
     </div>
   </div>
@@ -6872,8 +6963,12 @@ let journalTab = 'goals';
 let dailyViewDate = new Date().toISOString().slice(0,10);
 let editingGoalIdx = null;
 
-const CAT_COLORS = { trading:'#9B7FFF', fitness:'#00d084', finance:'#f5a623', learning:'#4a9eff', mindset:'#ff7eb3', social:'#00d4ff', other:'#aaa' };
-const CAT_ICONS  = { trading:'📈', fitness:'💪', finance:'💰', learning:'📚', mindset:'🧠', social:'🤝', other:'⭐' };
+const CAT_COLORS = { trading:'#9B7FFF', money:'#f5a623', audience:'#4a9eff', fitness:'#00d084', skills:'#9B7FFF', network:'#00d4ff', discipline:'#ff7eb3', other:'#aaa',
+  // Legacy keys for backward compat
+  finance:'#f5a623', learning:'#9B7FFF', mindset:'#ff7eb3', social:'#00d4ff' };
+const CAT_ICONS  = { trading:'📈', money:'💰', audience:'📱', fitness:'💪', skills:'🧠', network:'🤝', discipline:'⚡', other:'⭐',
+  // Legacy keys
+  finance:'💰', learning:'🧠', mindset:'🧠', social:'🤝' };
 const MOODS      = ['😤','😐','😊','🔥','😴'];
 const MOOD_NAMES = ['Frustrated','Neutral','Focused','Confident','Tired'];
 
@@ -6951,15 +7046,27 @@ function setHeroStats(prefix, vals, cols) {
 
 // ── GOALS TAB ─────────────────────────────────────────────────────────────────
 function goalProgress(g) {
+  if (g.type === 'habit') {
+    const target = parseInt(g.habitTarget) || 1;
+    const completed = Object.values(g.completions||{}).filter(v=>v==='yes'||v==='partial').length;
+    if (g.habitIsPercent) {
+      const totalDays = Math.max(1, Math.ceil((Date.now()-new Date((g.startDate||g.createdAt)+'T00:00').getTime())/86400000));
+      const rate = Math.round(completed/totalDays*100);
+      return Math.min(100, Math.max(0, Math.round(rate/target*100)));
+    }
+    return Math.min(100, Math.round(completed/target*100));
+  }
+  if (g.type === 'milestone') {
+    const total = (g.milestoneList||[]).length;
+    if (!total) return g.status==='done'?100:0;
+    return Math.round((g.milestoneChecked||[]).filter(Boolean).length/total*100);
+  }
+  // Numeric (default, or g.type===undefined for legacy goals)
   const s = parseFloat(g.startVal) || 0;
   const t = parseFloat(g.target)   || 0;
   const c = parseFloat(g.current)  || s;
   if (t === s) return g.status === 'done' ? 100 : 0;
-  // Lower is better: target < start (e.g. handicap 19.4 → 10)
-  if (t < s) {
-    return Math.min(100, Math.max(0, Math.round((s - c) / (s - t) * 100)));
-  }
-  // Higher is better: target > start
+  if (t < s) return Math.min(100, Math.max(0, Math.round((s - c) / (s - t) * 100)));
   return Math.min(100, Math.max(0, Math.round((c - s) / (t - s) * 100)));
 }
 function daysLeft(dl) {
@@ -7014,7 +7121,156 @@ function renderGoalsTab() {
 function wuStatusClass(s){return s==='on-track'?'wu-pill-on-track':s==='at-risk'?'wu-pill-at-risk':'wu-pill-behind';}
 function wuStatusLabel(s){return s==='on-track'?'🟢 On Track':s==='at-risk'?'🟡 At Risk':'🔴 Behind';}
 
+// ── HABIT HELPERS ─────────────────────────────────────────────────────────────
+function habitStreak(g) {
+  const comps=g.completions||{}, today=new Date().toISOString().slice(0,10);
+  let streak=0; const d=new Date();
+  for(let i=0;i<365;i++){
+    const key=new Date(d.getTime()-i*86400000).toISOString().slice(0,10);
+    if(key>today) continue;
+    const v=comps[key];
+    if(v==='yes'||v==='partial') streak++; else break;
+  }
+  return streak;
+}
+function habitLongestStreak(g) {
+  const comps=g.completions||{};
+  const days=Object.keys(comps).filter(k=>comps[k]==='yes'||comps[k]==='partial').sort();
+  let max=0,cur=0,prev=null;
+  days.forEach(d=>{
+    if(prev){const gap=(new Date(d)-new Date(prev))/86400000;cur=gap===1?cur+1:1;}else cur=1;
+    if(cur>max)max=cur; prev=d;
+  });
+  return max;
+}
+function habitDaysCompleted(g){return Object.values(g.completions||{}).filter(v=>v==='yes'||v==='partial').length;}
+
+function checkInHabit(goalIdx, status, event) {
+  if(event) event.stopPropagation();
+  const j=getJournal(); const g=j.goals[goalIdx]; if(!g||g.type!=='habit')return;
+  if(!g.completions) g.completions={};
+  const today=new Date().toISOString().slice(0,10);
+  g.completions[today] = g.completions[today]===status ? undefined : status;
+  if(g.completions[today]===undefined) delete g.completions[today];
+  const target=parseInt(g.habitTarget)||1;
+  if(!g.habitIsPercent && habitDaysCompleted(g)>=target) g.status='done'; else g.status='active';
+  state.journal=j; save(true); renderGoalsTab();
+}
+
+function checkInHabitForDate(goalIdx, status, date, event) {
+  if(event) event.stopPropagation();
+  const j=getJournal(); const g=j.goals[goalIdx]; if(!g||g.type!=='habit')return;
+  if(!g.completions) g.completions={};
+  g.completions[date] = g.completions[date]===status ? undefined : status;
+  if(g.completions[date]===undefined) delete g.completions[date];
+  const target=parseInt(g.habitTarget)||1;
+  if(!g.habitIsPercent && habitDaysCompleted(g)>=target) g.status='done'; else if(g.status==='done') g.status='active';
+  state.journal=j; save(true); renderDailyTab();
+}
+
+function saveMilestoneNote(goalIdx, mIdx, note) {
+  const j=getJournal(); const g=j.goals[goalIdx]; if(!g||g.type!=='milestone')return;
+  if(!g.milestoneNotes) g.milestoneNotes=new Array(g.milestoneList.length).fill('');
+  while(g.milestoneNotes.length<g.milestoneList.length) g.milestoneNotes.push('');
+  g.milestoneNotes[mIdx]=note;
+  state.journal=j; save(true);
+}
+
+function toggleMilestone(goalIdx, mIdx, event) {
+  if(event) event.stopPropagation();
+  const j=getJournal(); const g=j.goals[goalIdx]; if(!g||g.type!=='milestone')return;
+  if(!g.milestoneChecked) g.milestoneChecked=new Array(g.milestoneList.length).fill(false);
+  if(!g.milestoneCompletedAt) g.milestoneCompletedAt=new Array(g.milestoneList.length).fill(null);
+  g.milestoneChecked[mIdx]=!g.milestoneChecked[mIdx];
+  g.milestoneCompletedAt[mIdx]=g.milestoneChecked[mIdx]?new Date().toISOString():null;
+  g.status=g.milestoneChecked.every(Boolean)&&g.milestoneList.length>0?'done':'active';
+  state.journal=j; save(true); renderGoalsTab();
+  // Refresh detail panel if open
+  if(document.getElementById('goal-detail-overlay').classList.contains('open')) openGoalDetail(goalIdx);
+}
+
+// ── GOAL CARD RENDERERS ───────────────────────────────────────────────────────
 function renderGoalCard(g, staggerIdx) {
+  if (g.type === 'habit') return renderHabitCard(g, staggerIdx);
+  if (g.type === 'milestone') return renderMilestoneCard(g, staggerIdx);
+  return renderNumericCard(g, staggerIdx);
+}
+
+function renderHabitCard(g, staggerIdx) {
+  const col=CAT_COLORS[g.category]||'#9B7FFF', pct=goalProgress(g), done=g.status==='done';
+  const comps=g.completions||{}, streak=habitStreak(g), total=habitDaysCompleted(g);
+  const target=parseInt(g.habitTarget)||1, today=new Date().toISOString().slice(0,10);
+  const todayV=comps[today], delay=(staggerIdx||0)*55;
+  const updates=(g.weeklyUpdates||[]), latestU=updates.length?updates[updates.length-1]:null;
+  // 28-day heatmap
+  const days28=Array.from({length:28},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(27-i));return d.toISOString().slice(0,10);});
+  const heatmap=days28.map(d=>{
+    const v=comps[d];
+    const bg=v==='yes'?col+'cc':v==='partial'?col+'55':v==='no'?'rgba(255,77,77,.3)':'rgba(255,255,255,0.05)';
+    const glow=v==='yes'?'box-shadow:0 0 4px '+col+'55;':'';
+    return`<div style="width:100%;padding-top:100%;border-radius:3px;background:${bg};${glow}" title="${d}"></div>`;
+  }).join('');
+  return`<div class="goal-card" onclick="openGoalDetail(${g._idx})" style="--c:${col};animation-delay:${delay}ms">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${col},${col}88);border-radius:16px 16px 0 0"></div>
+    <div style="margin-top:6px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700;color:${done?'var(--muted)':'var(--text)'};margin-bottom:4px;${done?'text-decoration:line-through':''}">${g.title}</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            ${streak>0?`<span style="font-size:12px;font-weight:700;color:${col}">🔥 ${streak}d streak</span>`:'<span style="font-size:11px;color:var(--dim)">No streak yet</span>'}
+            ${latestU?`<span class="wu-pill ${wuStatusClass(latestU.status)}">${wuStatusLabel(latestU.status)}</span>`:''}
+            ${done?`<span style="font-size:10px;font-weight:700;color:var(--green);background:rgba(0,208,132,.12);padding:2px 8px;border-radius:20px;border:1px solid rgba(0,208,132,.25)">✓ Done</span>`:''}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:12px">
+          <div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;color:${col};line-height:1">${pct}%</div>
+          <div style="font-size:10px;color:var(--dim);margin-top:1px">${total}/${target} ${g.habitIsPercent?'% avg':'days'}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(28,1fr);gap:2px;margin-bottom:8px">${heatmap}</div>
+      <div class="goal-progress-track" style="height:5px;margin-bottom:10px">
+        <div class="goal-progress-fill" style="width:${pct}%;background:${done?'var(--green)':col};box-shadow:0 0 8px ${col}55"></div>
+      </div>
+      ${!done?`<div style="display:flex;gap:6px" onclick="event.stopPropagation()">
+        <button class="habit-ci-btn" style="flex:1;background:${todayV==='yes'?col+'22':'rgba(255,255,255,.04)'};border-color:${todayV==='yes'?col:'rgba(255,255,255,.1)'};color:${todayV==='yes'?col:'var(--muted)'}" onclick="checkInHabit(${g._idx},'yes',event)">✓ Yes</button>
+        <button class="habit-ci-btn" style="flex:1;background:${todayV==='partial'?'rgba(245,166,35,.2)':'rgba(255,255,255,.04)'};border-color:${todayV==='partial'?'#f5a623':'rgba(255,255,255,.1)'};color:${todayV==='partial'?'#f5a623':'var(--muted)'}" onclick="checkInHabit(${g._idx},'partial',event)">~ Partial</button>
+        <button class="habit-ci-btn" style="flex:1;background:${todayV==='no'?'rgba(255,77,77,.2)':'rgba(255,255,255,.04)'};border-color:${todayV==='no'?'#ff4d4d':'rgba(255,255,255,.1)'};color:${todayV==='no'?'#ff4d4d':'var(--muted)'}" onclick="checkInHabit(${g._idx},'no',event)">✗ No</button>
+      </div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderMilestoneCard(g, staggerIdx) {
+  const col=CAT_COLORS[g.category]||'#9B7FFF', pct=goalProgress(g), done=g.status==='done';
+  const list=g.milestoneList||[], checked=g.milestoneChecked||[];
+  const doneCount=checked.filter(Boolean).length, delay=(staggerIdx||0)*55;
+  const updates=(g.weeklyUpdates||[]), latestU=updates.length?updates[updates.length-1]:null;
+  return`<div class="goal-card" style="--c:${col};animation-delay:${delay}ms" onclick="event.target.type!=='checkbox'&&openGoalDetail(${g._idx})">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${col},${col}88);border-radius:16px 16px 0 0"></div>
+    <div style="margin-top:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:700;color:${done?'var(--muted)':'var(--text)'};${done?'text-decoration:line-through':''};flex:1;min-width:0">${g.title}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px">
+          ${latestU?`<span class="wu-pill ${wuStatusClass(latestU.status)}">${wuStatusLabel(latestU.status)}</span>`:''}
+          <span style="font-size:14px;font-weight:800;font-family:'Geist Mono',monospace;color:${col}">${doneCount}/${list.length}</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px">
+        ${list.slice(0,4).map((m,i)=>`<label class="ms-check-label" style="color:${checked[i]?'var(--dim)':'var(--muted)'};${checked[i]?'text-decoration:line-through':''}" onclick="event.stopPropagation()">
+          <input type="checkbox" ${checked[i]?'checked':''} onclick="toggleMilestone(${g._idx},${i},event)" style="width:15px;height:15px;accent-color:${col};cursor:pointer;flex-shrink:0">
+          ${checked[i]?`<span style="color:${col};margin-right:2px">✓</span>`:''}${m}
+        </label>`).join('')}
+        ${list.length>4?`<div style="font-size:11px;color:var(--dim);padding-left:23px">+${list.length-4} more…</div>`:''}
+      </div>
+      <div class="goal-progress-track" style="height:6px">
+        <div class="goal-progress-fill" style="width:${pct}%;background:${done?'var(--green)':col};box-shadow:0 0 8px ${col}55"></div>
+      </div>
+      ${g.desc?`<div style="font-size:11px;color:var(--dim);margin-top:8px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${g.desc}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderNumericCard(g, staggerIdx) {
   const pct  = goalProgress(g);
   const col  = CAT_COLORS[g.category]||'#9B7FFF';
   const done = g.status==='done'||pct>=100;
@@ -7095,36 +7351,9 @@ function openGoalDetail(idx) {
   const j = getJournal();
   const g = {...j.goals[idx], _idx:idx};
   const col = CAT_COLORS[g.category]||'#9B7FFF';
-  const pct = goalProgress(g);
-  const unit = g.unit||'';
-  const done = g.status==='done'||pct>=100;
-  const dl   = daysLeft(g.deadline);
-  const milestones = (g.milestones||[]).map(m=>parseFloat(m)).filter(Boolean);
-  const weeklyUpdates = (g.weeklyUpdates||[]).slice().reverse(); // newest first
+  const weeklyUpdates = (g.weeklyUpdates||[]).slice().reverse();
 
-  // Check-in history for this goal
-  const checkins = Object.entries(j.dailyEntries)
-    .filter(([,e])=>e.goalCheckins&&e.goalCheckins[idx]!==undefined)
-    .sort((a,b)=>b[0].localeCompare(a[0]));
-
-  // Build progress timeline dots (last 14 days)
-  const days14 = Array.from({length:14},(_,i)=>{
-    const d=new Date(); d.setDate(d.getDate()-(13-i));
-    return d.toISOString().slice(0,10);
-  });
-
-  const R=44, circ=2*Math.PI*R, dash=circ*(pct/100);
-  const bigRing = `<svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg)">
-    <circle cx="60" cy="60" r="${R}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="8"/>
-    <circle cx="60" cy="60" r="${R}" fill="none" stroke="${col}" stroke-width="8"
-      stroke-dasharray="${dash} ${circ}" stroke-linecap="round"
-      style="filter:drop-shadow(0 0 10px ${col}99);transition:stroke-dasharray 1s ease"/>
-  </svg>`;
-
-  const wuColMap = {'on-track':'#00d084','at-risk':'#f5a623','behind':'#ff4d4d'};
-
-  const panel = document.getElementById('goal-detail-panel');
-  panel.innerHTML = `
+  const header = `
     <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,${col},${col}44);border-radius:20px 20px 0 0"></div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;margin-top:8px">
       <div>
@@ -7137,38 +7366,239 @@ function openGoalDetail(idx) {
         <button class="btn btn-sm" onclick="openGoalModal(${idx});closeGoalDetail()" style="font-size:11px">Edit</button>
         <button class="btn btn-sm" onclick="closeGoalDetail()" style="font-size:18px;padding:4px 10px">✕</button>
       </div>
-    </div>
+    </div>`;
 
-    <!-- Big ring + stats -->
-    <div style="display:grid;grid-template-columns:130px 1fr;gap:24px;align-items:center;margin-bottom:28px;background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,0.06)">
+  let body = '';
+  if (g.type === 'habit')       body = _habitDetailBody(g, j, idx, col);
+  else if (g.type === 'milestone') body = _milestoneDetailBody(g, j, idx, col);
+  else                           body = _numericDetailBody(g, j, idx, col);
+
+  const panel = document.getElementById('goal-detail-panel');
+  panel.innerHTML = header + body + _wuSection(idx, col, weeklyUpdates);
+  document.getElementById('goal-detail-overlay').classList.add('open');
+}
+
+function _wuSection(idx, col, weeklyUpdates) {
+  return `<div style="margin-bottom:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Weekly Updates</div>
+      <button class="btn btn-sm" onclick="openWeeklyUpdateModal(${idx})" style="font-size:10px;padding:4px 10px;background:rgba(155,127,255,.12);border-color:rgba(155,127,255,.3);color:var(--accent)">+ Add</button>
+    </div>
+    ${weeklyUpdates.length
+      ? `<div style="display:flex;flex-direction:column;gap:10px">${weeklyUpdates.map(u=>{
+          const wc={'on-track':'#00d084','at-risk':'#f5a623','behind':'#ff4d4d'}[u.status]||'#9B7FFF';
+          const dAgo=Math.round((Date.now()-new Date(u.createdAt).getTime())/86400000);
+          const dLabel=dAgo===0?'Today':dAgo===1?'Yesterday':dAgo+'d ago';
+          return`<div class="wu-timeline-item" style="--wu-c:${wc}">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${(u.note||u.working||u.improve)?'10px':'0'}">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="wu-pill ${wuStatusClass(u.status)}">${wuStatusLabel(u.status)}</span>
+                <span style="font-size:11px;color:var(--dim)">${dLabel}</span>
+              </div>
+              <span style="font-size:10px;color:var(--dim)">${new Date(u.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+            </div>
+            ${u.note?`<div style="font-size:12px;color:var(--text);line-height:1.55;margin-bottom:${u.working||u.improve?'8px':'0'}">${u.note}</div>`:''}
+            ${u.working?`<div style="font-size:11px;color:var(--muted);margin-bottom:${u.improve?'4px':'0'}"><span style="color:#00d084;font-weight:700">✓ Working: </span>${u.working}</div>`:''}
+            ${u.improve?`<div style="font-size:11px;color:var(--muted)"><span style="color:var(--amber);font-weight:700">→ Improve: </span>${u.improve}</div>`:''}
+          </div>`;
+        }).join('')}</div>`
+      : `<div style="text-align:center;padding:24px;color:var(--dim);font-size:13px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px dashed rgba(255,255,255,0.08)">
+          <div style="font-size:24px;margin-bottom:8px">📝</div>No weekly updates yet — tap "+ Add" to log your first
+        </div>`}
+  </div>`;
+}
+
+function _habitDetailBody(g, j, idx, col) {
+  const streak=habitStreak(g), longest=habitLongestStreak(g), total=habitDaysCompleted(g);
+  const target=parseInt(g.habitTarget)||1;
+  const today=new Date().toISOString().slice(0,10);
+  const todayV=(g.completions||{})[today];
+  const pct=goalProgress(g);
+  const rate=g.habitIsPercent
+    ? Math.round(total/Math.max(1,Math.ceil((Date.now()-new Date((g.startDate||g.createdAt||today)+'T00:00').getTime())/86400000))*100)+'%'
+    : total+'/'+target;
+
+  const days84=Array.from({length:84},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(83-i));return d.toISOString().slice(0,10);});
+  const heatCells=days84.map(d=>{
+    const v=(g.completions||{})[d];
+    const bg=v==='yes'?col+'cc':v==='partial'?col+'55':v==='no'?'rgba(255,77,77,.3)':'rgba(255,255,255,0.05)';
+    const isToday=d===today;
+    return`<div style="border-radius:3px;background:${bg};${v==='yes'?'filter:drop-shadow(0 0 2px '+col+');':''}${isToday?'box-shadow:0 0 0 2px '+col+';':''}" title="${d}"></div>`;
+  }).join('');
+  const dayLabels=['M','T','W','T','F','S','S'].map(l=>`<div style="font-size:8px;color:var(--dim);display:flex;align-items:center;height:100%;justify-content:flex-end;padding-right:4px">${l}</div>`).join('');
+  const recentCIs=Object.entries(g.completions||{}).filter(([,v])=>v).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,8);
+
+  return`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">
+      ${[['Current Streak',streak+'d'],['Best Streak',longest+'d'],['Days Done',total+''],['Progress',rate]].map(([lbl,val])=>
+        `<div style="text-align:center;padding:14px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.06)">
+          <div style="font-size:24px;font-weight:800;font-family:var(--mono);color:${col}">${val}</div>
+          <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px">${lbl}</div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-bottom:24px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">3-Month Activity</div>
+      <div style="display:flex;gap:4px">
+        <div style="display:grid;grid-template-rows:repeat(7,1fr);gap:2px;height:100px;width:16px;flex-shrink:0">${dayLabels}</div>
+        <div style="flex:1;display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;grid-auto-columns:1fr;gap:2px">${heatCells}</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:8px;font-size:10px;color:var(--dim)">
+        <div style="display:flex;gap:4px;align-items:center"><div style="width:10px;height:10px;border-radius:2px;background:${col}cc"></div>Done</div>
+        <div style="display:flex;gap:4px;align-items:center"><div style="width:10px;height:10px;border-radius:2px;background:${col}55"></div>Partial</div>
+        <div style="display:flex;gap:4px;align-items:center"><div style="width:10px;height:10px;border-radius:2px;background:rgba(255,77,77,.3)"></div>Missed</div>
+        <div style="display:flex;gap:4px;align-items:center"><div style="width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,.05)"></div>Not logged</div>
+      </div>
+    </div>
+    ${todayV!=='yes'
+      ? `<div style="margin-bottom:24px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Today</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-green" style="flex:1;justify-content:center;height:44px;font-size:14px;font-weight:700" onclick="checkInHabit(${idx},'yes',event);openGoalDetail(${idx})">✓ Mark Today Complete</button>
+            ${todayV!=='partial'?`<button class="btn" style="height:44px" onclick="checkInHabit(${idx},'partial',event);openGoalDetail(${idx})">~ Partial</button>`:''}
+          </div>
+        </div>`
+      : `<div style="margin-bottom:24px;padding:14px 16px;background:rgba(0,208,132,.08);border-radius:10px;border:1px solid rgba(0,208,132,.2);color:var(--green);font-size:13px;font-weight:600">
+          ✓ Marked complete today — great work!
+        </div>`}
+    ${recentCIs.length?`
+    <div style="margin-bottom:24px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Recent Activity</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${recentCIs.map(([d,v])=>`<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:9px 12px;border-left:3px solid ${v==='yes'?col:v==='partial'?'#f5a623':'#ff4d4d'}">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;font-weight:600;color:var(--text)">${new Date(d+'T12:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</span>
+            <span style="font-size:11px;font-weight:700;color:${v==='yes'?col:v==='partial'?'#f5a623':'#ff4d4d'}">${v==='yes'?'✓ Done':v==='partial'?'~ Partial':'✗ Missed'}</span>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`:''}`;
+}
+
+function _milestoneDetailBody(g, j, idx, col) {
+  const list=g.milestoneList||[], checked=g.milestoneChecked||[], completedAt=g.milestoneCompletedAt||[];
+  const notes=g.milestoneNotes||[];
+  const doneCount=checked.filter(Boolean).length;
+  const pct=list.length?Math.round(doneCount/list.length*100):0;
+
+  return`
+    <div style="margin-bottom:24px;background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,0.06)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:32px;font-weight:800;font-family:var(--mono);color:${col}">${doneCount}<span style="font-size:18px;color:var(--dim);font-weight:400"> / ${list.length}</span></div>
+        <div style="font-size:28px;font-weight:800;font-family:var(--mono);color:${pct>=100?'var(--green)':col}">${pct}%</div>
+      </div>
+      <div class="goal-progress-track" style="height:8px">
+        <div class="goal-progress-fill" style="width:${pct}%;background:${pct>=100?'var(--green)':col};box-shadow:0 0 10px ${col}55"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:24px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Milestones</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${list.map((m,mi)=>{
+          const done=checked[mi]||false;
+          const doneDate=completedAt[mi]?new Date(completedAt[mi]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):null;
+          const note=notes[mi]||'';
+          return`<div style="background:${done?'rgba(0,208,132,.05)':'rgba(255,255,255,0.03)'};border-radius:10px;padding:12px 14px;border:1px solid ${done?'rgba(0,208,132,.15)':'rgba(255,255,255,0.06)'};transition:all .2s">
+            <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">
+              <input type="checkbox" ${done?'checked':''} onclick="toggleMilestone(${idx},${mi},event);event.stopPropagation();setTimeout(()=>openGoalDetail(${idx}),50)" style="width:17px;height:17px;accent-color:${col};cursor:pointer;flex-shrink:0;margin-top:2px">
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600;color:${done?'var(--muted)':'var(--text)'};${done?'text-decoration:line-through':''}">
+                  ${done?`<span style="color:${col};margin-right:4px">✓</span>`:''}${m}
+                </div>
+                ${doneDate?`<div style="font-size:10px;color:var(--green);margin-top:2px">Completed ${doneDate}</div>`:''}
+              </div>
+            </div>
+            <input class="modal-input" style="width:100%;font-size:11px;padding:6px 8px;background:rgba(255,255,255,0.04)" placeholder="Notes for this milestone..." value="${note.replace(/"/g,'&quot;')}" onchange="saveMilestoneNote(${idx},${mi},this.value)">
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function _numericDetailBody(g, j, idx, col) {
+  const pct=goalProgress(g), unit=g.unit||'', dl=daysLeft(g.deadline);
+  const milestones=(g.milestones||[]).map(m=>parseFloat(m)).filter(Boolean);
+  const checkins=Object.entries(j.dailyEntries)
+    .filter(([,e])=>e.goalCheckins&&e.goalCheckins[idx]!==undefined)
+    .sort((a,b)=>b[0].localeCompare(a[0]));
+
+  const historyPts=Object.entries(j.dailyEntries)
+    .filter(([,e])=>e.goalValues&&e.goalValues[idx]!==undefined)
+    .sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([,e])=>parseFloat(e.goalValues[idx]))
+    .filter(v=>!isNaN(v));
+  const startV=parseFloat(g.startVal)||0;
+  if(historyPts.length===0||historyPts[0]!==startV) historyPts.unshift(startV);
+
+  let sparklineHTML='';
+  if(historyPts.length>=2){
+    const tgt=parseFloat(g.target)||0;
+    const minV=Math.min(...historyPts,startV,tgt>0?tgt:Infinity);
+    const maxV=Math.max(...historyPts,startV,tgt);
+    const range=maxV-minV||1;
+    const W=300,H=60;
+    const pts=historyPts.map((v,i)=>{
+      const x=(i/(historyPts.length-1))*(W-20)+10;
+      const y=H-8-(v-minV)/range*(H-20);
+      return`${x},${y}`;
+    }).join(' ');
+    const ty=tgt?H-8-(tgt-minV)/range*(H-20):null;
+    sparklineHTML=`<div style="margin-bottom:24px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Progress Over Time</div>
+      <div style="background:rgba(255,255,255,.02);border-radius:10px;padding:14px;border:1px solid rgba(255,255,255,.05)">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="overflow:visible;display:block">
+          ${ty!==null?`<line x1="10" y1="${ty.toFixed(1)}" x2="${W-10}" y2="${ty.toFixed(1)}" stroke="rgba(255,255,255,.12)" stroke-dasharray="4,3" stroke-width="1"/>`:''}
+          <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 4px ${col}88)"/>
+          ${historyPts.map((v,i)=>{
+            const x=(i/(historyPts.length-1))*(W-20)+10;
+            const y=H-8-(v-minV)/range*(H-20);
+            return`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${i===historyPts.length-1?4:2.5}" fill="${col}" opacity="${i===historyPts.length-1?1:.7}"/>`;
+          }).join('')}
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:4px;font-family:var(--mono)">
+          <span>${g.startDate||'Start'}</span>
+          <span>${g.deadline||new Date().toISOString().slice(0,10)}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const R=44, circ=2*Math.PI*R, dash=circ*(pct/100);
+  const bigRing=`<svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg)">
+    <circle cx="60" cy="60" r="${R}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="8"/>
+    <circle cx="60" cy="60" r="${R}" fill="none" stroke="${col}" stroke-width="8"
+      stroke-dasharray="${dash} ${circ}" stroke-linecap="round"
+      style="filter:drop-shadow(0 0 10px ${col}99);transition:stroke-dasharray 1s ease"/>
+  </svg>`;
+
+  return`
+    <div style="display:grid;grid-template-columns:130px 1fr;gap:24px;align-items:center;margin-bottom:24px;background:rgba(255,255,255,0.03);border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,0.06)">
       <div style="position:relative;width:120px;height:120px;display:flex;align-items:center;justify-content:center">
         ${bigRing}
         <div style="position:absolute;display:flex;flex-direction:column;align-items:center">
-          <div style="font-size:26px;font-weight:800;font-family:'Geist Mono',monospace;color:${col};letter-spacing:-1px">${pct}%</div>
+          <div style="font-size:26px;font-weight:800;font-family:var(--mono);color:${col};letter-spacing:-1px">${pct}%</div>
           <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em">complete</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
-          <div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;color:${col}">${g.current||g.startVal||0}<span style="font-size:12px;color:var(--muted);font-weight:400"> ${unit}</span></div>
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:${col}">${g.current||g.startVal||0}<span style="font-size:12px;color:var(--muted);font-weight:400"> ${unit}</span></div>
           <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px">Current</div>
         </div>
         <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
-          <div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;color:var(--text)">${g.target||'—'}<span style="font-size:12px;color:var(--muted);font-weight:400"> ${unit}</span></div>
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--text)">${g.target||'—'}<span style="font-size:12px;color:var(--muted);font-weight:400"> ${unit}</span></div>
           <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px">Target</div>
         </div>
         <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
-          <div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;color:${dl===null?'var(--muted)':dl<0?'var(--red)':dl<7?'var(--amber)':'var(--text)'}">${dl===null?'—':Math.abs(dl)}</div>
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:${dl===null?'var(--muted)':dl<0?'var(--red)':dl<7?'var(--amber)':'var(--text)'}">${dl===null?'—':Math.abs(dl)}</div>
           <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px">${dl===null?'No deadline':dl<0?'Days overdue':'Days left'}</div>
         </div>
         <div style="text-align:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px">
-          <div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;color:var(--accent)">${weeklyUpdates.length}</div>
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--accent)">${(g.weeklyUpdates||[]).length}</div>
           <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:3px">Updates</div>
         </div>
       </div>
     </div>
-
-    <!-- Milestones -->
+    ${sparklineHTML}
     ${milestones.length?`
     <div style="margin-bottom:24px">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Milestones</div>
@@ -7178,65 +7608,29 @@ function openGoalDetail(idx) {
           const s=parseFloat(g.startVal)||0,t=parseFloat(g.target)||1;
           const mPct=Math.min(100,Math.max(0,(m-s)/(t-s)*100));
           const reached=parseFloat(g.current||0)>=m;
-          return `<div style="position:absolute;left:${mPct}%;top:-8px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px">
+          return`<div style="position:absolute;left:${mPct}%;top:-8px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px">
             <div style="font-size:9px;font-weight:700;color:${reached?col:'var(--dim)'}">${m}${unit}</div>
             <div style="width:3px;height:46px;background:${reached?col:'rgba(255,255,255,0.15)'};border-radius:2px;box-shadow:${reached?'0 0 6px '+col:'none'}"></div>
           </div>`;
         }).join('')}
       </div>
     </div>`:''}
-
-    <!-- 14-day activity -->
     <div style="margin-bottom:24px">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Activity — last 14 days</div>
       <div style="display:flex;gap:4px;align-items:flex-end">
-        ${days14.map(d=>{
-          const e=j.dailyEntries[d];
-          const hasNote=e&&e.goalCheckins&&e.goalCheckins[idx]!==undefined;
-          const hasVal=e&&e.goalValues&&e.goalValues[idx]!==undefined;
-          const active=hasNote||hasVal;
-          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
-            <div style="width:100%;height:28px;border-radius:4px;background:${active?col+'99':'rgba(255,255,255,0.05)'};transition:all .2s;${active?'box-shadow:0 0 8px '+col+'44':''}" title="${d}${hasNote?' — '+e.goalCheckins[idx].slice(0,40):''}"></div>
-            <div style="font-size:8px;color:var(--dim)">${new Date(d+'T12:00').toLocaleDateString('en-US',{month:'numeric',day:'numeric'})}</div>
+        ${Array.from({length:14},(_,i)=>{
+          const d=new Date();d.setDate(d.getDate()-(13-i));
+          const date=d.toISOString().slice(0,10);
+          const e=j.dailyEntries[date];
+          const active=(e&&e.goalCheckins&&e.goalCheckins[idx]!==undefined)||(e&&e.goalValues&&e.goalValues[idx]!==undefined);
+          const note=e&&e.goalCheckins&&e.goalCheckins[idx];
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+            <div style="width:100%;height:28px;border-radius:4px;background:${active?col+'99':'rgba(255,255,255,0.05)'};transition:all .2s;${active?'box-shadow:0 0 8px '+col+'44':''}" title="${date}${note?' — '+note.slice(0,40):''}"></div>
+            <div style="font-size:8px;color:var(--dim)">${new Date(date+'T12:00').toLocaleDateString('en-US',{month:'numeric',day:'numeric'})}</div>
           </div>`;
         }).join('')}
       </div>
     </div>
-
-    <!-- Weekly Updates Timeline -->
-    <div style="margin-bottom:24px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Weekly Updates</div>
-        <button class="btn btn-sm" onclick="openWeeklyUpdateModal(${idx})" style="font-size:10px;padding:4px 10px;background:rgba(155,127,255,.12);border-color:rgba(155,127,255,.3);color:var(--accent)">+ Add</button>
-      </div>
-      ${weeklyUpdates.length
-        ? `<div style="display:flex;flex-direction:column;gap:10px">
-          ${weeklyUpdates.map((u,ui)=>{
-            const wc=wuColMap[u.status]||'#9B7FFF';
-            const dAgo=Math.round((Date.now()-new Date(u.createdAt).getTime())/86400000);
-            const dLabel=dAgo===0?'Today':dAgo===1?'Yesterday':dAgo+'d ago';
-            return `<div class="wu-timeline-item" style="--wu-c:${wc}">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${(u.note||u.working||u.improve)?'10px':'0'}">
-                <div style="display:flex;align-items:center;gap:8px">
-                  <span class="wu-pill ${wuStatusClass(u.status)}">${wuStatusLabel(u.status)}</span>
-                  <span style="font-size:11px;color:var(--dim)">${dLabel}</span>
-                </div>
-                <span style="font-size:10px;color:var(--dim)">${new Date(u.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
-              </div>
-              ${u.note?`<div style="font-size:12px;color:var(--text);line-height:1.55;margin-bottom:${u.working||u.improve?'8px':'0'}">${u.note}</div>`:''}
-              ${u.working?`<div style="font-size:11px;color:var(--muted);margin-bottom:${u.improve?'4px':'0'}"><span style="color:#00d084;font-weight:700">✓ Working: </span>${u.working}</div>`:''}
-              ${u.improve?`<div style="font-size:11px;color:var(--muted)"><span style="color:var(--amber);font-weight:700">→ Improve: </span>${u.improve}</div>`:''}
-            </div>`;
-          }).join('')}
-        </div>`
-        : `<div style="text-align:center;padding:24px;color:var(--dim);font-size:13px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px dashed rgba(255,255,255,0.08)">
-            <div style="font-size:24px;margin-bottom:8px">📝</div>
-            No weekly updates yet — tap "+ Add" to log your first
-          </div>`
-      }
-    </div>
-
-    <!-- Check-in log -->
     ${checkins.length?`
     <div style="margin-bottom:24px">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Daily Check-ins</div>
@@ -7244,23 +7638,19 @@ function openGoalDetail(idx) {
         ${checkins.map(([d,e])=>`<div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:10px 12px;border-left:3px solid ${col}66">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
             <span style="font-size:11px;font-weight:600;color:${col}">${new Date(d+'T12:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</span>
-            ${e.goalValues&&e.goalValues[idx]!==undefined?`<span style="font-size:11px;font-family:'Geist Mono',monospace;color:var(--text)">${e.goalValues[idx]} ${unit}</span>`:''}
+            ${e.goalValues&&e.goalValues[idx]!==undefined?`<span style="font-size:11px;font-family:var(--mono);color:var(--text)">${e.goalValues[idx]} ${unit}</span>`:''}
           </div>
           <div style="font-size:12px;color:var(--muted);line-height:1.5">${e.goalCheckins[idx]||'—'}</div>
         </div>`).join('')}
       </div>
     </div>`:''}
-
-    <!-- Update value -->
     <div style="padding-top:20px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;align-items:flex-end">
       <div style="flex:1">
         <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Update current value</div>
-        <input class="modal-input" id="detail-update-val" type="number" value="${g.current||g.startVal||0}" style="font-size:16px;font-weight:700;font-family:'Geist Mono',monospace">
+        <input class="modal-input" id="detail-update-val" type="number" value="${g.current||g.startVal||0}" style="font-size:16px;font-weight:700;font-family:var(--mono)">
       </div>
       <button class="btn btn-green" onclick="quickUpdateGoalVal(${idx})" style="height:38px">Update</button>
     </div>`;
-
-  document.getElementById('goal-detail-overlay').classList.add('open');
 }
 
 function closeGoalDetail() {
@@ -7281,6 +7671,14 @@ function quickUpdateGoalVal(idx) {
 }
 
 // ── GOAL MODAL ────────────────────────────────────────────────────────────────
+let _gmType = 'numeric';
+function setGoalType(type) {
+  _gmType = type;
+  ['numeric','habit','milestone'].forEach(t=>{
+    document.getElementById('gmt-'+t)?.classList.toggle('gm-type-active', t===type);
+    document.getElementById('gm-'+t+'-fields').style.display = t===type?'':'none';
+  });
+}
 function openGoalModal(idx) {
   editingGoalIdx = (idx !== undefined && idx !== null) ? idx : null;
   const j=getJournal(), g=idx!==undefined?j.goals[idx]:null;
@@ -7288,14 +7686,22 @@ function openGoalModal(idx) {
   document.getElementById('gm-delete-btn').style.display  = g ? '' : 'none';
   document.getElementById('gm-title').value      = g?.title||'';
   document.getElementById('gm-category').value   = g?.category||'trading';
+  document.getElementById('gm-startdate').value  = g?.startDate||new Date().toISOString().slice(0,10);
+  document.getElementById('gm-deadline').value   = g?.deadline||'';
+  document.getElementById('gm-desc').value       = g?.desc||'';
+  // Numeric fields
   document.getElementById('gm-target').value     = g?.target||'';
   document.getElementById('gm-unit').value       = g?.unit||'';
   document.getElementById('gm-start').value      = g?.startVal||'';
   document.getElementById('gm-current').value    = g?.current||'';
-  document.getElementById('gm-startdate').value  = g?.startDate||new Date().toISOString().slice(0,10);
-  document.getElementById('gm-deadline').value   = g?.deadline||'';
-  document.getElementById('gm-desc').value       = g?.desc||'';
   document.getElementById('gm-milestones').value = (g?.milestones||[]).join(', ');
+  // Habit fields
+  document.getElementById('gm-habit-target').value = g?.habitTarget||'';
+  document.getElementById('gm-habit-freq').value   = g?.habitFreq||'daily';
+  document.getElementById('gm-habit-pct').checked  = g?.habitIsPercent||false;
+  // Milestone fields
+  document.getElementById('gm-milestone-list').value = (g?.milestoneList||[]).join('\n');
+  setGoalType(g?.type||'numeric');
   document.getElementById('goal-modal').classList.add('open');
 }
 function closeGoalModal() { document.getElementById('goal-modal').classList.remove('open'); }
@@ -7303,12 +7709,43 @@ function saveGoal() {
   const j=getJournal();
   const title=document.getElementById('gm-title').value.trim();
   if(!title){alert('Please enter a goal title');return;}
-  const ms=document.getElementById('gm-milestones').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const goal={title,category:document.getElementById('gm-category').value,target:document.getElementById('gm-target').value,unit:document.getElementById('gm-unit').value.trim(),startVal:document.getElementById('gm-start').value,current:document.getElementById('gm-current').value,startDate:document.getElementById('gm-startdate').value,deadline:document.getElementById('gm-deadline').value,desc:document.getElementById('gm-desc').value.trim(),milestones:ms,status:'active',createdAt:editingGoalIdx!==null?(j.goals[editingGoalIdx]?.createdAt||new Date().toISOString()):new Date().toISOString()};
-  goal.status = 'active';
-  if (goal.target && goal.current && goal.current.toString().trim() !== '' && goal.current !== goal.startVal) {
-    const t = parseFloat(goal.target), c = parseFloat(goal.current), s = parseFloat(goal.startVal) || 0;
-    if (!isNaN(c) && !isNaN(t) && (t < s ? c <= t : c >= t)) goal.status = 'done';
+  const type = _gmType;
+  const existing = editingGoalIdx!==null?j.goals[editingGoalIdx]:null;
+  const base = {
+    title, type,
+    category: document.getElementById('gm-category').value,
+    startDate: document.getElementById('gm-startdate').value,
+    deadline:  document.getElementById('gm-deadline').value,
+    desc:      document.getElementById('gm-desc').value.trim(),
+    status:    'active',
+    createdAt: existing?.createdAt||new Date().toISOString(),
+    weeklyUpdates: existing?.weeklyUpdates||[],
+  };
+  let goal;
+  if (type === 'habit') {
+    goal = { ...base,
+      habitTarget:    document.getElementById('gm-habit-target').value,
+      habitIsPercent: document.getElementById('gm-habit-pct').checked,
+      habitFreq:      document.getElementById('gm-habit-freq').value,
+      completions:    existing?.completions||{},
+    };
+  } else if (type === 'milestone') {
+    const raw = document.getElementById('gm-milestone-list').value;
+    const milestoneList = raw.split('\n').map(s=>s.trim()).filter(Boolean);
+    const oldList = existing?.milestoneList||[];
+    const oldChecked = existing?.milestoneChecked||[];
+    const oldAt = existing?.milestoneCompletedAt||[];
+    const milestoneChecked = milestoneList.map(m=>{const oi=oldList.indexOf(m);return oi>=0?(oldChecked[oi]||false):false;});
+    const milestoneCompletedAt = milestoneList.map(m=>{const oi=oldList.indexOf(m);return oi>=0?(oldAt[oi]||null):null;});
+    goal = { ...base, milestoneList, milestoneChecked, milestoneCompletedAt };
+    if (milestoneList.length>0 && milestoneChecked.every(Boolean)) goal.status='done';
+  } else {
+    const ms=document.getElementById('gm-milestones').value.split(',').map(s=>s.trim()).filter(Boolean);
+    goal = { ...base, target:document.getElementById('gm-target').value, unit:document.getElementById('gm-unit').value.trim(), startVal:document.getElementById('gm-start').value, current:document.getElementById('gm-current').value, milestones:ms };
+    if (goal.target && goal.current && goal.current.toString().trim()!=='' && goal.current!==goal.startVal) {
+      const t=parseFloat(goal.target),c=parseFloat(goal.current),s=parseFloat(goal.startVal)||0;
+      if(!isNaN(c)&&!isNaN(t)&&(t<s?c<=t:c>=t)) goal.status='done';
+    }
   }
   if(editingGoalIdx!==null) j.goals[editingGoalIdx]=goal; else j.goals.push(goal);
   state.journal=j; save(true); closeGoalModal(); renderGoalsTab();
@@ -7380,62 +7817,239 @@ function saveWeeklyUpdate() {
 }
 
 // ── DAILY LOG TAB ─────────────────────────────────────────────────────────────
-function renderDailyTab() {
+function renderDailyTab(dir) {
   const j=getJournal(), entry=j.dailyEntries[dailyViewDate]||{};
+  const d=new Date(dailyViewDate+'T12:00:00');
+
+  // Large date header with accent day-of-week
   const el=document.getElementById('daily-date-label');
-  if(el){const d=new Date(dailyViewDate+'T12:00:00');el.textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});}
-  const ta=document.getElementById('daily-notes'); if(ta) ta.value=entry.notes||'';
-  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('selected',parseInt(b.dataset.mood)===entry.mood));
-  const nb=document.getElementById('daily-next-btn'); if(nb) nb.disabled=dailyViewDate>=new Date().toISOString().slice(0,10);
-  const cc=document.getElementById('daily-goal-checkins');
-  if(cc&&j.goals.length){
-    cc.innerHTML=`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Goal check-ins</div>
-      <div style="background:var(--bg3);border-radius:var(--r);padding:2px 0">
-        ${j.goals.filter(g=>g.status!=='done').map((g,fi)=>{const i=j.goals.indexOf(g);return`<div class="goal-checkin-row">
-          <span style="font-size:14px">${CAT_ICONS[g.category]||'⭐'}</span>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:12px;font-weight:600;color:var(--text)">${g.title}</div>
-            <input class="modal-input" style="margin-top:4px;padding:5px 8px;font-size:11px;width:100%;box-sizing:border-box" id="checkin-${i}" placeholder="Note..." value="${(entry.goalCheckins||{})[i]||''}">
-          </div>
-          <input type="number" class="modal-input" style="width:70px;padding:5px 8px;font-size:11px;text-align:center" id="checkin-val-${i}" placeholder="${g.current||0}" value="${(entry.goalValues||{})[i]||''}">
-        </div>`;}).join('')}
+  if(el){
+    const dayName=d.toLocaleDateString('en-US',{weekday:'long'});
+    const rest=', '+d.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+    el.innerHTML=`<span style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text)"><span style="color:var(--accent)">${dayName}</span>${rest}</span>`;
+  }
+
+  // Auto trade summary
+  const ts=document.getElementById('daily-trade-summary');
+  if(ts){
+    const dt=(state.trades||[]).filter(t=>(t.datetime||'').slice(0,10)===dailyViewDate);
+    if(dt.length){
+      const pnl=dt.reduce((s,t)=>s+calcPnL(t),0);
+      const wr=Math.round(dt.filter(t=>calcPnL(t)>0).length/dt.length*100);
+      const c=pnl>=0?'var(--green)':'var(--red)';
+      const bg=pnl>=0?'rgba(0,208,132,.1)':'rgba(255,77,77,.1)';
+      const bc=pnl>=0?'rgba(0,208,132,.3)':'rgba(255,77,77,.3)';
+      ts.innerHTML=`<div class="daily-trade-pill" style="background:${bg};border-color:${bc};color:${c}">
+        <span>📊</span><span>${dt.length} trade${dt.length!==1?'s':''} today</span>
+        <span style="opacity:.4">·</span>
+        <span style="font-weight:700">${pnl>=0?'+':''}\$${Math.abs(pnl).toFixed(0)}</span>
+        <span style="opacity:.4">·</span>
+        <span>${wr}% WR</span>
       </div>`;
-  } else if(cc) cc.innerHTML='';
+    } else {
+      ts.innerHTML='';
+    }
+  }
+
+  // Mood buttons
+  document.querySelectorAll('.mood-btn-v2').forEach((b,i)=>b.classList.toggle('selected',i===entry.mood));
+
+  // Notes
+  const ta=document.getElementById('daily-notes'); if(ta) ta.value=entry.notes||'';
+
+  // Next button
+  const nb=document.getElementById('daily-next-btn'); if(nb) nb.disabled=dailyViewDate>=new Date().toISOString().slice(0,10);
+
+  // Type-aware goal check-ins
+  const cc=document.getElementById('daily-goal-checkins');
+  if(cc){
+    const activeGoals=j.goals.filter(g=>g.status!=='done');
+    if(activeGoals.length){
+      cc.innerHTML=`<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Goal Check-ins</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${activeGoals.map(g=>{
+            const i=j.goals.indexOf(g);
+            const col=CAT_COLORS[g.category]||'#9B7FFF';
+            if(g.type==='habit'){
+              const tv=(g.completions||{})[dailyViewDate];
+              return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                  <span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:var(--text)">${g.title}</div>
+                    <div style="font-size:10px;color:var(--dim)">🔁 Habit / Streak</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px" onclick="event.stopPropagation()">
+                  <button class="habit-ci-btn" style="flex:1;font-size:12px;padding:8px;background:${tv==='yes'?col+'22':'rgba(255,255,255,.04)'};border-color:${tv==='yes'?col:'rgba(255,255,255,.1)'};color:${tv==='yes'?col:'var(--muted)'}" onclick="checkInHabitForDate(${i},'yes','${dailyViewDate}',event)">✓ Yes</button>
+                  <button class="habit-ci-btn" style="flex:1;font-size:12px;padding:8px;background:${tv==='partial'?'rgba(245,166,35,.2)':'rgba(255,255,255,.04)'};border-color:${tv==='partial'?'#f5a623':'rgba(255,255,255,.1)'};color:${tv==='partial'?'#f5a623':'var(--muted)'}" onclick="checkInHabitForDate(${i},'partial','${dailyViewDate}',event)">~ Partial</button>
+                  <button class="habit-ci-btn" style="flex:1;font-size:12px;padding:8px;background:${tv==='no'?'rgba(255,77,77,.2)':'rgba(255,255,255,.04)'};border-color:${tv==='no'?'#ff4d4d':'rgba(255,255,255,.1)'};color:${tv==='no'?'#ff4d4d':'var(--muted)'}" onclick="checkInHabitForDate(${i},'no','${dailyViewDate}',event)">✗ No</button>
+                </div>
+              </div>`;
+            }
+            if(g.type==='milestone'){
+              const list=g.milestoneList||[], checked=g.milestoneChecked||[];
+              const unchecked=list.map((m,mi)=>({m,mi})).filter(({mi})=>!checked[mi]);
+              if(!unchecked.length) return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border);display:flex;align-items:center;gap:8px">
+                <span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span>
+                <div style="font-size:13px;font-weight:600;color:var(--text);flex:1">${g.title}</div>
+                <span style="font-size:10px;color:var(--green);background:rgba(0,208,132,.12);padding:2px 8px;border-radius:20px;border:1px solid rgba(0,208,132,.25)">✓ All done</span>
+              </div>`;
+              return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                  <span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span>
+                  <div>
+                    <div style="font-size:13px;font-weight:600;color:var(--text)">${g.title}</div>
+                    <div style="font-size:10px;color:var(--dim)">✅ ${checked.filter(Boolean).length}/${list.length} milestones</div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  ${unchecked.slice(0,3).map(({m,mi})=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted);padding:4px 0" onclick="event.stopPropagation()">
+                    <input type="checkbox" onclick="toggleMilestone(${i},${mi},event)" style="width:15px;height:15px;accent-color:${col};cursor:pointer;flex-shrink:0">${m}
+                  </label>`).join('')}
+                  ${unchecked.length>3?`<div style="font-size:11px;color:var(--dim);padding-left:23px">+${unchecked.length-3} more…</div>`:''}
+                </div>
+              </div>`;
+            }
+            // Numeric
+            return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border)">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                <span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600;color:var(--text)">${g.title}</div>
+                  <div style="font-size:10px;color:var(--dim)">📊 ${g.current||g.startVal||0} → ${g.target||'?'} ${g.unit||''}</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <input class="modal-input" style="flex:1;padding:6px 10px;font-size:12px" id="checkin-${i}" placeholder="Note or update..." value="${(entry.goalCheckins||{})[i]||''}">
+                <input type="number" class="modal-input" style="width:80px;padding:6px 8px;font-size:12px;text-align:center;font-family:var(--mono)" id="checkin-val-${i}" placeholder="${g.current||0}" value="${(entry.goalValues||{})[i]||''}">
+              </div>
+            </div>`;
+          }).join('')}
+        </div>`;
+    } else {
+      cc.innerHTML='';
+    }
+  }
+
+  // Emil-style slide animation on day change
+  const mc=document.getElementById('daily-main-content');
+  if(mc&&dir!==undefined){
+    mc.classList.remove('dl-slide-left','dl-slide-right');
+    void mc.offsetWidth;
+    mc.classList.add(dir>0?'dl-slide-right':'dl-slide-left');
+  }
+
   renderDailyHistoryList();
 }
-function setDailyMood(idx){document.querySelectorAll('.mood-btn').forEach((b,i)=>b.classList.toggle('selected',i===idx));}
+
+function setDailyMood(idx){document.querySelectorAll('.mood-btn-v2').forEach((b,i)=>b.classList.toggle('selected',i===idx));}
+
 function saveDailyEntry() {
   const j=getJournal();
-  const mood=[...document.querySelectorAll('.mood-btn')].findIndex(b=>b.classList.contains('selected'));
+  const mood=[...document.querySelectorAll('.mood-btn-v2')].findIndex(b=>b.classList.contains('selected'));
   const notes=document.getElementById('daily-notes')?.value||'';
   const goalCheckins={},goalValues={};
   j.goals.forEach((g,idx)=>{
-    const ci=document.getElementById('checkin-'+idx),vl=document.getElementById('checkin-val-'+idx);
-    if(ci&&ci.value.trim())goalCheckins[idx]=ci.value.trim();
-    if(vl&&vl.value.trim()){goalValues[idx]=vl.value.trim();j.goals[idx].current=vl.value.trim();const _t=parseFloat(g.target),_c=parseFloat(vl.value),_s=parseFloat(g.startVal)||0;if(g.target&&(_t<_s?_c<=_t:_c>=_t))j.goals[idx].status='done';}
+    if(g.type==='numeric'||!g.type){
+      const ci=document.getElementById('checkin-'+idx),vl=document.getElementById('checkin-val-'+idx);
+      if(ci&&ci.value.trim())goalCheckins[idx]=ci.value.trim();
+      if(vl&&vl.value.trim()){
+        goalValues[idx]=vl.value.trim();
+        j.goals[idx].current=vl.value.trim();
+        const _t=parseFloat(g.target),_c=parseFloat(vl.value),_s=parseFloat(g.startVal)||0;
+        if(g.target&&(_t<_s?_c<=_t:_c>=_t))j.goals[idx].status='done';
+      }
+    }
   });
-  j.dailyEntries[dailyViewDate]={notes,mood,goalCheckins,goalValues,savedAt:new Date().toISOString()};
+  const existing=j.dailyEntries[dailyViewDate]||{};
+  j.dailyEntries[dailyViewDate]={...existing,notes,mood,
+    goalCheckins:{...(existing.goalCheckins||{}),...goalCheckins},
+    goalValues:{...(existing.goalValues||{}),...goalValues},
+    savedAt:new Date().toISOString()};
   state.journal=j;save(true);
   const saveBtn=[...document.querySelectorAll('#jtab-daily .btn')].find(b=>b.textContent.includes('Save'));
   if(saveBtn){saveBtn.textContent='Saved ✓';saveBtn.style.background='var(--green)';setTimeout(()=>{saveBtn.textContent='Save entry';saveBtn.style.background='';},1500);}
   renderDailyHistoryList();
 }
-function dailyNavDay(dir){const d=new Date(dailyViewDate+'T12:00:00');d.setDate(d.getDate()+dir);dailyViewDate=d.toISOString().slice(0,10);renderDailyTab();}
+
+function dailyNavDay(dir){
+  const d=new Date(dailyViewDate+'T12:00:00');
+  d.setDate(d.getDate()+dir);
+  dailyViewDate=d.toISOString().slice(0,10);
+  renderDailyTab(dir);
+}
+
 function renderDailyHistoryList(){
   const j=getJournal(),el=document.getElementById('daily-history-list');if(!el)return;
-  const entries=Object.entries(j.dailyEntries).filter(([,e])=>e.notes||e.mood!==undefined).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,14);
-  if(!entries.length){el.innerHTML='<div style="font-size:12px;color:var(--dim)">No entries yet</div>';return;}
-  el.innerHTML=entries.map(([date,e])=>{
-    const d=new Date(date+'T12:00:00'),lbl=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const mood=e.mood!==undefined?MOODS[e.mood]:'';
-    const preview=(e.notes||'').slice(0,55)+((e.notes||'').length>55?'…':'');
-    const ci=Object.keys(e.goalCheckins||{}).length;
-    const isActive=date===dailyViewDate;
-    return`<div class="daily-entry-item" onclick="dailyViewDate='${date}';renderDailyTab()" style="border-color:${isActive?'var(--accent)':'var(--border)'}">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-        <span style="font-size:12px;font-weight:600;color:${isActive?'var(--accent)':'var(--text)'}">${lbl}</span>
-        <div style="display:flex;gap:5px;align-items:center">${mood?`<span style="font-size:13px">${mood}</span>`:''}${ci?`<span style="font-size:9px;background:var(--accent-dim);color:var(--accent);padding:1px 5px;border-radius:3px;font-weight:600">${ci} goals</span>`:''}</div>
-      </div>${preview?`<div style="font-size:11px;color:var(--muted);line-height:1.4">${preview}</div>`:''}
+
+  // Right-panel header with streak
+  const hdr=document.getElementById('daily-journal-header');
+  if(hdr){
+    const allE=Object.entries(j.dailyEntries).filter(([,e])=>e.notes||e.mood!==undefined);
+    let streak=0;const dn=new Date();
+    for(let i=0;i<365;i++){
+      const k=new Date(dn.getTime()-i*86400000).toISOString().slice(0,10);
+      if((j.dailyEntries[k]?.notes||'').trim()||j.dailyEntries[k]?.mood!==undefined)streak++;else break;
+    }
+    hdr.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:700;color:var(--text)">Your Journal</div>
+      <div style="font-size:11px;color:var(--dim)">${allE.length} entries</div>
+    </div>
+    <div style="padding:10px 12px;border-radius:var(--r2);background:${streak>0?'rgba(155,127,255,.08)':'rgba(255,255,255,.04)'};border:1px solid ${streak>0?'rgba(155,127,255,.2)':'rgba(255,255,255,.06)'};font-size:12px;font-weight:600;color:${streak>0?'var(--accent)':'var(--dim)'}">
+      ${streak>0?`🔥 ${streak} day streak — keep going!`:'🔥 0 day streak — start today!'}
+    </div>`;
+  }
+
+  const entries=Object.entries(j.dailyEntries).filter(([,e])=>e.notes||e.mood!==undefined).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30);
+  if(!entries.length){el.innerHTML='<div style="font-size:12px;color:var(--dim);padding:8px 0">No entries yet</div>';return;}
+
+  // Group by month
+  const byMonth={};
+  entries.forEach(([date,e])=>{const m=date.slice(0,7);if(!byMonth[m])byMonth[m]=[];byMonth[m].push([date,e]);});
+
+  el.innerHTML=Object.entries(byMonth).map(([month,mes])=>{
+    const [y,m]=month.split('-');
+    const mlbl=new Date(parseInt(y),parseInt(m)-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    const cards=mes.map(([date,e])=>{
+      const dd=new Date(date+'T12:00:00');
+      const dayNum=dd.toLocaleDateString('en-US',{day:'numeric'});
+      const dayName=dd.toLocaleDateString('en-US',{weekday:'short'});
+      const mood=e.mood!==undefined?MOODS[e.mood]:'';
+      const preview=(e.notes||'').slice(0,60)+((e.notes||'').length>60?'…':'');
+      const isActive=date===dailyViewDate;
+      const ciKeys=Object.keys(e.goalCheckins||{});
+      const goalDots=ciKeys.slice(0,4).map(gi=>{
+        const gobj=j.goals[parseInt(gi)];
+        const gc=CAT_COLORS[gobj?.category]||'#9B7FFF';
+        return`<div style="width:7px;height:7px;border-radius:50%;background:${gc};opacity:.85" title="${gobj?.title||''}"></div>`;
+      }).join('');
+      const dt2=(state.trades||[]).filter(t=>(t.datetime||'').slice(0,10)===date);
+      let pnlBadge='';
+      if(dt2.length){
+        const pnl2=dt2.reduce((s,t)=>s+calcPnL(t),0);
+        pnlBadge=`<span style="font-size:10px;font-weight:700;color:${pnl2>=0?'var(--green)':'var(--red)'};font-family:var(--mono)">${pnl2>=0?'+':'-'}\$${Math.abs(pnl2).toFixed(0)}</span>`;
+      }
+      return`<div class="daily-entry-card ${isActive?'entry-active':''}" onclick="dailyViewDate='${date}';renderDailyTab()">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="text-align:center;flex-shrink:0;min-width:30px">
+            <div style="font-size:18px;font-weight:800;font-family:var(--mono);line-height:1;color:${isActive?'var(--accent)':'var(--text)'}">${dayNum}</div>
+            <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em">${dayName}</div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+              ${mood?`<span style="font-size:16px">${mood}</span>`:''}
+              ${pnlBadge}
+            </div>
+            ${preview?`<div style="font-size:11px;color:var(--muted);line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${preview}</div>`:'<div style="font-size:11px;color:var(--dim)">No notes</div>'}
+            ${goalDots?`<div style="display:flex;gap:4px;margin-top:6px;align-items:center">${goalDots}${ciKeys.length>4?`<span style="font-size:9px;color:var(--dim)">+${ciKeys.length-4}</span>`:''}</div>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    return`<div style="margin-bottom:18px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06)">${mlbl}</div>
+      ${cards}
     </div>`;
   }).join('');
 }
