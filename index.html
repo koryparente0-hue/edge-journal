@@ -3842,12 +3842,24 @@ function renderBEAnalysis(T) {
   const beWinPnL  = beWins.length ? beWins.reduce((a,t)=>a+calcPnL(t),0)/beWins.length : 0;
   const beLossPnL = beLoss.length ? beLoss.reduce((a,t)=>a+calcPnL(t),0)/beLoss.length : 0;
 
+  // BE→Win: you got stopped at BE, trade hit target — COSTS you R
+  // missedR per trade = the R the trade went on to (quickRR) or plannedRR
+  const beWinCostR = beWins.reduce((sum,t)=>{
+    const r = parseFloat(t.quickRR) || parseFloat(t.plannedRR) || 0;
+    return sum + r;
+  }, 0);
+
+  // BE→Win dollar potential (if target price logged)
   const beWinPotential = beWins.filter(t=>t.tp&&t.entry).map(t=>{
     const mult={NQ:20,MNQ:2,ES:50,MES:5}[t.ticker?.toUpperCase()]||1;
     const dir=t.side==='long'?1:-1;
     return dir*(t.tp-t.entry)*mult*(t.qty||1);
   });
   const avgBeWinPotential = beWinPotential.length ? beWinPotential.reduce((a,b)=>a+b,0)/beWinPotential.length : null;
+
+  // BE→Loss: you got stopped at BE, trade would have hit SL — SAVES you R
+  // savedR per trade ≈ 1R (you avoided a full stop)
+  const beLossSavingsR = beLoss.length; // 1R saved per be_loss trade
 
   const beLossPotential = beLoss.filter(t=>t.sl&&t.entry).map(t=>{
     const mult={NQ:20,MNQ:2,ES:50,MES:5}[t.ticker?.toUpperCase()]||1;
@@ -3858,63 +3870,64 @@ function renderBEAnalysis(T) {
 
   const totalBEPnL = allBE.reduce((a,t)=>a+calcPnL(t),0);
   const beRate = T.filter(t=>t.outcome).length ? Math.round(allBE.length/T.filter(t=>t.outcome).length*100) : 0;
-  const beWinRate = allBE.length ? Math.round(beWins.length/allBE.length*100) : 0;
-  const verdict = beWinRate >= 60 ? 'helping' : beWinRate <= 40 ? 'hurting' : 'mixed';
-  const verdictColor = verdict==='helping'?'var(--accent)':verdict==='hurting'?'var(--red)':'var(--amber)';
-  const verdictText = verdict==='helping'
-    ? `Your BE management is working — ${beWinRate}% of BE trades eventually win.`
-    : verdict==='hurting'
-    ? `BE is costing you — only ${beWinRate}% of BE trades win. You may be moving stops too early.`
-    : `Mixed results. ${beWinRate}% of BE trades win — not a clear edge either way.`;
 
-  headEl.textContent = `${allBE.length} BE trades tracked`;
+  // Net R impact: savings (from be_loss avoiding full stops) minus cost (from be_win missing targets)
+  const netR = beLossSavingsR - beWinCostR;
+  const verdict = netR > 0.5 ? 'helping' : netR < -0.5 ? 'hurting' : 'mixed';
+  const verdictColor = verdict==='helping'?'var(--green)':verdict==='hurting'?'var(--red)':'var(--amber)';
+  const verdictText = verdict==='hurting'
+    ? `Moving to BE early cost you ${beWinCostR.toFixed(1)}R in missed targets vs ${beLossSavingsR.toFixed(1)}R saved. Net: ${netR.toFixed(1)}R.`
+    : verdict==='helping'
+    ? `BE management is net positive — ${beLossSavingsR.toFixed(1)}R saved from losses vs ${beWinCostR.toFixed(1)}R in missed targets. Net: +${netR.toFixed(1)}R.`
+    : `Near breakeven — ${beLossSavingsR.toFixed(1)}R saved vs ${beWinCostR.toFixed(1)}R missed. Net: ${netR.toFixed(1)}R.`;
+
+  headEl.textContent = `${allBE.length} BE trades · net ${netR>=0?'+':''}${netR.toFixed(1)}R`;
   const outcomeName = {win:'Win',loss:'Loss',be_win:'BE → Win',be_loss:'BE → Loss'};
 
   beEl.innerHTML = `
     <div style="background:${verdictColor}18;border:1px solid ${verdictColor}40;border-radius:var(--r);padding:12px 14px;margin-bottom:16px;font-size:13px;line-height:1.6">
-      <strong style="color:${verdictColor}">Verdict: BE is ${verdict}</strong><br>
+      <strong style="color:${verdictColor}">Early BE is ${verdict==='hurting'?'costing you R':verdict==='helping'?'net positive':'roughly neutral'}</strong><br>
       <span style="color:var(--muted)">${verdictText}</span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px">
       <div class="metric" style="text-align:center">
         <div class="metric-label">BE → Win</div>
-        <div class="metric-val pos">${beWins.length}</div>
-        <div class="metric-sub">avg $${Math.round(beWinPnL)}/trade</div>
+        <div class="metric-val neg">${beWins.length}</div>
+        <div class="metric-sub">missed ${beWinCostR.toFixed(1)}R total</div>
       </div>
       <div class="metric" style="text-align:center">
         <div class="metric-label">BE → Loss</div>
-        <div class="metric-val neg">${beLoss.length}</div>
-        <div class="metric-sub">avg $${Math.round(beLossPnL)}/trade</div>
+        <div class="metric-val pos">${beLoss.length}</div>
+        <div class="metric-sub">saved ~${beLossSavingsR}R total</div>
       </div>
       <div class="metric" style="text-align:center">
-        <div class="metric-label">BE win rate</div>
-        <div class="metric-val ${beWinRate>=50?'pos':'neg'}">${allBE.length?beWinRate+'%':'—'}</div>
-        <div class="metric-sub">of all BE trades</div>
+        <div class="metric-label">Net R impact</div>
+        <div class="metric-val ${netR>=0?'pos':'neg'}">${netR>=0?'+':''}${netR.toFixed(1)}R</div>
+        <div class="metric-sub">${verdict==='hurting'?'costing edge':verdict==='helping'?'adding edge':'neutral'}</div>
       </div>
       <div class="metric" style="text-align:center">
-        <div class="metric-label">Total BE P&L</div>
-        <div class="metric-val ${totalBEPnL>=0?'pos':'neg'}">${pf(totalBEPnL)}</div>
+        <div class="metric-label">BE trades</div>
+        <div class="metric-val">${allBE.length}</div>
         <div class="metric-sub">${beRate}% of tagged trades</div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      ${beWins.length&&avgBeWinPotential?`
+      ${beWins.length?`
       <div class="card" style="background:var(--bg3)">
-        <div class="card-title" style="color:var(--accent);margin-bottom:8px">BE → Win — what you left on the table</div>
+        <div class="card-title" style="color:var(--red);margin-bottom:8px">BE → Win — R you left on the table</div>
         <div style="font-size:13px;color:var(--muted);line-height:1.7">
-          You moved to BE on ${beWins.length} winning trade${beWins.length>1?'s':''}.<br>
-          Avg actual P&L: <strong style="color:var(--text)">$${Math.round(beWinPnL)}</strong><br>
-          Avg if held to target: <strong style="color:var(--green)">+$${Math.round(avgBeWinPotential)}</strong><br>
-          Left on table: <strong style="color:var(--amber)">$${Math.round(avgBeWinPotential-beWinPnL)}/trade</strong>
+          Stopped at BE on ${beWins.length} trade${beWins.length>1?'s':''} that hit target.<br>
+          R missed: <strong style="color:var(--red)">${beWinCostR.toFixed(1)}R total</strong><br>
+          ${avgBeWinPotential?`Avg dollar missed: <strong style="color:var(--amber)">~$${Math.round(avgBeWinPotential-beWinPnL)}/trade</strong>`:'Add target prices to see dollar impact.'}
         </div>
       </div>`:''}
       ${beLoss.length?`
       <div class="card" style="background:var(--bg3)">
-        <div class="card-title" style="color:var(--red);margin-bottom:8px">BE → Loss — the false safety net</div>
+        <div class="card-title" style="color:var(--green);margin-bottom:8px">BE → Loss — drawdown you avoided</div>
         <div style="font-size:13px;color:var(--muted);line-height:1.7">
-          You moved to BE on ${beLoss.length} trade${beLoss.length>1?'s':''} that reversed.<br>
-          Avg loss after BE: <strong style="color:var(--red)">$${Math.round(Math.abs(beLossPnL))}</strong><br>
-          ${avgBeLossPotential?`If stopped at original SL: <strong style="color:var(--text)">$${Math.round(Math.abs(avgBeLossPotential))}</strong><br>${Math.abs(beLossPnL)<Math.abs(avgBeLossPotential)?'<strong style="color:var(--green)">BE saved you money on these.</strong>':'<strong style="color:var(--red)">Original SL would have been better.</strong>'}`:'Add stop prices to compare vs original SL.'}
+          BE stop saved you on ${beLoss.length} trade${beLoss.length>1?'s':''} that reversed.<br>
+          Saved ~<strong style="color:var(--green)">${beLossSavingsR}R</strong> vs taking full stops.<br>
+          ${avgBeLossPotential?`Avg SL would have cost: <strong style="color:var(--text)">$${Math.round(Math.abs(avgBeLossPotential))}</strong>`:'Add SL prices to see dollar savings.'}
         </div>
       </div>`:''}
     </div>
@@ -5915,6 +5928,12 @@ function renderSetupsPage() {
     } else {
       podBody.innerHTML = sorted.map(([time, trades]) => {
         const s = groupStats(trades);
+        const wCount = trades.filter(t=>t.outcome==='win').length;
+        const lCount = trades.filter(t=>t.outcome==='loss').length;
+        const beCount = trades.filter(t=>t.outcome==='be_win'||t.outcome==='be_loss').length;
+        // WR excludes BE trades from denominator
+        const denominator = wCount + lCount;
+        const trueWR = denominator ? (wCount / denominator * 100) : 0;
         const setupCounts = {};
         const mistakeCounts = {};
         trades.forEach(t => {
@@ -5923,9 +5942,16 @@ function renderSetupsPage() {
         });
         const topSetups = Object.entries(setupCounts).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([s])=>`<span class="tag-pill setup-pill">${s}</span>`).join('');
         const topMistakes = Object.entries(mistakeCounts).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([m])=>`<span class="tag-pill mistake-pill">${m}</span>`).join('');
+        const wrColor = trueWR >= 70 ? 'var(--green)' : trueWR >= 50 ? 'var(--amber)' : 'var(--red)';
+        const wrDisplay = denominator
+          ? `<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+              <span style="font-weight:700;color:${wrColor}">${Math.round(trueWR)}%</span>
+              <span style="font-size:10px;color:var(--muted)">${wCount}W · ${lCount}L${beCount?` · ${beCount}BE`:''}</span>
+             </div>`
+          : `<span style="color:var(--muted);font-size:12px">${beCount?beCount+'BE':'—'}</span>`;
         return `<tr>
           <td><strong style="font-family:var(--mono)">${time}</strong></td>
-          <td style="text-align:center">${wr(s.wr)}</td>
+          <td style="text-align:center">${wrDisplay}</td>
           <td style="text-align:center">${rrf(s.avgRR)}</td>
           <td style="text-align:center">${totalRf(s.totalR)}</td>
           <td style="text-align:center;color:var(--muted)">${s.n}</td>
