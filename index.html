@@ -2857,8 +2857,8 @@ function renderDashboard() {
   const T = periodFilter(state.trades, period);
   const pnls = T.map(t => calcPnL(t));
   const total = pnls.reduce((a,b)=>a+b,0);
-  const wins = T.filter((_,i)=>pnls[i]>0);
-  const losses = T.filter((_,i)=>pnls[i]<0);
+  const wins = T.filter(t=>t.outcome==='win');
+  const losses = T.filter(t=>t.outcome==='loss');
   const wr = T.length ? wins.length/T.length*100 : 0;
   const avgW = wins.length ? wins.reduce((a,t)=>a+calcPnL(t),0)/wins.length : 0;
   const avgL = losses.length ? Math.abs(losses.reduce((a,t)=>a+calcPnL(t),0)/losses.length) : 0;
@@ -3230,7 +3230,7 @@ async function reviewTrade(idx) {
   const hourPerf=thisHour&&hourStats[thisHour]?hourStats[thisHour]:null;
 
   const setupStats={};
-  prevTrades.forEach(x=>(x.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0};setupStats[s].n++;if(calcPnL(x)>0)setupStats[s].wins++;}));
+  prevTrades.forEach(x=>(x.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0};setupStats[s].n++;if(x.outcome==='win')setupStats[s].wins++;}));
 
   const prevLoss=prevTrades.length&&calcPnL(prevTrades[prevTrades.length-1])<0;
   const timeDiffMin=prevTrades.length&&prevTrades[prevTrades.length-1].datetime?Math.round((new Date(t.datetime)-new Date(prevTrades[prevTrades.length-1].datetime))/60000):null;
@@ -3244,7 +3244,7 @@ async function reviewTrade(idx) {
 
   const histContext=`
 TRADER HISTORY CONTEXT (${prevTrades.length} prior trades):
-- Overall win rate: ${prevTrades.length?Math.round(prevTrades.filter(x=>calcPnL(x)>0).length/prevTrades.length*100)+'%':'unknown'}
+- Overall win rate: ${prevTrades.length?Math.round(prevTrades.filter(x=>x.outcome==='win').length/prevTrades.length*100)+'%':'unknown'}
 - Avg risk per trade: ${avgRiskVal?avgRiskVal.toFixed(1)+' pts':'unknown'}
 - This trade risk: ${thisRisk?thisRisk.toFixed(1)+' pts ('+riskSpike+'x avg)':'unknown'}
 - Performance at ${thisHour?thisHour+':00':'this hour'}: ${hourPerf?'avg $'+Math.round(hourPerf.pnl/hourPerf.n)+' over '+hourPerf.n+' trades':'no data'}
@@ -3507,7 +3507,7 @@ function switchReviewTab(tab, idx, loading) {
     if (!improvements.length&&pnl>0)                         improvements.push({title:'Clean execution',          body:'No major mistakes flagged. Focus on replicating this process consistently.'});
 
     const winsBySetup = {};
-    state.trades.forEach(tr=>(tr.setups||[]).forEach(s=>{ if(!winsBySetup[s])winsBySetup[s]={w:0,n:0}; winsBySetup[s].n++; if(calcPnL(tr)>0)winsBySetup[s].w++; }));
+    state.trades.forEach(tr=>(tr.setups||[]).forEach(s=>{ if(!winsBySetup[s])winsBySetup[s]={w:0,n:0}; winsBySetup[s].n++; if(tr.outcome==='win')winsBySetup[s].w++; }));
     const setupRows = (t.setups||[]).map(s=>{ const d=winsBySetup[s]; if(!d||d.n<2)return ''; return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:12px">${s}</span><span style="font-size:12px;font-weight:700;color:${d.w/d.n>=0.6?'var(--accent)':'var(--amber)'}">${Math.round(d.w/d.n*100)}% WR (${d.n} trades)</span></div>`; }).filter(Boolean);
 
     body.innerHTML = `
@@ -3614,7 +3614,7 @@ function renderSetupAnalytics() {
     (t.setups||[]).forEach(s=>{
       if(!stats[s])stats[s]={wins:0,losses:0,pnl:0,count:0,winPnls:[],lossPnls:[]};
       const p=calcPnL(t); stats[s].count++; stats[s].pnl+=p;
-      if(p>0){stats[s].wins++;stats[s].winPnls.push(p);}else{stats[s].losses++;stats[s].lossPnls.push(p);}
+      if(t.outcome==='win'){stats[s].wins++;stats[s].winPnls.push(p);}else if(t.outcome==='loss'){stats[s].losses++;stats[s].lossPnls.push(p);}
     });
   });
   const active=Object.entries(stats).filter(([,v])=>v.count>0).sort((a,b)=>b[1].count-a[1].count);
@@ -3821,6 +3821,121 @@ function renderMistakeAnalytics() {
   }, 50);
 }
 
+// ─── BE ANALYSIS ──────────────────────────────────────────────────────────────
+function renderBEAnalysis(T) {
+  const beEl = document.getElementById('be-analysis-content');
+  const headEl = document.getElementById('be-headline');
+  if (!beEl || !headEl) return;
+
+  const wins    = T.filter(t=>t.outcome==='win');
+  const losses  = T.filter(t=>t.outcome==='loss');
+  const beWins  = T.filter(t=>t.outcome==='be_win');
+  const beLoss  = T.filter(t=>t.outcome==='be_loss');
+  const allBE   = [...beWins, ...beLoss];
+
+  if (!allBE.length) {
+    beEl.innerHTML = '<div class="empty"><strong>No BE data yet</strong>Tag trades with BE → Win or BE → Loss outcomes to see this analysis.</div>';
+    headEl.textContent = '';
+    return;
+  }
+
+  const beWinPnL  = beWins.length ? beWins.reduce((a,t)=>a+calcPnL(t),0)/beWins.length : 0;
+  const beLossPnL = beLoss.length ? beLoss.reduce((a,t)=>a+calcPnL(t),0)/beLoss.length : 0;
+
+  const beWinPotential = beWins.filter(t=>t.tp&&t.entry).map(t=>{
+    const mult={NQ:20,MNQ:2,ES:50,MES:5}[t.ticker?.toUpperCase()]||1;
+    const dir=t.side==='long'?1:-1;
+    return dir*(t.tp-t.entry)*mult*(t.qty||1);
+  });
+  const avgBeWinPotential = beWinPotential.length ? beWinPotential.reduce((a,b)=>a+b,0)/beWinPotential.length : null;
+
+  const beLossPotential = beLoss.filter(t=>t.sl&&t.entry).map(t=>{
+    const mult={NQ:20,MNQ:2,ES:50,MES:5}[t.ticker?.toUpperCase()]||1;
+    const dir=t.side==='long'?1:-1;
+    return dir*(t.sl-t.entry)*mult*(t.qty||1);
+  });
+  const avgBeLossPotential = beLossPotential.length ? beLossPotential.reduce((a,b)=>a+b,0)/beLossPotential.length : null;
+
+  const totalBEPnL = allBE.reduce((a,t)=>a+calcPnL(t),0);
+  const beRate = T.filter(t=>t.outcome).length ? Math.round(allBE.length/T.filter(t=>t.outcome).length*100) : 0;
+  const beWinRate = allBE.length ? Math.round(beWins.length/allBE.length*100) : 0;
+  const verdict = beWinRate >= 60 ? 'helping' : beWinRate <= 40 ? 'hurting' : 'mixed';
+  const verdictColor = verdict==='helping'?'var(--accent)':verdict==='hurting'?'var(--red)':'var(--amber)';
+  const verdictText = verdict==='helping'
+    ? `Your BE management is working — ${beWinRate}% of BE trades eventually win.`
+    : verdict==='hurting'
+    ? `BE is costing you — only ${beWinRate}% of BE trades win. You may be moving stops too early.`
+    : `Mixed results. ${beWinRate}% of BE trades win — not a clear edge either way.`;
+
+  headEl.textContent = `${allBE.length} BE trades tracked`;
+  const outcomeName = {win:'Win',loss:'Loss',be_win:'BE → Win',be_loss:'BE → Loss'};
+
+  beEl.innerHTML = `
+    <div style="background:${verdictColor}18;border:1px solid ${verdictColor}40;border-radius:var(--r);padding:12px 14px;margin-bottom:16px;font-size:13px;line-height:1.6">
+      <strong style="color:${verdictColor}">Verdict: BE is ${verdict}</strong><br>
+      <span style="color:var(--muted)">${verdictText}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px">
+      <div class="metric" style="text-align:center">
+        <div class="metric-label">BE → Win</div>
+        <div class="metric-val pos">${beWins.length}</div>
+        <div class="metric-sub">avg $${Math.round(beWinPnL)}/trade</div>
+      </div>
+      <div class="metric" style="text-align:center">
+        <div class="metric-label">BE → Loss</div>
+        <div class="metric-val neg">${beLoss.length}</div>
+        <div class="metric-sub">avg $${Math.round(beLossPnL)}/trade</div>
+      </div>
+      <div class="metric" style="text-align:center">
+        <div class="metric-label">BE win rate</div>
+        <div class="metric-val ${beWinRate>=50?'pos':'neg'}">${allBE.length?beWinRate+'%':'—'}</div>
+        <div class="metric-sub">of all BE trades</div>
+      </div>
+      <div class="metric" style="text-align:center">
+        <div class="metric-label">Total BE P&L</div>
+        <div class="metric-val ${totalBEPnL>=0?'pos':'neg'}">${pf(totalBEPnL)}</div>
+        <div class="metric-sub">${beRate}% of tagged trades</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      ${beWins.length&&avgBeWinPotential?`
+      <div class="card" style="background:var(--bg3)">
+        <div class="card-title" style="color:var(--accent);margin-bottom:8px">BE → Win — what you left on the table</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7">
+          You moved to BE on ${beWins.length} winning trade${beWins.length>1?'s':''}.<br>
+          Avg actual P&L: <strong style="color:var(--text)">$${Math.round(beWinPnL)}</strong><br>
+          Avg if held to target: <strong style="color:var(--green)">+$${Math.round(avgBeWinPotential)}</strong><br>
+          Left on table: <strong style="color:var(--amber)">$${Math.round(avgBeWinPotential-beWinPnL)}/trade</strong>
+        </div>
+      </div>`:''}
+      ${beLoss.length?`
+      <div class="card" style="background:var(--bg3)">
+        <div class="card-title" style="color:var(--red);margin-bottom:8px">BE → Loss — the false safety net</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7">
+          You moved to BE on ${beLoss.length} trade${beLoss.length>1?'s':''} that reversed.<br>
+          Avg loss after BE: <strong style="color:var(--red)">$${Math.round(Math.abs(beLossPnL))}</strong><br>
+          ${avgBeLossPotential?`If stopped at original SL: <strong style="color:var(--text)">$${Math.round(Math.abs(avgBeLossPotential))}</strong><br>${Math.abs(beLossPnL)<Math.abs(avgBeLossPotential)?'<strong style="color:var(--green)">BE saved you money on these.</strong>':'<strong style="color:var(--red)">Original SL would have been better.</strong>'}`:'Add stop prices to compare vs original SL.'}
+        </div>
+      </div>`:''}
+    </div>
+    <div>
+      <div class="card-title" style="margin-bottom:10px">All BE trades</div>
+      <table class="trades-table" style="width:100%">
+        <thead><tr><th>Date</th><th>Ticker</th><th>Side</th><th>Outcome</th><th>Actual P&L</th><th>Setup</th></tr></thead>
+        <tbody>
+          ${allBE.map(t=>{const pnl=calcPnL(t);return`<tr>
+            <td>${t.datetime?t.datetime.slice(0,10):''}</td>
+            <td><strong>${t.ticker}</strong></td>
+            <td><span class="side-pill ${t.side==='long'?'long-pill':'short-pill'}">${t.side.toUpperCase()}</span></td>
+            <td><span class="tag-pill amber-pill">${outcomeName[t.outcome]}</span></td>
+            <td class="${pnl>=0?'pnl-pos':'pnl-neg'}">${pf(pnl)}</td>
+            <td>${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')||'—'}</td>
+          </tr>`;}).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 // ─── AI INSIGHTS ──────────────────────────────────────────────────────────────
 async function runInsights() {
   if (!isPro()) { openUpgradeModal(); return; }
@@ -3831,7 +3946,7 @@ async function runInsights() {
     return `${t.datetime?t.datetime.slice(0,10):''} ${h}:00 | ${t.ticker} ${t.side} | PnL:$${Math.round(pnl)} | setups:${(t.setups||[]).join('+')||'none'} | mistakes:${(t.mistakes||[]).join('+')||'none'} | grade:${t.grade||'?'}`;
   }).join('\n');
   const totalPnL=state.trades.reduce((a,t)=>a+calcPnL(t),0);
-  const wr=Math.round(state.trades.filter(t=>calcPnL(t)>0).length/state.trades.length*100);
+  const wr=Math.round(state.trades.filter(t=>t.outcome==='win').length/state.trades.length*100);
   const prompt=`You are an expert trading coach analyzing a futures scalper's journal. Trader uses ICT methods (FVGs, liquidity sweeps, inversions) on NQ/MNQ, NY session 9:30-11:00 EST only.
 ${buildGradingContext()}
 JOURNAL (${state.trades.length} trades, ${wr}% win rate, total P&L $${Math.round(totalPnL)}):
@@ -4032,7 +4147,7 @@ function refreshPatternFeed() {
 
   // Hour performance
   const hourPnL={};
-  T.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(calcPnL(t)>0)hourPnL[h].wins++;});
+  T.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(t.outcome==='win')hourPnL[h].wins++;});
   const bestHour=Object.entries(hourPnL).sort((a,b)=>b[1].pnl-a[1].pnl)[0];
   const worstHour=Object.entries(hourPnL).sort((a,b)=>a[1].pnl-b[1].pnl)[0];
   if(bestHour&&bestHour[1].n>=2)patterns.push({color:'#9B7FFF',text:`Your best hour is <strong>${bestHour[0]}:00 EST</strong> — ${Math.round(bestHour[1].wins/bestHour[1].n*100)}% win rate, avg +$${Math.round(bestHour[1].pnl/bestHour[1].n)} per trade.`,badge:'+$'+Math.round(bestHour[1].pnl/bestHour[1].n)});
@@ -4040,7 +4155,7 @@ function refreshPatternFeed() {
 
   // Setup win rates
   const setupStats={};
-  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(calcPnL(t)>0)setupStats[s].wins++;}));
+  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(t.outcome==='win')setupStats[s].wins++;}));
   const setups=Object.entries(setupStats).filter(([,v])=>v.n>=2).sort((a,b)=>b[1].wins/b[1].n-a[1].wins/a[1].n);
   if(setups.length)patterns.push({color:'#9B7FFF',text:`Your best setup is <strong>${setups[0][0]}</strong> — ${Math.round(setups[0][1].wins/setups[0][1].n*100)}% win rate over ${setups[0][1].n} trades.`,badge:Math.round(setups[0][1].wins/setups[0][1].n*100)+'% WR'});
   if(setups.length>1){const worst=setups[setups.length-1];patterns.push({color:'#f5a623',text:`<strong>${worst[0]}</strong> is your weakest setup — only ${Math.round(worst[1].wins/worst[1].n*100)}% win rate. Consider reducing size or avoiding it.`,badge:Math.round(worst[1].wins/worst[1].n*100)+'% WR'});}
@@ -4067,16 +4182,16 @@ function refreshPatternFeed() {
 
   // Win/loss after loss
   const afterLoss=T.filter((t,i)=>i>0&&calcPnL(T[i-1])<0);
-  if(afterLoss.length>=3){const wr=Math.round(afterLoss.filter(t=>calcPnL(t)>0).length/afterLoss.length*100);const dir=wr>=50;patterns.push({color:dir?'#9B7FFF':'#ff4d4d',text:`After a losing trade, your win rate is <strong>${wr}%</strong> (${afterLoss.length} samples). ${wr<40?'Consider taking a break after losses.':wr>=60?'You bounce back well after losses.':'Mixed results after losses.'}`,badge:wr+'% after loss'});}
+  if(afterLoss.length>=3){const wr=Math.round(afterLoss.filter(t=>t.outcome==='win').length/afterLoss.length*100);const dir=wr>=50;patterns.push({color:dir?'#9B7FFF':'#ff4d4d',text:`After a losing trade, your win rate is <strong>${wr}%</strong> (${afterLoss.length} samples). ${wr<40?'Consider taking a break after losses.':wr>=60?'You bounce back well after losses.':'Mixed results after losses.'}`,badge:wr+'% after loss'});}
 
   // Revenge trading speed
   const quickEntries=T.filter((t,i)=>{if(i===0)return false;const prev=T[i-1];if(calcPnL(prev)>=0)return false;if(!prev.datetime||!t.datetime)return false;return (new Date(t.datetime)-new Date(prev.datetime))/60000<=5;});
-  if(quickEntries.length>=2){const revWR=Math.round(quickEntries.filter(t=>calcPnL(t)>0).length/quickEntries.length*100);patterns.push({color:'#ff4d4d',text:`You've entered <strong>${quickEntries.length} trades within 5 min of a loss</strong> — potential revenge trading. Win rate on those: ${revWR}%.`,badge:revWR+'% WR'});}
+  if(quickEntries.length>=2){const revWR=Math.round(quickEntries.filter(t=>t.outcome==='win').length/quickEntries.length*100);patterns.push({color:'#ff4d4d',text:`You've entered <strong>${quickEntries.length} trades within 5 min of a loss</strong> — potential revenge trading. Win rate on those: ${revWR}%.`,badge:revWR+'% WR'});}
 
   // Consistency
   const pnls=T.map(t=>calcPnL(t));
   const avg=pnls.reduce((a,b)=>a+b,0)/pnls.length;
-  const wins=T.filter(t=>calcPnL(t)>0);const losses=T.filter(t=>calcPnL(t)<0);
+  const wins=T.filter(t=>t.outcome==='win');const losses=T.filter(t=>t.outcome==='loss');
   const avgW=wins.length?wins.reduce((a,t)=>a+calcPnL(t),0)/wins.length:0;
   const avgL=losses.length?Math.abs(losses.reduce((a,t)=>a+calcPnL(t),0)/losses.length):0;
   if(avgW&&avgL)patterns.push({color:avgW/avgL>=1.5?'#9B7FFF':'#f5a623',text:`Your average win is <strong>$${Math.round(avgW)}</strong> and average loss is <strong>$${Math.round(avgL)}</strong> — a ${(avgW/avgL).toFixed(2)}:1 win/loss ratio. ${avgW/avgL>=2?'Excellent.':avgW/avgL>=1?'Acceptable, keep it above 1.5x.':'Your losses are too large relative to wins.'}`,badge:(avgW/avgL).toFixed(2)+'x W/L'});
@@ -4102,14 +4217,14 @@ function renderCopilotPage(){
 function renderCopilotStats(){
   // Setup stats
   const setupStats={};
-  state.trades.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(calcPnL(t)>0)setupStats[s].wins++;}));
+  state.trades.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(t.outcome==='win')setupStats[s].wins++;}));
   const ssEl=document.getElementById('copilot-setup-stats');
   const ssEntries=Object.entries(setupStats).filter(([,v])=>v.n>0).sort((a,b)=>b[1].n-a[1].n);
   ssEl.innerHTML=ssEntries.length?ssEntries.map(([s,v])=>{const wr=Math.round(v.wins/v.n*100);return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;font-weight:600;flex:1">${s}</span><span style="font-size:12px;font-family:var(--mono);font-weight:700" class="${wr>=50?'pnl-pos':'pnl-neg'}">${wr}% WR</span><span style="font-size:11px;color:var(--muted)">${v.n} trades</span></div>`;}).join(''):'<div class="empty">No setup data yet</div>';
 
   // Hour stats
   const hourPnL={};
-  state.trades.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(calcPnL(t)>0)hourPnL[h].wins++;});
+  state.trades.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(t.outcome==='win')hourPnL[h].wins++;});
   const hsEl=document.getElementById('copilot-time-stats');
   const now=new Date().getHours();
   const hoursToShow=[9,10,11];
@@ -4142,7 +4257,7 @@ async function runCopilot(){
   // Build history context
   const T=state.trades;
   const setupStats={};
-  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(calcPnL(t)>0)setupStats[s].wins++;}));
+  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(t.outcome==='win')setupStats[s].wins++;}));
   const hourPnL={};
   T.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;});
   const avgRisks=T.filter(t=>t.sl&&t.entry&&t.sl!==t.entry).map(t=>Math.abs(t.entry-t.sl)*t.qty);
@@ -4160,7 +4275,7 @@ ${ticker} ${copilotSide.toUpperCase()} | Entry:${entry} | Stop:${sl||'none'} | T
 Setup: ${setup||'not specified'} | Context: ${context||'none provided'} | Time: ${nowHour}:00 EST
 
 TRADER'S HISTORY (${T.length} trades):
-- Win rate: ${T.length?Math.round(T.filter(t=>calcPnL(t)>0).length/T.length*100)+'%':'unknown'}
+- Win rate: ${T.length?Math.round(T.filter(t=>t.outcome==='win').length/T.length*100)+'%':'unknown'}
 - Avg risk per trade: ${avgRisk?avgRisk.toFixed(1)+' pts':'unknown'} | This trade risk: ${thisRisk?thisRisk.toFixed(1)+' pts':'unknown'}
 - ${setup&&setupStats[setup]?`${setup} win rate: ${Math.round(setupStats[setup].wins/setupStats[setup].n*100)}% over ${setupStats[setup].n} trades`:'No history on this setup yet'}
 - Performance at ${nowHour}:00: ${hourPnL[nowHour]?'avg $'+Math.round(hourPnL[nowHour].pnl/hourPnL[nowHour].n)+' ('+hourPnL[nowHour].n+' trades)':'no data'}
@@ -4522,7 +4637,7 @@ function renderStreaks() {
 
   // Win streak
   let winStreak=0;
-  for(let i=state.trades.length-1;i>=0;i--){if(calcPnL(state.trades[i])>0)winStreak++;else break;}
+  for(let i=state.trades.length-1;i>=0;i--){if(state.trades[i].outcome==='win')winStreak++;else break;}
 
   document.getElementById('s-journal').textContent=journalStreak;
   document.getElementById('s-journal-sub').textContent=journalStreak>0?'Keep it going!':'Log today to start';
@@ -5270,7 +5385,7 @@ function renderPropAccountsSection() {
 
           // Trades on this account
           const acTrades  = state.trades.filter(t => t.propAccounts?.includes(a.name) || t.propFirm === a.firm);
-          const acWins    = acTrades.filter(t=>calcPnL(t)>0).length;
+          const acWins    = acTrades.filter(t=>t.outcome==='win').length;
           const acWR      = acTrades.length ? Math.round(acWins/acTrades.length*100) : null;
 
           // Daily loss remaining — today's P&L on this account
@@ -5612,7 +5727,7 @@ function renderSetupsPage() {
   renderSetupRadar(T);
   const spSetups=new Set(state.trades.flatMap(t=>t.setups||[]));
   const spStats={};
-  state.trades.forEach(t=>{(t.setups||[]).forEach(s=>{if(!spStats[s])spStats[s]={wins:0,n:0,pnl:0};const p=calcPnL(t);spStats[s].n++;spStats[s].pnl+=p;if(p>0)spStats[s].wins++;});});
+  state.trades.forEach(t=>{(t.setups||[]).forEach(s=>{if(!spStats[s])spStats[s]={wins:0,n:0,pnl:0};const p=calcPnL(t);spStats[s].n++;spStats[s].pnl+=p;if(t.outcome==='win')spStats[s].wins++;});});
   const spActive=Object.entries(spStats).filter(([,v])=>v.n>=2);
   let spBestWR='—', spBestPnL='—';
   if(spActive.length){
@@ -5627,7 +5742,7 @@ function renderSetupsPage() {
   startHeroCanvas('sp-c');
   if (!T.length) return;
 
-  const wins = t => ['win','be_win'].includes(t.outcome);
+  const wins = t => t.outcome === 'win';
   const rr   = t => parseFloat(calcRR(t)) || (t.quickRR ? parseFloat(t.quickRR) : null);
 
   function groupStats(trades) {
@@ -6528,7 +6643,7 @@ function renderWRTrendChart(T) {
   const labels = [], data = [];
   for (let i = 0; i < sorted.length; i++) {
     const window = sorted.slice(Math.max(0, i-9), i+1);
-    const wr = window.filter(t=>calcPnL(t)>0).length / window.length * 100;
+    const wr = window.filter(t=>t.outcome==='win').length / window.length * 100;
     labels.push(sorted[i].datetime ? sorted[i].datetime.slice(5,10) : '#'+(i+1));
     data.push(Math.round(wr));
   }
@@ -6577,7 +6692,7 @@ function renderSetupRadar(T) {
   const setupMap = {};
   T.forEach(t => (t.setups||[]).forEach(s => {
     if (!setupMap[s]) setupMap[s] = { wins:0, n:0 };
-    setupMap[s].n++; if (calcPnL(t)>0) setupMap[s].wins++;
+    setupMap[s].n++; if (t.outcome==='win') setupMap[s].wins++;
   }));
   const entries = Object.entries(setupMap).filter(([,v])=>v.n>=1);
   if (entries.length < 1) { ctx.canvas.parentElement.innerHTML = '<div class="empty" style="padding:20px;text-align:center">Tag trades with setups to render radar</div>'; return; }
@@ -6596,7 +6711,7 @@ function renderRolling10(trades) {
   if (!el) return;
   const sorted = [...trades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||'')).slice(-10);
   if (!sorted.length) { el.innerHTML = '<span style="color:var(--muted);font-size:12px">No trades yet</span>'; return; }
-  const wins = sorted.filter(t=>calcPnL(t)>0).length;
+  const wins = sorted.filter(t=>t.outcome==='win').length;
   const pnl  = sorted.reduce((a,t)=>a+calcPnL(t),0);
   el.innerHTML = sorted.map(t => {
     const p = calcPnL(t); const col = p>0?'#00d084':p<0?'#ff4d4d':'#888';
@@ -6617,7 +6732,7 @@ function renderHistHourHeat(trades) {
     const d = new Date(t.datetime||''); if (isNaN(d)) return;
     const h = d.getHours();
     if (!hours[h]) hours[h] = { pnl:0, n:0, wins:0 };
-    hours[h].pnl += calcPnL(t); hours[h].n++; if(calcPnL(t)>0) hours[h].wins++;
+    hours[h].pnl += calcPnL(t); hours[h].n++; if(t.outcome==='win') hours[h].wins++;
   });
   const hoursToShow = [9,10,11,12,13,14,15,16];
   const maxAbs = Math.max(...hoursToShow.map(h=>Math.abs((hours[h]||{pnl:0}).pnl)), 1);
@@ -6747,7 +6862,7 @@ function renderCalendar() {
       cell.appendChild(numDiv);
 
       if (trades.length) {
-        const wins = trades.filter(t => calcPnL(t)>0).length;
+        const wins = trades.filter(t => t.outcome==='win').length;
         const wr   = Math.round(wins/trades.length*100);
         const col  = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
         const glow = (!isLM && pnl>0)?'0 0 14px rgba(0,208,132,.55)':(!isLM && pnl<0)?'0 0 14px rgba(255,77,77,.5)':'none';
@@ -6794,7 +6909,7 @@ function calClickDay(day, trades) {
   calSelectedDay = day; renderCalendar();
   const detail = document.getElementById('cal-day-detail');
   const pnl = trades.reduce((a,t)=>a+calcPnL(t),0);
-  const wins = trades.filter(t=>calcPnL(t)>0).length;
+  const wins = trades.filter(t=>t.outcome==='win').length;
   const wr   = Math.round(wins/trades.length*100);
   const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const col  = pnl>=0?'var(--green)':'var(--red)';
@@ -6852,7 +6967,7 @@ function renderStatsExtras(T) {
         ${activeBuckets.map(b => {
           const group = withDur.filter(t => t.holdMins >= b.min && t.holdMins < b.max);
           const pnl  = group.reduce((a,t)=>a+calcPnL(t),0);
-          const wins = group.filter(t=>calcPnL(t)>0).length;
+          const wins = group.filter(t=>t.outcome==='win').length;
           const wr   = Math.round(wins/group.length*100);
           const col  = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
           const pStr = (pnl>=0?'+':'-')+'$'+Math.abs(pnl).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -6889,7 +7004,7 @@ function renderStatsExtras(T) {
   const setupMap={};
   T.forEach(t=>(t.setups||[]).forEach(s=>{
     if(!setupMap[s])setupMap[s]={wins:0,n:0,rrs:[]};
-    setupMap[s].n++; if(calcPnL(t)>0)setupMap[s].wins++;
+    setupMap[s].n++; if(t.outcome==='win')setupMap[s].wins++;
     const r=trRR(t); if(r!==null)setupMap[s].rrs.push(r);
   }));
   const sEntries=Object.entries(setupMap).filter(([,v])=>v.n>=2)
@@ -6916,7 +7031,7 @@ function renderStatsExtras(T) {
     const slot=`${h}:${String(Math.floor(m/15)*15).padStart(2,'0')}`;
     if(!slotMap[slot])slotMap[slot]={pnl:0,n:0,wins:0};
     slotMap[slot].pnl+=calcPnL(t); slotMap[slot].n++;
-    if(calcPnL(t)>0)slotMap[slot].wins++;
+    if(t.outcome==='win')slotMap[slot].wins++;
   });
   const slotEntries=Object.entries(slotMap).filter(([,v])=>v.n>=1)
     .map(([s,v])=>({s,pnl:v.pnl,n:v.n,wr:Math.round(v.wins/v.n*100)}))
@@ -7835,7 +7950,7 @@ function renderDailyTab(dir) {
     const dt=(state.trades||[]).filter(t=>(t.datetime||'').slice(0,10)===dailyViewDate);
     if(dt.length){
       const pnl=dt.reduce((s,t)=>s+calcPnL(t),0);
-      const wr=Math.round(dt.filter(t=>calcPnL(t)>0).length/dt.length*100);
+      const wr=Math.round(dt.filter(t=>t.outcome==='win').length/dt.length*100);
       const c=pnl>=0?'var(--green)':'var(--red)';
       const bg=pnl>=0?'rgba(0,208,132,.1)':'rgba(255,77,77,.1)';
       const bc=pnl>=0?'rgba(0,208,132,.3)':'rgba(255,77,77,.3)';
@@ -8073,16 +8188,16 @@ function renderCommandCenter(){
   // ── Compute data from state ──
   const T=state.trades,pls=T.map(t=>calcPnL(t));
   const tot=pls.reduce((a,b)=>a+b,0);
-  const wP=pls.filter(p=>p>0),lP=pls.filter(p=>p<0);
+  const wP=T.filter(t=>t.outcome==='win'),lP=T.filter(t=>t.outcome==='loss');
   const wr=T.length?wP.length/T.length*100:0;
-  const avgW=wP.length?wP.reduce((a,b)=>a+b,0)/wP.length:0;
-  const avgL=lP.length?Math.abs(lP.reduce((a,b)=>a+b,0)/lP.length):0;
+  const avgW=wP.length?wP.reduce((a,t)=>a+calcPnL(t),0)/wP.length:0;
+  const avgL=lP.length?Math.abs(lP.reduce((a,t)=>a+calcPnL(t),0)/lP.length):0;
   let peak=0,dd=0,run=0;
   pls.forEach(p=>{run+=p;if(run>peak)peak=run;dd=Math.min(dd,run-peak);});
   const rrs=T.filter(t=>calcRR(t)).map(t=>parseFloat(calcRR(t)));
   const avgRR=rrs.length?rrs.reduce((a,b)=>a+b,0)/rrs.length:0;
   const ss={};
-  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!ss[s])ss[s]={n:0,w:0,pnl:0};ss[s].n++;if(calcPnL(t)>0)ss[s].w++;ss[s].pnl+=calcPnL(t);}));
+  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!ss[s])ss[s]={n:0,w:0,pnl:0};ss[s].n++;if(t.outcome==='win')ss[s].w++;ss[s].pnl+=calcPnL(t);}));
   const topS=Object.entries(ss).sort((a,b)=>b[1].n-a[1].n).slice(0,5);
   const props=(state.propAccounts||[]).slice(0,4);
   const goals=(state.journal?.goals||[]).slice(0,4);
@@ -8108,7 +8223,7 @@ function renderCommandCenter(){
     label:T.length?Math.round(wr)+'%':'—',sub:'WIN RATE',conn:['hub','pnl'],
     cd:{title:'Win Rate',val:T.length?Math.round(wr)+'%':'—',vc:wr>=50?G:AM,rows:[
       ['Wins / Losses',wP.length+' / '+lP.length],
-      ['Last 5 trades',T.length?T.slice(-5).filter((_,i)=>pls.slice(-5)[i]>0).length+'/5 W':'—'],
+      ['Last 5 trades',T.length?T.slice(-5).filter(t=>t.outcome==='win').length+'/5 W':'—'],
       ['Trades',T.length+'']]}});
   add({id:'rr',x:cx+195*SC,y:cy+115*SC,r:22*SC,color:avgRR>=1.5?G:A,
     label:avgRR?avgRR.toFixed(1)+'R':'—',sub:'AVG R:R',conn:['hub'],
@@ -8295,7 +8410,7 @@ function renderMetricSparklines() {
   if(!state?.trades?.length) return;
   const sorted=[...state.trades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
   let run=0; const pnlS=sorted.map(t=>{run+=calcPnL(t);return run;});
-  const wrS=sorted.map((_,i)=>{const w=sorted.slice(Math.max(0,i-9),i+1);return Math.round(w.filter(t=>calcPnL(t)>0).length/w.length*100);});
+  const wrS=sorted.map((_,i)=>{const w=sorted.slice(Math.max(0,i-9),i+1);return Math.round(w.filter(t=>t.outcome==='win').length/w.length*100);});
   const pc=document.getElementById('spark-pnl');if(pc)drawSparkline(pc,pnlS,run>=0?'#00d084':'#ff4d4d');
   const wc=document.getElementById('spark-wr');if(wc)drawSparkline(wc,wrS,'#9B7FFF');
 }
