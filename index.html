@@ -1673,9 +1673,15 @@ body.light-mode .metric-val{color:#0a0a14}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
 
     <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:20px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">⭐ Trade Rating Stats</div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Overall Grade</div>
-      <div style="overflow-x:auto;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">⭐ Trade Rating Stats</div>
+        <div style="display:flex;gap:2px;background:var(--bg3);border-radius:6px;padding:2px">
+          <button id="gtab-overall" onclick="switchGradeTab('overall')" style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;border:none;cursor:pointer;background:var(--accent);color:#fff;transition:background .15s">Overall</button>
+          <button id="gtab-exec" onclick="switchGradeTab('exec')" style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;border:none;cursor:pointer;background:transparent;color:var(--muted);transition:background .15s">Execution</button>
+          <button id="gtab-setup" onclick="switchGradeTab('setup')" style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;border:none;cursor:pointer;background:transparent;color:var(--muted);transition:background .15s">Setup</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
         <table class="trades-table" style="width:100%">
           <thead><tr>
             <th>Grade</th>
@@ -1687,34 +1693,10 @@ body.light-mode .metric-val{color:#0a0a14}
           <tbody id="grade-stats-body">
             <tr><td colspan="5"><div class="empty" style="padding:12px">No graded trades yet</div></td></tr>
           </tbody>
-        </table>
-      </div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Execution Grade <span style="color:var(--accent);font-size:8px">most actionable</span></div>
-      <div style="overflow-x:auto;margin-bottom:16px">
-        <table class="trades-table" style="width:100%">
-          <thead><tr>
-            <th>Grade</th>
-            <th style="text-align:center"># Trades</th>
-            <th style="text-align:center">Win Rate</th>
-            <th style="text-align:center">Total R</th>
-            <th style="text-align:center">Avg R:R</th>
-          </tr></thead>
-          <tbody id="execution-grade-body">
+          <tbody id="execution-grade-body" style="display:none">
             <tr><td colspan="5"><div class="empty" style="padding:12px">No execution grades yet — review trades with AI</div></td></tr>
           </tbody>
-        </table>
-      </div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Setup Grade</div>
-      <div style="overflow-x:auto">
-        <table class="trades-table" style="width:100%">
-          <thead><tr>
-            <th>Grade</th>
-            <th style="text-align:center"># Trades</th>
-            <th style="text-align:center">Win Rate</th>
-            <th style="text-align:center">Total R</th>
-            <th style="text-align:center">Avg R:R</th>
-          </tr></thead>
-          <tbody id="setup-grade-body">
+          <tbody id="setup-grade-body" style="display:none">
             <tr><td colspan="5"><div class="empty" style="padding:12px">No setup grades yet — review trades with AI</div></td></tr>
           </tbody>
         </table>
@@ -6477,6 +6459,17 @@ function removePhoto(i) {
 }
 
 // ─── TRADE GALLERY ────────────────────────────────────────────────────────────
+function switchGradeTab(tab) {
+  const tabs = { overall: 'grade-stats-body', exec: 'execution-grade-body', setup: 'setup-grade-body' };
+  const btnIds = { overall: 'gtab-overall', exec: 'gtab-exec', setup: 'gtab-setup' };
+  Object.entries(tabs).forEach(([t, bodyId]) => {
+    const el = document.getElementById(bodyId);
+    if (el) el.style.display = t === tab ? '' : 'none';
+    const btn = document.getElementById(btnIds[t]);
+    if (btn) { btn.style.background = t === tab ? 'var(--accent)' : 'transparent'; btn.style.color = t === tab ? '#fff' : 'var(--muted)'; }
+  });
+}
+
 function renderGallery() {
   const grid = document.getElementById('gallery-grid');
   if (!grid) return;
