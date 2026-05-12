@@ -1685,7 +1685,8 @@ body.light-mode .metric-val{color:#0a0a14}
         <span class="card-title">Trade Rating Stats</span>
         <span class="card-sub">Performance by AI grade</span>
       </div>
-      <div style="overflow-x:auto">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Overall Grade</div>
+      <div style="overflow-x:auto;margin-bottom:16px">
         <table class="trades-table" style="width:100%">
           <thead><tr>
             <th>Grade</th>
@@ -1696,6 +1697,36 @@ body.light-mode .metric-val{color:#0a0a14}
           </tr></thead>
           <tbody id="grade-stats-body">
             <tr><td colspan="5"><div class="empty" style="padding:16px">No graded trades yet</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Execution Grade <span style="color:var(--accent);font-size:8px">most actionable</span></div>
+      <div style="overflow-x:auto;margin-bottom:16px">
+        <table class="trades-table" style="width:100%">
+          <thead><tr>
+            <th>Grade</th>
+            <th style="text-align:center"># Trades</th>
+            <th style="text-align:center">Win Rate</th>
+            <th style="text-align:center">Total R</th>
+            <th style="text-align:center">Avg R:R</th>
+          </tr></thead>
+          <tbody id="execution-grade-body">
+            <tr><td colspan="5"><div class="empty" style="padding:12px">No execution grades yet — review trades with AI</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Setup Grade</div>
+      <div style="overflow-x:auto">
+        <table class="trades-table" style="width:100%">
+          <thead><tr>
+            <th>Grade</th>
+            <th style="text-align:center"># Trades</th>
+            <th style="text-align:center">Win Rate</th>
+            <th style="text-align:center">Total R</th>
+            <th style="text-align:center">Avg R:R</th>
+          </tr></thead>
+          <tbody id="setup-grade-body">
+            <tr><td colspan="5"><div class="empty" style="padding:12px">No setup grades yet — review trades with AI</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -3279,14 +3310,21 @@ ${t.notes?.includes('Imported from Tradovate') || t.quickMode ? 'DATA NOTE: Impo
 ${buildSetupLibraryContext(t.setups)}
 ${histContext}
 
+You must provide THREE separate letter grades (A+/A/A-/B+/B/B-/C+/C/C-/D/F format):
+1. setupGrade: Grade the QUALITY OF THE SETUP ITSELF — was there HTF confluence, valid ICT structure, clean entry zone? This grades the OPPORTUNITY independent of execution.
+2. executionGrade: Grade HOW THE TRADER EXECUTED — entry timing, stop placement, holding to target, following rules. This grades HOW they played it.
+3. overallGrade: Weighted overall (setup 40%, execution 60%).
+
 Respond in this EXACT JSON format only, no other text:
 {
-  "grade": "B+",
+  "setupGrade": "B+",
+  "executionGrade": "C+",
+  "overallGrade": "B-",
   "headline": "One sentence summary of this specific trade",
   "worked": "What went right based on the trader's actual notes and setup",
   "wrong": "What went wrong — be specific to what they described",
   "lesson": "The single most important takeaway",
-  "why": "Why you gave this grade",
+  "why": "Why you gave this overall grade",
   "auto_setups": ["Continuation"],
   "auto_mistakes": [],
   "auto_behaviors": [],
@@ -3304,8 +3342,10 @@ For flags add specific warnings relevant to this trade only.`;
     let parsed;
     try { parsed=JSON.parse(raw.match(/\{[\s\S]*\}/)?.[0]||'{}'); } catch(e){ parsed={}; }
 
-    const grade=parsed.grade||'C';
+    const grade=parsed.overallGrade||parsed.grade||'C';
     state.trades[idx].grade=grade;
+    state.trades[idx].setupGrade=parsed.setupGrade||null;
+    state.trades[idx].executionGrade=parsed.executionGrade||null;
     // Auto-tag: merge AI tags with any manual ones, dedupe
     if(parsed.auto_setups?.length) state.trades[idx].setups=[...new Set([...(state.trades[idx].setups||[]),...parsed.auto_setups])];
     if(parsed.auto_mistakes?.length) state.trades[idx].mistakes=[...new Set([...(state.trades[idx].mistakes||[]),...parsed.auto_mistakes])];
@@ -3326,23 +3366,45 @@ For flags add specific warnings relevant to this trade only.`;
 }
 
 function buildReviewCard(d, idx) {
-  const grade=d.grade||'?';
-  const baseLetter = grade.replace(/[^A-F]/g,'')[0] || 'C'; // strip +/- for CSS
-  const gradeColors={A:'#9B7FFF',B:'#4a9eff',C:'#f5a623',D:'#ff6432',F:'#ff4d4d'};
-  const col=gradeColors[baseLetter]||'#888';
+  const overallGrade = d.overallGrade || d.grade || '?';
+  const setupGrade   = d.setupGrade   || null;
+  const execGrade    = d.executionGrade || null;
+
+  function gradeCircle(grade, size, label, sublabel, isExec) {
+    const g = grade || '—';
+    const letter = g.replace(/[^A-F]/g,'')[0] || null;
+    const bgClass = letter ? `grade-${letter}-bg` : '';
+    const gradeColors={A:'var(--green)',B:'var(--blue)',C:'var(--amber)',D:'var(--red)',F:'var(--red)'};
+    const col = letter ? (gradeColors[letter]||'var(--dim)') : 'var(--dim)';
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+      <div class="${bgClass ? 'grade-circle '+bgClass : ''}" style="${!bgClass?'width:'+size+'px;height:'+size+'px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:2px solid var(--border2)':'width:'+size+'px;height:'+size+'px;font-size:'+Math.round(size*0.44)+'px'}${isExec?';box-shadow:0 0 18px '+col+'44':''}">
+        <span style="${!bgClass?'color:var(--dim);font-size:'+Math.round(size*0.36)+'px;font-weight:800;font-family:var(--mono)':'font-size:'+Math.round(size*0.44)+'px;color:inherit'}">${g}</span>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${letter?col:'var(--dim)'}${isExec?';font-size:11px':''}">${label}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:1px">${sublabel}</div>
+      </div>
+    </div>`;
+  }
+
   const autoTags=[
     ...(d.auto_setups||[]).map(s=>`<span class="auto-tag auto-tag-setup">${s}</span>`),
     ...(d.auto_mistakes||[]).map(m=>`<span class="auto-tag auto-tag-mistake">${m}</span>`),
     ...(d.auto_behaviors||[]).map(b=>`<span class="auto-tag ${b.toLowerCase().includes('clean')?'auto-tag-clean':'auto-tag-behavior'}">${b}</span>`),
   ].join('');
   const flags=(d.flags||[]).map(f=>`<div style="font-size:11px;color:var(--amber);padding:3px 0;border-bottom:1px solid var(--border)">⚠ ${f}</div>`).join('');
+
   return `<div class="review-card">
-    <div class="review-grade-bar">
-      <div class="grade-circle grade-${baseLetter}-bg">${grade}</div>
-      <div>
-        <div style="font-size:14px;font-weight:700;line-height:1.3">${d.headline||'Trade reviewed'}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:3px">${d.why||''}</div>
+    <div style="padding:16px 16px 12px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        ${gradeCircle(setupGrade, 56, 'Setup', 'The opportunity', false)}
+        <div style="width:1px;height:48px;background:var(--border2)"></div>
+        ${gradeCircle(execGrade, 66, 'Execution', 'How you played it', true)}
+        <div style="width:1px;height:48px;background:var(--border2)"></div>
+        ${gradeCircle(overallGrade, 56, 'Overall', 'Combined score', false)}
       </div>
+      <div style="font-size:13px;font-weight:700;line-height:1.4;margin-bottom:4px">${d.headline||'Trade reviewed'}</div>
+      <div style="font-size:11px;color:var(--muted)">${d.why||''}</div>
     </div>
     ${flags?`<div style="padding:0 16px 10px">${flags}</div>`:''}
     <div class="review-sections">
@@ -3599,7 +3661,13 @@ function renderHistory() {
       <td style="color:var(--muted);font-size:11px">${t.propFirm?`<span style="color:var(--text);font-size:11px">${t.propFirm}</span>${t.propAccount?`<br><span style="color:var(--dim)">${t.propAccount}</span>`:''}` : '<span style="color:var(--dim)">—</span>'}</td>
       <td>${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
       <td>${(t.mistakes||[]).map(m=>`<span class="tag-pill mistake-pill">${m}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
-      <td style="text-align:center">${t.grade?`<span class="grade-badge grade-${t.grade?.replace(/[^A-F]/g,'')[0]||''}">${t.grade}</span>`:'<span style="color:var(--dim);font-size:18px;font-weight:700">—</span>'}</td>
+      <td style="text-align:center;white-space:nowrap">
+        ${t.grade?`<span class="grade-badge grade-${t.grade?.replace(/[^A-F]/g,'')[0]||''}" style="font-size:18px">${t.grade}</span>`:'<span style="color:var(--dim);font-size:16px;font-weight:700">—</span>'}
+        ${(t.setupGrade||t.executionGrade)?`<div style="display:flex;gap:3px;justify-content:center;margin-top:3px">
+          ${t.setupGrade?`<span title="Setup" style="font-size:9px;font-weight:700;font-family:var(--mono);padding:1px 4px;border-radius:3px;border:1px solid var(--border2);color:var(--muted)">S:${t.setupGrade}</span>`:''}
+          ${t.executionGrade?`<span title="Execution" style="font-size:9px;font-weight:700;font-family:var(--mono);padding:1px 4px;border-radius:3px;background:rgba(155,127,255,.12);border:1px solid rgba(155,127,255,.25);color:var(--accent)">E:${t.executionGrade}</span>`:''}
+        </div>`:''}
+      </td>
       <td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" onclick="openTradeModal(${idx})">Review</button> <button class="btn btn-sm" onclick="event.stopPropagation();openEditTradeModal(${idx})">Edit</button> <button class="btn btn-sm btn-red" style="padding:5px 8px" onclick="event.stopPropagation();deleteTrade(${idx})" title="Delete trade">✕</button></td>
     </tr>`;
   }).join('');
@@ -5858,6 +5926,32 @@ function renderSetupsPage() {
     gradeBody.innerHTML = rows || '<tr><td colspan="5"><div class="empty" style="padding:12px">No graded trades yet</div></td></tr>';
   }
 
+  // ── EXECUTION GRADE STATS ──
+  const execGradeGroups = {};
+  T.forEach(t => { const g = t.executionGrade; if (g) { if (!execGradeGroups[g]) execGradeGroups[g]=[]; execGradeGroups[g].push(t); } });
+  const execBody = document.getElementById('execution-grade-body');
+  if (execBody) {
+    const gradeColor = {'A+':'var(--green)','A':'var(--green)','A-':'var(--green)','B+':'var(--blue)','B':'var(--blue)','B-':'var(--blue)','C+':'var(--amber)','C':'var(--amber)','C-':'var(--amber)','D':'var(--red)','F':'var(--red)'};
+    const rows = gradeOrder.filter(g => execGradeGroups[g]).map(g => {
+      const s = groupStats(execGradeGroups[g]);
+      return `<tr><td><strong style="color:${gradeColor[g]||'var(--text)'};font-size:16px;font-family:var(--mono)">${g}</strong></td><td style="text-align:center;color:var(--muted)">${s.n}</td><td style="text-align:center">${wr(s.wr)}</td><td style="text-align:center">${totalRf(s.totalR)}</td><td style="text-align:center">${rrf(s.avgRR)}</td></tr>`;
+    }).join('');
+    execBody.innerHTML = rows || '<tr><td colspan="5"><div class="empty" style="padding:12px">No execution grades yet — review trades with AI</div></td></tr>';
+  }
+
+  // ── SETUP GRADE STATS ──
+  const setupGradeGroups = {};
+  T.forEach(t => { const g = t.setupGrade; if (g) { if (!setupGradeGroups[g]) setupGradeGroups[g]=[]; setupGradeGroups[g].push(t); } });
+  const setupGradeBody = document.getElementById('setup-grade-body');
+  if (setupGradeBody) {
+    const gradeColor = {'A+':'var(--green)','A':'var(--green)','A-':'var(--green)','B+':'var(--blue)','B':'var(--blue)','B-':'var(--blue)','C+':'var(--amber)','C':'var(--amber)','C-':'var(--amber)','D':'var(--red)','F':'var(--red)'};
+    const rows = gradeOrder.filter(g => setupGradeGroups[g]).map(g => {
+      const s = groupStats(setupGradeGroups[g]);
+      return `<tr><td><strong style="color:${gradeColor[g]||'var(--text)'};font-size:16px;font-family:var(--mono)">${g}</strong></td><td style="text-align:center;color:var(--muted)">${s.n}</td><td style="text-align:center">${wr(s.wr)}</td><td style="text-align:center">${totalRf(s.totalR)}</td><td style="text-align:center">${rrf(s.avgRR)}</td></tr>`;
+    }).join('');
+    setupGradeBody.innerHTML = rows || '<tr><td colspan="5"><div class="empty" style="padding:12px">No setup grades yet — review trades with AI</div></td></tr>';
+  }
+
   // ── SETUP BREAKDOWN ──
   const setupGroups = {};
   T.forEach(t => {
@@ -6352,6 +6446,10 @@ function renderGallery() {
           <span class="side-pill ${t.side==='long'?'long-pill':'short-pill'}">${t.side.toUpperCase()}</span>
           <strong style="font-size:13px">${t.ticker}</strong>
           ${t.grade ? `<span class="grade-badge grade-${t.grade?.replace(/[^A-F]/g,'')[0]||''}" style="font-size:20px">${t.grade}</span>` : ''}
+          ${(t.setupGrade||t.executionGrade)?`<div style="display:flex;flex-direction:column;gap:2px;margin-left:2px">
+            ${t.setupGrade?`<span style="font-size:9px;font-weight:700;font-family:var(--mono);padding:1px 4px;border-radius:3px;border:1px solid var(--border2);color:var(--muted);line-height:1.4" title="Setup grade">S:${t.setupGrade}</span>`:''}
+            ${t.executionGrade?`<span style="font-size:9px;font-weight:700;font-family:var(--mono);padding:1px 4px;border-radius:3px;background:rgba(155,127,255,.12);border:1px solid rgba(155,127,255,.25);color:var(--accent);line-height:1.4" title="Execution grade">E:${t.executionGrade}</span>`:''}
+          </div>`:''}
           ${outcomeLabel ? `<span class="tag-pill ${outcomeClass}">${outcomeLabel}</span>` : ''}
           <span style="font-size:11px;color:var(--muted);margin-left:auto">${t.datetime?t.datetime.slice(0,10):''}</span>
         </div>
