@@ -1407,7 +1407,7 @@ body.light-mode .metric-val{color:#0a0a14}
         <div class="qe-field"><label>Target $</label><input id="q-tp" type="number" placeholder="21080"></div>
         <div class="qe-field"><label>Setup</label><select id="q-setup-d"><option value="">— setup —</option></select></div>
         <div class="qe-field"><label>Outcome</label>
-          <select id="q-outcome-d">
+          <select id="q-outcome-d" onchange="autoFillRR()">
             <option value="">— outcome —</option>
             <option value="win">Win</option>
             <option value="loss">Loss</option>
@@ -1422,6 +1422,10 @@ body.light-mode .metric-val{color:#0a0a14}
     </div>
 
     <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+      <div class="modal-field" id="be-point-field" style="margin-bottom:12px;display:none">
+        <label>BE reason <span style="color:var(--dim);font-weight:400;font-size:11px">— why did you move to breakeven?</span></label>
+        <input id="q-be-point" placeholder="e.g. News risk, Partial hit, Time stop, Fear, Manual" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 12px;font-size:13px;color:var(--text);outline:none">
+      </div>
       <div class="modal-field" style="margin-bottom:12px"><label>Notes / thesis <span style="color:var(--dim);font-weight:400;font-size:11px">— optional</span></label><textarea id="full-notes" placeholder="What was the setup? Why did you take it? How did it play out?" style="min-height:70px"></textarea></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
         <div class="modal-field" style="margin-bottom:0"><label>Setup tags</label><div class="tag-select" id="setup-tags" style="margin-top:6px"></div></div>
@@ -2547,7 +2551,7 @@ body.light-mode .metric-val{color:#0a0a14}
       <div class="modal-field"><label class="modal-label">Planned R:R</label><input class="modal-input" id="et-planned-rr" type="number" step="0.1"></div>
       <div class="modal-field"><label class="modal-label">Realized R:R</label><input class="modal-input" id="et-rr" type="number" step="0.1"></div>
       <div class="modal-field"><label class="modal-label">Outcome</label>
-        <select class="modal-select" id="et-outcome">
+        <select class="modal-select" id="et-outcome" onchange="const isBE=this.value==='be_win'||this.value==='be_loss';document.getElementById('et-be-point-wrap').style.display=isBE?'':'none'">
           <option value="">—</option>
           <option value="win">Win</option>
           <option value="loss">Loss</option>
@@ -2555,6 +2559,7 @@ body.light-mode .metric-val{color:#0a0a14}
           <option value="be_loss">BE → Loss</option>
         </select>
       </div>
+      <div class="modal-field" id="et-be-point-wrap" style="display:none"><label class="modal-label">BE reason</label><input class="modal-input" id="et-be-point" placeholder="e.g. News risk, Fear, Partial hit"></div>
       <div class="modal-field"><label class="modal-label">Date</label><input class="modal-input" id="et-date" type="date"></div>
       <div class="modal-field"><label class="modal-label">Time (EST)</label><input class="modal-input" id="et-time" type="time"></div>
       <div class="modal-field"><label class="modal-label">Entry $</label><input class="modal-input" id="et-entry" type="number"></div>
@@ -3162,7 +3167,8 @@ function buildTrade(withNotes) {
     const propAccount = propAccounts.join(', ');
     const entryTF = document.getElementById('q-entry-tf')?.value || '';
     const holdMins = parseFloat(document.getElementById('q-hold-mins')?.value)||null;
-    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF, holdMins};
+    const bePoint = (outcome === 'be_win' || outcome === 'be_loss') ? (document.getElementById('q-be-point')?.value.trim()||'') : '';
+    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF, holdMins, bePoint};
   } else {
     // Detailed mode
     entry = parseFloat(document.getElementById('q-entry').value);
@@ -3181,7 +3187,8 @@ function buildTrade(withNotes) {
     const propFirm = document.getElementById('q-prop-firm')?.value||'';
     const propAccounts = propFirm ? Array.from(document.querySelectorAll('#q-prop-account-checkboxes input:checked')).map(cb=>cb.value) : [];
     const propAccount = propAccounts.join(', ');
-    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null};
+    const bePoint = (outcome === 'be_win' || outcome === 'be_loss') ? (document.getElementById('q-be-point')?.value.trim()||'') : '';
+    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, bePoint};
   }
 }
 
@@ -3215,6 +3222,8 @@ function fullLog(){
   const qprr=document.getElementById('q-planned-rr'); if(qprr) qprr.value='';
   const qhm=document.getElementById('q-hold-mins'); if(qhm) qhm.value='';
   const qod=document.getElementById('q-outcome-d'); if(qod) qod.value='';
+  const qbp=document.getElementById('q-be-point'); if(qbp) qbp.value='';
+  const bepf=document.getElementById('be-point-field'); if(bepf) bepf.style.display='none';
   const _qts=document.getElementById('q-time-select'); if(_qts){_qts.value='';delete _qts.dataset.userSet;}
   const qtsel=document.getElementById('q-time-select'); if(qtsel){qtsel.value='';delete qtsel.dataset.userSet;}
   renderTagSelectors();
@@ -3881,124 +3890,95 @@ function renderBEAnalysis(T) {
   const headEl = document.getElementById('be-headline');
   if (!beEl || !headEl) return;
 
-  const wins    = T.filter(t=>t.outcome==='win');
-  const losses  = T.filter(t=>t.outcome==='loss');
-  const beWins  = T.filter(t=>t.outcome==='be_win');
-  const beLoss  = T.filter(t=>t.outcome==='be_loss');
-  const allBE   = [...beWins, ...beLoss];
+  const beWins = T.filter(t=>t.outcome==='be_win');
+  const beLoss = T.filter(t=>t.outcome==='be_loss');
+  const allBE  = [...beWins, ...beLoss];
 
   if (!allBE.length) {
-    beEl.innerHTML = '<div class="empty"><strong>No BE data yet</strong>Tag trades with BE → Win or BE → Loss outcomes to see this analysis.</div>';
+    beEl.innerHTML = '<div class="empty"><strong>No BE data yet</strong> — tag trades with BE → Win or BE → Loss to see this.</div>';
     headEl.textContent = '';
     return;
   }
 
-  const beWinPnL  = beWins.length ? beWins.reduce((a,t)=>a+calcPnL(t),0)/beWins.length : 0;
-  const beLossPnL = beLoss.length ? beLoss.reduce((a,t)=>a+calcPnL(t),0)/beLoss.length : 0;
-
-  // BE→Win: you got stopped at BE, trade hit target — COSTS you R
-  // missedR per trade = the R the trade went on to (quickRR) or plannedRR
-  const beWinCostR = beWins.reduce((sum,t)=>{
-    const r = parseFloat(t.quickRR) || parseFloat(t.plannedRR) || 0;
-    return sum + r;
-  }, 0);
-
-  // BE→Win dollar potential (if target price logged)
-  const beWinPotential = beWins.filter(t=>t.tp&&t.entry).map(t=>{
-    const mult={NQ:20,MNQ:2,ES:50,MES:5}[t.ticker?.toUpperCase()]||1;
-    const dir=t.side==='long'?1:-1;
-    return dir*(t.tp-t.entry)*mult*(t.qty||1);
-  });
-  const avgBeWinPotential = beWinPotential.length ? beWinPotential.reduce((a,b)=>a+b,0)/beWinPotential.length : null;
-
-  // BE→Loss: you got stopped at BE, trade would have hit SL — SAVES you R
-  // savedR per trade ≈ 1R (you avoided a full stop)
-  const beLossSavingsR = beLoss.length; // 1R saved per be_loss trade
-
-  const beLossPotential = beLoss.filter(t=>t.sl&&t.entry).map(t=>{
-    const mult={NQ:20,MNQ:2,ES:50,MES:5}[t.ticker?.toUpperCase()]||1;
-    const dir=t.side==='long'?1:-1;
-    return dir*(t.sl-t.entry)*mult*(t.qty||1);
-  });
-  const avgBeLossPotential = beLossPotential.length ? beLossPotential.reduce((a,b)=>a+b,0)/beLossPotential.length : null;
-
-  const totalBEPnL = allBE.reduce((a,t)=>a+calcPnL(t),0);
-  const beRate = T.filter(t=>t.outcome).length ? Math.round(allBE.length/T.filter(t=>t.outcome).length*100) : 0;
-
-  // Net R impact: savings (from be_loss avoiding full stops) minus cost (from be_win missing targets)
+  // BE→Win COSTS R (moved to BE, trade hit target without you)
+  const beWinCostR = beWins.reduce((sum,t) => sum + (parseFloat(t.plannedRR)||parseFloat(t.quickRR)||1), 0);
+  // BE→Loss SAVES ~1R per trade (avoided full stop)
+  const beLossSavingsR = beLoss.length;
   const netR = beLossSavingsR - beWinCostR;
-  const verdict = netR > 0.5 ? 'helping' : netR < -0.5 ? 'hurting' : 'mixed';
-  const verdictColor = verdict==='helping'?'var(--green)':verdict==='hurting'?'var(--red)':'var(--amber)';
-  const verdictText = verdict==='hurting'
-    ? `Moving to BE early cost you ${beWinCostR.toFixed(1)}R in missed targets vs ${beLossSavingsR.toFixed(1)}R saved. Net: ${netR.toFixed(1)}R.`
-    : verdict==='helping'
-    ? `BE management is net positive — ${beLossSavingsR.toFixed(1)}R saved from losses vs ${beWinCostR.toFixed(1)}R in missed targets. Net: +${netR.toFixed(1)}R.`
-    : `Near breakeven — ${beLossSavingsR.toFixed(1)}R saved vs ${beWinCostR.toFixed(1)}R missed. Net: ${netR.toFixed(1)}R.`;
 
-  headEl.textContent = `${allBE.length} BE trades · net ${netR>=0?'+':''}${netR.toFixed(1)}R`;
-  const outcomeName = {win:'Win',loss:'Loss',be_win:'BE → Win',be_loss:'BE → Loss'};
+  const verdict = netR > 0.5 ? 'saving' : netR < -0.5 ? 'hurting' : 'neutral';
+  const verdictColor = verdict==='saving'?'var(--green)':verdict==='hurting'?'var(--red)':'var(--amber)';
+  const verdictLabel = verdict==='saving' ? 'BE management is helping you' : verdict==='hurting' ? 'BE management is hurting you' : 'BE management is roughly neutral';
+  const verdictSub = verdict==='hurting'
+    ? `Moving to BE early has cost you ${beWinCostR.toFixed(1)}R in missed targets. Only ${beLossSavingsR}R saved from avoided losses.`
+    : verdict==='saving'
+    ? `BE has saved ${beLossSavingsR}R in avoided losses — more than the ${beWinCostR.toFixed(1)}R in missed targets.`
+    : `${beLossSavingsR}R saved vs ${beWinCostR.toFixed(1)}R missed — roughly even.`;
+
+  const beRate = T.filter(t=>t.outcome).length ? Math.round(allBE.length/T.filter(t=>t.outcome).length*100) : 0;
+  headEl.textContent = `${allBE.length} trades · net ${netR>=0?'+':''}${netR.toFixed(1)}R`;
+
+  // Per-reason breakdown
+  const reasonGroups = {};
+  allBE.forEach(t => {
+    const r = (t.bePoint||'').trim() || 'Untagged';
+    if (!reasonGroups[r]) reasonGroups[r] = {beWin:0,beLoss:0,costR:0,savedR:0};
+    if (t.outcome==='be_win') { reasonGroups[r].beWin++; reasonGroups[r].costR += parseFloat(t.plannedRR)||parseFloat(t.quickRR)||1; }
+    if (t.outcome==='be_loss') { reasonGroups[r].beLoss++; reasonGroups[r].savedR += 1; }
+  });
+  const hasReasons = Object.keys(reasonGroups).some(k => k !== 'Untagged') || Object.keys(reasonGroups).length > 1;
+  const reasonRows = Object.entries(reasonGroups).sort((a,b)=>(b[1].beWin+b[1].beLoss)-(a[1].beWin+a[1].beLoss)).map(([reason, g]) => {
+    const total = g.beWin + g.beLoss;
+    const net = g.savedR - g.costR;
+    const col = net > 0 ? 'var(--green)' : net < 0 ? 'var(--red)' : 'var(--muted)';
+    return `<tr>
+      <td><span style="font-size:11px;font-weight:600">${reason}</span></td>
+      <td style="text-align:center;color:var(--muted)">${total}</td>
+      <td style="text-align:center"><span style="color:var(--red);font-family:var(--mono);font-size:12px">${g.beWin}</span> / <span style="color:var(--green);font-family:var(--mono);font-size:12px">${g.beLoss}</span></td>
+      <td style="text-align:center;font-family:var(--mono);font-size:12px;color:${col};font-weight:700">${net>=0?'+':''}${net.toFixed(1)}R</td>
+    </tr>`;
+  }).join('');
 
   beEl.innerHTML = `
-    <div style="background:${verdictColor}18;border:1px solid ${verdictColor}40;border-radius:var(--r);padding:12px 14px;margin-bottom:16px;font-size:13px;line-height:1.6">
-      <strong style="color:${verdictColor}">Early BE is ${verdict==='hurting'?'costing you R':verdict==='helping'?'net positive':'roughly neutral'}</strong><br>
-      <span style="color:var(--muted)">${verdictText}</span>
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:${verdictColor}15;border:1px solid ${verdictColor}35;border-radius:10px;margin-bottom:16px">
+      <div style="font-size:22px">${verdict==='saving'?'✅':verdict==='hurting'?'⚠️':'⚖️'}</div>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:${verdictColor}">${verdictLabel}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${verdictSub}</div>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
       <div class="metric" style="text-align:center">
         <div class="metric-label">BE → Win</div>
-        <div class="metric-val neg">${beWins.length}</div>
-        <div class="metric-sub">missed ${beWinCostR.toFixed(1)}R total</div>
+        <div class="metric-val" style="color:var(--red)">${beWins.length}</div>
+        <div class="metric-sub">${beWinCostR.toFixed(1)}R missed</div>
       </div>
       <div class="metric" style="text-align:center">
         <div class="metric-label">BE → Loss</div>
-        <div class="metric-val pos">${beLoss.length}</div>
-        <div class="metric-sub">saved ~${beLossSavingsR}R total</div>
+        <div class="metric-val" style="color:var(--green)">${beLoss.length}</div>
+        <div class="metric-sub">${beLossSavingsR}R saved</div>
       </div>
       <div class="metric" style="text-align:center">
         <div class="metric-label">Net R impact</div>
-        <div class="metric-val ${netR>=0?'pos':'neg'}">${netR>=0?'+':''}${netR.toFixed(1)}R</div>
-        <div class="metric-sub">${verdict==='hurting'?'costing edge':verdict==='helping'?'adding edge':'neutral'}</div>
+        <div class="metric-val" style="color:${verdictColor}">${netR>=0?'+':''}${netR.toFixed(1)}R</div>
+        <div class="metric-sub">${verdict==='hurting'?'costs edge':verdict==='saving'?'adds edge':'neutral'}</div>
       </div>
       <div class="metric" style="text-align:center">
         <div class="metric-label">BE trades</div>
         <div class="metric-val">${allBE.length}</div>
-        <div class="metric-sub">${beRate}% of tagged trades</div>
+        <div class="metric-sub">${beRate}% of all trades</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      ${beWins.length?`
-      <div class="card" style="background:var(--bg3)">
-        <div class="card-title" style="color:var(--red);margin-bottom:8px">BE → Win — R you left on the table</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.7">
-          Stopped at BE on ${beWins.length} trade${beWins.length>1?'s':''} that hit target.<br>
-          R missed: <strong style="color:var(--red)">${beWinCostR.toFixed(1)}R total</strong><br>
-          ${avgBeWinPotential?`Avg dollar missed: <strong style="color:var(--amber)">~$${Math.round(avgBeWinPotential-beWinPnL)}/trade</strong>`:'Add target prices to see dollar impact.'}
-        </div>
-      </div>`:''}
-      ${beLoss.length?`
-      <div class="card" style="background:var(--bg3)">
-        <div class="card-title" style="color:var(--green);margin-bottom:8px">BE → Loss — drawdown you avoided</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.7">
-          BE stop saved you on ${beLoss.length} trade${beLoss.length>1?'s':''} that reversed.<br>
-          Saved ~<strong style="color:var(--green)">${beLossSavingsR}R</strong> vs taking full stops.<br>
-          ${avgBeLossPotential?`Avg SL would have cost: <strong style="color:var(--text)">$${Math.round(Math.abs(avgBeLossPotential))}</strong>`:'Add SL prices to see dollar savings.'}
-        </div>
-      </div>`:''}
-    </div>
     <div>
-      <div class="card-title" style="margin-bottom:10px">All BE trades</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">By BE reason <span style="color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0"> — tag trades with a BE reason in Log Trade</span></div>
       <table class="trades-table" style="width:100%">
-        <thead><tr><th>Date</th><th>Ticker</th><th>Side</th><th>Outcome</th><th>Actual P&L</th><th>Setup</th></tr></thead>
-        <tbody>
-          ${allBE.map(t=>{const pnl=calcPnL(t);return`<tr>
-            <td>${t.datetime?t.datetime.slice(0,10):''}</td>
-            <td><strong>${t.ticker}</strong></td>
-            <td><span class="side-pill ${t.side==='long'?'long-pill':'short-pill'}">${t.side.toUpperCase()}</span></td>
-            <td><span class="tag-pill amber-pill">${outcomeName[t.outcome]}</span></td>
-            <td class="${pnl>=0?'pnl-pos':'pnl-neg'}">${pf(pnl)}</td>
-            <td>${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')||'—'}</td>
-          </tr>`;}).join('')}
-        </tbody>
+        <thead><tr>
+          <th>Reason</th>
+          <th style="text-align:center"># Trades</th>
+          <th style="text-align:center">Win / Loss</th>
+          <th style="text-align:center">Net R</th>
+        </tr></thead>
+        <tbody>${reasonRows}</tbody>
       </table>
     </div>`;
 }
@@ -4988,16 +4968,15 @@ function toggleMore(el) {
 }
 
 function autoFillRR() {
-  const outcome = document.getElementById('q-outcome')?.value;
+  const outcome = document.getElementById('q-outcome')?.value || document.getElementById('q-outcome-d')?.value;
   const rrEl = document.getElementById('q-quick-rr');
   const plannedEl = document.getElementById('q-planned-rr');
+  const isBE = outcome === 'be_win' || outcome === 'be_loss';
+  const beField = document.getElementById('be-point-field');
+  if (beField) beField.style.display = isBE ? '' : 'none';
   if (!rrEl) return;
-  if (outcome === 'loss') {
-    if (!rrEl.value) rrEl.value = '-1';
-    // If planned RR is set but realized not, mark as -1 (full loss)
-  }
-  if ((outcome === 'be_win' || outcome === 'be_loss') && !rrEl.value) rrEl.value = '0';
-  // If win and realized RR empty, copy planned RR as default (full target hit)
+  if (outcome === 'loss') { if (!rrEl.value) rrEl.value = '-1'; }
+  if (isBE && !rrEl.value) rrEl.value = '0';
   if (outcome === 'win' && !rrEl.value && plannedEl?.value) rrEl.value = plannedEl.value;
 }
 
@@ -5810,7 +5789,10 @@ function renderSetupsPage() {
   if (!T.length) return;
 
   const wins = t => t.outcome === 'win';
-  const rr   = t => parseFloat(calcRR(t)) || (t.quickRR ? parseFloat(t.quickRR) : null);
+  const rr   = t => {
+    if (t.outcome === 'be_win' || t.outcome === 'be_loss') return 0;
+    return parseFloat(calcRR(t)) || (t.quickRR ? parseFloat(t.quickRR) : null);
+  };
 
   function groupStats(trades) {
     const n = trades.length;
@@ -6185,6 +6167,9 @@ function openEditTradeModal(idx) {
   document.getElementById('et-planned-rr').value = t.plannedRR||'';
   document.getElementById('et-rr').value = t.quickRR||'';
   document.getElementById('et-outcome').value = t.outcome||'';
+  const isBEEdit = t.outcome==='be_win'||t.outcome==='be_loss';
+  document.getElementById('et-be-point-wrap').style.display = isBEEdit ? '' : 'none';
+  document.getElementById('et-be-point').value = t.bePoint||'';
   document.getElementById('et-entry').value = t.entry||'';
   document.getElementById('et-exit').value = t.exit||'';
   document.getElementById('et-qty').value = t.qty||1;
@@ -6246,6 +6231,7 @@ function saveEditTrade(reReview = false) {
   t.ticker = document.getElementById('et-ticker').value.trim().toUpperCase() || 'NQ';
   t.side = document.getElementById('et-side').value;
   t.outcome = document.getElementById('et-outcome').value;
+  t.bePoint = (t.outcome==='be_win'||t.outcome==='be_loss') ? (document.getElementById('et-be-point').value.trim()||'') : '';
   t.datetime = dateVal && timeVal ? `${dateVal}T${timeVal}` : dateVal || t.datetime;
   t.entry = parseFloat(document.getElementById('et-entry').value)||t.entry;
   t.exit = parseFloat(document.getElementById('et-exit').value)||t.exit;
