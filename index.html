@@ -1293,7 +1293,7 @@ body.light-mode .metric-val{color:#0a0a14}
         <button class="btn btn-sm" onclick="refreshPatternFeed()">Refresh ↗</button>
       </div>
     </div>
-    <div id="pattern-feed"><div class="empty">Log 5+ trades to see your live pattern feed.</div></div>
+    <div id="pattern-feed"><div class="empty">Log 3+ trades to see your live pattern feed.</div></div>
   </div>
 </div>
 
@@ -2926,7 +2926,8 @@ function renderEquity(T, pnls) {
 
   const labels=['Start'], data=[0], rData=[0]; let run=0, rRun=0;
   T.forEach((t,i)=>{
-    run+=pnls[i]; rRun+=parseFloat(calcRR(t)||t.quickRR||0)||0;
+    const isBE = t.outcome==='be_win'||t.outcome==='be_loss';
+    run+=pnls[i]; rRun+=isBE ? 0 : (parseFloat(calcRR(t))||parseFloat(t.quickRR)||0);
     labels.push(t.datetime?t.datetime.slice(5,10):'#'+(i+1));
     data.push(Math.round(run)); rData.push(parseFloat(rRun.toFixed(2)));
   });
@@ -3019,10 +3020,11 @@ function renderEquity(T, pnls) {
     ]},
     options:{
       responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ top: 32, left:4, right:4, bottom:0 } },
       animation:{ duration:900, easing:'easeInOutQuart' },
       interaction:{ mode:'index', intersect:false },
       plugins:{
-        legend:{ display:hasRR, labels:{color:'#888',font:{size:10},boxWidth:16} },
+        legend:{ display:hasRR, position:'bottom', labels:{color:'#888',font:{size:10},boxWidth:16, padding:8} },
         tooltip:{
           backgroundColor:'rgba(10,10,11,0.92)',
           borderColor: lineColor,
@@ -4188,7 +4190,7 @@ function refreshPatternFeed() {
   const el=document.getElementById('pattern-feed');
   if(!el)return;
   const T=state.trades;
-  if(T.length<5){el.innerHTML='<div class="empty">Log 5+ trades to see your live pattern feed.</div>';return;}
+  if(T.length<3){el.innerHTML='<div class="empty">Log 3+ trades to see your live pattern feed.</div>';return;}
 
   const patterns=[];
 
