@@ -916,7 +916,7 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 .cc-hud-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(155,127,255,.6);font-weight:700;margin-bottom:3px}
 .cc-hud-node{font-size:11px;color:rgba(255,255,255,.25);letter-spacing:.05em}
 .cc-corner{position:absolute;bottom:18px;right:22px;z-index:2;pointer-events:none;font-size:9px;color:rgba(255,255,255,.14);font-family:var(--mono);letter-spacing:.1em;text-align:right}
-.phero-stat{text-align:center;padding:8px}
+.phero-stat{display:flex;align-items:center;justify-content:center;padding:10px 8px}
 .phero-val{font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent)}
 .phero-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
 .phero-sub{font-size:10px;color:rgba(255,255,255,.3);margin-top:2px}
@@ -1240,14 +1240,14 @@ body.light-mode .metric-val{color:#0a0a14}
     </div>
   </div>
 
-  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="dh-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s0">—</div><div class="phero-lbl">Total P&amp;L</div><div class="phero-sub" id="m-pnl-sub">0 trades</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s1">—</div><div class="phero-lbl">Win Rate</div><div class="phero-sub" id="m-wr-sub">0W / 0L</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s2">—</div><div class="phero-lbl">Avg Winner R</div><div class="phero-sub" id="m-avgl-sub">wins only</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s3">—</div><div class="phero-lbl">Profit Factor</div><div class="phero-sub">gross P / gross L</div></div>
-      <div class="phero-stat"><div class="phero-val neg" id="dh-s4">—</div><div class="phero-lbl">Max Drawdown</div><div class="phero-sub">peak→trough</div></div>
+    <div style="position:relative;z-index:1;padding:16px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
+      <div id="dh-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="dh-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="dh-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="dh-s3" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="dh-s4" class="phero-stat"></div>
     </div>
   </div>
 
@@ -1519,10 +1519,10 @@ body.light-mode .metric-val{color:#0a0a14}
   <div id="hi-hero-banner" class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="hi-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="hi-s0">—</div><div class="phero-lbl">TOTAL TRADES</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="hi-s1">—</div><div class="phero-lbl">BEST TRADE</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="hi-s2">—</div><div class="phero-lbl">WORST TRADE</div></div>
-      <div class="phero-stat"><div class="phero-val" id="hi-s3">—</div><div class="phero-lbl">ACTIVE DAYS</div></div>
+      <div id="hi-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="hi-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="hi-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="hi-s3" class="phero-stat"></div>
     </div>
   </div>
 
@@ -1596,14 +1596,14 @@ body.light-mode .metric-val{color:#0a0a14}
     </div>
   </div>
 
-  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="sp-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s0">—</div><div class="phero-lbl">SETUPS TRACKED</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s1">—</div><div class="phero-lbl">BEST WIN%</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s2">—</div><div class="phero-lbl">BEST SETUP P&amp;L</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s3">—</div><div class="phero-lbl">AVG WINNER R</div></div>
-      <div class="phero-stat"><div class="phero-val" id="sp-s4">—</div><div class="phero-lbl">PROFIT FACTOR</div></div>
+    <div style="position:relative;z-index:1;padding:16px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
+      <div id="sp-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="sp-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="sp-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="sp-s3" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="sp-s4" class="phero-stat"></div>
     </div>
   </div>
 
@@ -1852,10 +1852,10 @@ body.light-mode .metric-val{color:#0a0a14}
   <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="ph-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ph-s0">—</div><div class="phero-lbl">COMBINED P&L</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ph-s1">—</div><div class="phero-lbl">ACTIVE ACCOUNTS</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ph-s2">—</div><div class="phero-lbl">TOTAL PAYOUTS</div></div>
-      <div class="phero-stat"><div class="phero-val" id="ph-s3">—</div><div class="phero-lbl">NET PROFIT</div></div>
+      <div id="ph-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="ph-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="ph-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+      <div id="ph-s3" class="phero-stat"></div>
     </div>
   </div>
 
@@ -2915,21 +2915,7 @@ function renderDashboard() {
   const grossLoss   = Math.abs(losses.reduce((a,t) => a + calcPnL(t), 0));
   const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : null;
 
-  // Populate hero banner with the 5 real stats
-  const s0 = document.getElementById('dh-s0');
-  if (s0) { s0.textContent = (total>=0?'+':'')+'$'+Math.abs(Math.round(total)).toLocaleString(); s0.style.color = total>=0?'var(--green)':'var(--red)'; }
-  const s1 = document.getElementById('dh-s1');
-  if (s1) { s1.textContent = T.length ? pct(wr) : '—'; s1.style.color = wr>=50?'var(--green)':'var(--amber)'; }
-  const s2 = document.getElementById('dh-s2');
-  if (s2) { s2.textContent = avgWinnerR ? avgWinnerR.toFixed(2)+'R' : '—'; s2.style.color = 'var(--accent)'; }
-  const s3 = document.getElementById('dh-s3');
-  if (s3) { s3.textContent = profitFactor != null ? profitFactor.toFixed(2) : '—'; s3.style.color = profitFactor != null ? (profitFactor >= 1 ? 'var(--green)' : 'var(--red)') : 'var(--muted)'; }
-  const s4 = document.getElementById('dh-s4');
-  if (s4) { s4.textContent = dd ? '-$'+Math.abs(Math.round(dd)).toLocaleString() : '—'; s4.style.color = dd ? 'var(--red)' : 'var(--muted)'; }
-  // Update subs
-  const pnlSub = document.getElementById('m-pnl-sub'); if(pnlSub) pnlSub.textContent = T.length+' trades';
-  const wrSub  = document.getElementById('m-wr-sub');  if(wrSub)  wrSub.textContent  = wins.length+'W / '+losses.length+'L';
-  const avglSub= document.getElementById('m-avgl-sub');if(avglSub)avglSub.textContent= avgLoserR ? 'avg loser '+avgLoserR.toFixed(2)+'R' : 'no losses';
+  renderDashHero(T);
   startHeroCanvas('dh-c');
 
   renderEquity(T, pnls);
@@ -3659,9 +3645,7 @@ function renderHistory() {
   const hiBest=hiPnls.length?Math.max(...hiPnls):0;
   const hiWorst=hiPnls.length?Math.min(...hiPnls):0;
   const hiDays=new Set(state.trades.map(t=>t.datetime?.slice(0,10)).filter(Boolean)).size;
-  setHeroStats('hi',
-    [state.trades.length, hiBest?('+$'+Math.abs(Math.round(hiBest))):'—', hiPnls.length?(hiWorst>=0?'+$'+Math.round(hiWorst):'-$'+Math.abs(Math.round(hiWorst))):'—', hiDays],
-    ['var(--accent)', 'var(--green)', hiPnls.length&&hiWorst>=0?'var(--green)':'var(--red)', 'var(--accent)']);
+  renderHistoryHero(state.trades.length, hiBest, hiWorst, hiDays);
   startHeroCanvas('hi-c');
   const fSetupSel=document.getElementById('f-setup-filter');
   const fMistakeSel=document.getElementById('f-mistake-filter');
@@ -5516,9 +5500,7 @@ function renderPropCombinedStats() {
   const totalPayouts = payouts.reduce((s,p) => s + (parseFloat(p.amount)||0), 0);
   const totalFees = accounts.reduce((s,a) => s + (parseFloat(a.fee)||0) + (parseFloat(a.activation)||0), 0);
   const net = totalPayouts - totalFees;
-  setHeroStats('ph',
-    [(totalPnL>=0?'+$':'-$')+Math.abs(totalPnL).toLocaleString(), active.length, '+$'+totalPayouts.toLocaleString(), (net>=0?'+$':'-$')+Math.abs(net).toLocaleString()],
-    [totalPnL>=0?'var(--green)':'var(--red)', 'var(--accent)', 'var(--green)', net>=0?'var(--green)':'var(--red)']);
+  renderPropHero(totalPnL, active.length, totalPayouts, net);
   startHeroCanvas('ph-c');
 }
 
@@ -5936,7 +5918,7 @@ function renderSetupsPage() {
   const spPF = spGrossLoss > 0 ? spGrossProfit / spGrossLoss : null;
   const spAvgWinnerRStr = spAvgWinnerR ? spAvgWinnerR.toFixed(2)+'R' : '—';
   const spPFStr = spPF != null ? spPF.toFixed(2) : '—';
-  setHeroStats('sp',[spSetups.size,spBestWR,spBestPnL,spAvgWinnerRStr,spPFStr],['var(--accent)','var(--green)','var(--green)','var(--accent)',spPF != null ? (spPF >= 1 ? 'var(--green)' : 'var(--red)') : 'var(--muted)']);
+  renderStatsHero(T, spSetups, spBestWR, spBestPnL, spAvgWinnerR, spAvgLoserR, spPF);
   startHeroCanvas('sp-c');
   if (!T.length) return;
 
@@ -7484,6 +7466,132 @@ function setHeroStats(prefix, vals, cols) {
     el.textContent = v;
     if (cols?.[i]) el.style.color = cols[i];
   });
+}
+
+// ── HERO BANNER SVG HELPERS ────────────────────────────────────────────────────
+function _sparklineSVG(trades, color) {
+  if (trades.length < 2) return `<svg width="60" height="30" viewBox="0 0 60 30" fill="none"><line x1="4" y1="15" x2="56" y2="15" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/></svg>`;
+  let run = 0;
+  const pts = [0, ...trades.map(t => { run += calcPnL(t); return run; })];
+  const min = Math.min(...pts), max = Math.max(...pts);
+  const range = (max - min) || 1;
+  const coords = pts.map((v, i) => {
+    const x = (i / (pts.length - 1)) * 56 + 2;
+    const y = 26 - ((v - min) / range) * 22;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<svg width="60" height="30" viewBox="0 0 60 30" fill="none"><polygon points="2,28 ${coords} 58,28" fill="${color}" opacity="0.1"/><polyline points="${coords}" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" fill="none" opacity="0.9"/></svg>`;
+}
+
+function _donutSVG(winPct) {
+  const r = 15, cx = 22, cy = 22, circ = 2 * Math.PI * r;
+  const pct = Math.min(Math.max(winPct || 0, 0), 100);
+  const winArc = (pct / 100) * circ;
+  const pctStr = pct > 0 ? Math.round(pct) + '%' : '—';
+  return `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><circle cx="${cx}" cy="${cy}" r="${r}" stroke="rgba(255,77,77,0.6)" stroke-width="5" fill="none"/><circle cx="${cx}" cy="${cy}" r="${r}" stroke="rgba(0,208,132,0.9)" stroke-width="5" fill="none" stroke-dasharray="${winArc.toFixed(2)} ${circ.toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="8.5" font-weight="700" font-family="Geist Mono,monospace" fill="#EEEEF2">${pctStr}</text></svg>`;
+}
+
+function _rrBarsSVG(winR, lossR) {
+  const maxR = Math.max(winR || 0, lossR || 0, 0.01);
+  const winW = Math.max(Math.round((winR || 0) / maxR * 66), 2);
+  const lossW = Math.max(Math.round((lossR || 0) / maxR * 66), 2);
+  return `<svg width="70" height="18" viewBox="0 0 70 18" fill="none"><rect x="0" y="0" width="68" height="5" rx="2.5" fill="rgba(255,255,255,0.07)"/><rect x="0" y="0" width="${winW}" height="5" rx="2.5" fill="#00d084" opacity="0.85"/><rect x="0" y="11" width="68" height="5" rx="2.5" fill="rgba(255,255,255,0.07)"/><rect x="0" y="11" width="${lossW}" height="5" rx="2.5" fill="#ff4d4d" opacity="0.85"/></svg>`;
+}
+
+function _gaugeSVG(value) {
+  // Semi-circle gauge: left=0, top=1.0 marker, right=2.0 max
+  // Background arc: M 8,36 A 28,28 0 0,0 64,36 (CCW through top)
+  // Red arc: from left to 1.0 position (same path, dasharray)
+  // Green arc: from top M 36,8 A 28,28 0 0,1 64,36 (CW to right)
+  const pathLen = Math.PI * 28;
+  const cap = 2.0;
+  const v = Math.min(value || 0, cap);
+  let arcs = '';
+  if (v > 0) {
+    const redLen = Math.min(v, 1.0) / cap * pathLen;
+    arcs += `<path d="M 8,36 A 28,28 0 0,0 64,36" stroke="#ff4d4d" stroke-width="6" stroke-linecap="round" fill="none" stroke-dasharray="${redLen.toFixed(2)} ${pathLen.toFixed(2)}"/>`;
+  }
+  if (v > 1.0) {
+    const greenLen = (v - 1.0) / cap * pathLen;
+    arcs += `<path d="M 36,8 A 28,28 0 0,1 64,36" stroke="#00d084" stroke-width="6" stroke-linecap="round" fill="none" stroke-dasharray="${greenLen.toFixed(2)} ${pathLen.toFixed(2)}"/>`;
+  }
+  return `<svg width="72" height="40" viewBox="0 0 72 40" fill="none"><path d="M 8,36 A 28,28 0 0,0 64,36" stroke="rgba(255,255,255,0.08)" stroke-width="6" stroke-linecap="round" fill="none"/>${arcs}<line x1="36" y1="5" x2="36" y2="14" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+}
+
+function renderDashHero(T) {
+  const pnls = T.map(t => calcPnL(t));
+  const total = pnls.reduce((a,b)=>a+b,0);
+  const wins = T.filter(t=>t.outcome==='win');
+  const losses = T.filter(t=>t.outcome==='loss');
+  const wr = T.length ? wins.length/T.length*100 : 0;
+  let peak=0,dd=0,run=0;
+  for (const p of pnls){run+=p;if(run>peak)peak=run;dd=Math.min(dd,run-peak);}
+  const validRR=T.filter(t=>{const r=parseFloat(calcRR(t))||parseFloat(t.quickRR)||0;return r!==0&&!isNaN(r);});
+  const winnerRRs=validRR.filter(t=>t.outcome==='win').map(t=>parseFloat(calcRR(t))||parseFloat(t.quickRR));
+  const loserRRs=validRR.filter(t=>t.outcome==='loss').map(t=>Math.abs(parseFloat(calcRR(t))||parseFloat(t.quickRR)));
+  const avgWinnerR=winnerRRs.length?winnerRRs.reduce((a,b)=>a+b,0)/winnerRRs.length:null;
+  const avgLoserR=loserRRs.length?loserRRs.reduce((a,b)=>a+b,0)/loserRRs.length:null;
+  const grossProfit=wins.reduce((a,t)=>a+calcPnL(t),0);
+  const grossLoss=Math.abs(losses.reduce((a,t)=>a+calcPnL(t),0));
+  const pf=grossLoss>0?grossProfit/grossLoss:null;
+  const pnlColor=total>=0?'var(--green)':'var(--red)';
+  const pnlStr=T.length?(total>=0?'+':'')+'$'+Math.abs(Math.round(total)).toLocaleString():'—';
+  const pfColor=pf!=null?(pf>=1?'var(--green)':'var(--red)'):'var(--muted)';
+  const ddColor=dd?'var(--red)':'var(--muted)';
+  const ddStr=dd?'-$'+Math.abs(Math.round(dd)).toLocaleString():'—';
+  const lbl=(s,c)=>`<div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:3px">${s}</div>${c?`<div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:1px">${c}</div>`:''}`;
+  const val=(s,col)=>`<div style="font-size:26px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${col};line-height:1">${s}</div>`;
+  const s0=document.getElementById('dh-s0');
+  if(s0)s0.innerHTML=`<div style="display:flex;align-items:center;gap:10px">${_sparklineSVG(T,total>=0?'#00d084':'#ff4d4d')}<div>${val(pnlStr,pnlColor)}${lbl('Total P&L',T.length+' trades')}</div></div>`;
+  const s1=document.getElementById('dh-s1');
+  if(s1)s1.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">${_donutSVG(wr)}${lbl('Win Rate',wins.length+'W / '+losses.length+'L')}</div>`;
+  const s2=document.getElementById('dh-s2');
+  if(s2)s2.innerHTML=`<div style="display:flex;align-items:center;gap:10px">${_rrBarsSVG(avgWinnerR,avgLoserR)}<div><div style="font-size:24px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:var(--accent);line-height:1">${avgWinnerR?avgWinnerR.toFixed(2)+'R':'—'}</div>${lbl('Avg Winner R',avgLoserR?'avg loser '+avgLoserR.toFixed(2)+'R':'no losses')}</div></div>`;
+  const s3=document.getElementById('dh-s3');
+  if(s3)s3.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">${_gaugeSVG(pf)}<div style="font-size:24px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${pfColor};line-height:1;margin-top:-4px">${pf!=null?pf.toFixed(2):'—'}</div>${lbl('Profit Factor','gross P / gross L')}</div>`;
+  const s4=document.getElementById('dh-s4');
+  if(s4)s4.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="3,4 7,10 11,4" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="font-size:26px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${ddColor};line-height:1">${ddStr}</div></div>${lbl('Max Drawdown','peak to trough')}</div>`;
+}
+
+function renderStatsHero(T, spSetups, spBestWRStr, spBestPnLStr, spAvgWinnerR, spAvgLoserR, spPF) {
+  const bestWRNum = parseFloat(spBestWRStr) || 0;
+  const pfColor = spPF!=null?(spPF>=1?'var(--green)':'var(--red)'):'var(--muted)';
+  const lbl=s=>`<div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:3px">${s}</div>`;
+  const s0=document.getElementById('sp-s0');
+  if(s0)s0.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent);line-height:1">${spSetups.size||'—'}</div>${lbl('Setups Tracked')}</div>`;
+  const s1=document.getElementById('sp-s1');
+  if(s1)s1.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">${_donutSVG(bestWRNum)}${lbl('Best Win%')}</div>`;
+  const s2=document.getElementById('sp-s2');
+  if(s2){const isPos=spBestPnLStr!=='—'&&!spBestPnLStr.startsWith('-');const bc=spBestPnLStr==='—'?'var(--muted)':isPos?'var(--green)':'var(--red)';s2.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="${isPos?'2,9 6,3 10,9':'2,3 6,9 10,3'}" stroke="${bc}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${bc};line-height:1">${spBestPnLStr}</div></div>${lbl('Best Setup P&L')}</div>`;}
+  const s3=document.getElementById('sp-s3');
+  if(s3)s3.innerHTML=`<div style="display:flex;align-items:center;gap:10px">${_rrBarsSVG(spAvgWinnerR,spAvgLoserR)}<div><div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:var(--accent);line-height:1">${spAvgWinnerR?spAvgWinnerR.toFixed(2)+'R':'—'}</div>${lbl('Avg Winner R')}</div></div>`;
+  const s4=document.getElementById('sp-s4');
+  if(s4)s4.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">${_gaugeSVG(spPF)}<div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${pfColor};line-height:1;margin-top:-4px">${spPF!=null?spPF.toFixed(2):'—'}</div>${lbl('Profit Factor')}</div>`;
+}
+
+function renderHistoryHero(totalTrades, hiBest, hiWorst, hiDays) {
+  const sc=(id,h)=>{const el=document.getElementById(id);if(el)el.innerHTML=h;};
+  const lbl=s=>`<div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:3px">${s}</div>`;
+  sc('hi-s0',`<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent);line-height:1">${totalTrades||'—'}</div>${lbl('Total Trades')}</div>`);
+  const bestColor=hiBest>0?'var(--green)':'var(--muted)';
+  const bestStr=hiBest?(hiBest>0?'+':'')+'\$'+Math.abs(Math.round(hiBest)).toLocaleString():'—';
+  sc('hi-s1',`<div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div style="display:flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="2,10 6.5,3 11,10" stroke="${bestColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="font-size:24px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${bestColor};line-height:1">${bestStr}</div></div>${lbl('Best Trade')}</div>`);
+  const worstColor=hiWorst<0?'var(--red)':'var(--muted)';
+  const worstStr=hiWorst?(hiWorst>=0?'+':'-')+'\$'+Math.abs(Math.round(hiWorst)).toLocaleString():'—';
+  sc('hi-s2',`<div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div style="display:flex;align-items:center;gap:4px"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="2,3 6.5,10 11,3" stroke="${worstColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="font-size:24px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${worstColor};line-height:1">${worstStr}</div></div>${lbl('Worst Trade')}</div>`);
+  sc('hi-s3',`<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent);line-height:1">${hiDays||'—'}</div>${lbl('Active Days')}</div>`);
+}
+
+function renderPropHero(totalPnL, activeCount, totalPayouts, net) {
+  const sc=(id,h)=>{const el=document.getElementById(id);if(el)el.innerHTML=h;};
+  const lbl=s=>`<div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:3px">${s}</div>`;
+  const pnlColor=totalPnL>=0?'var(--green)':'var(--red)';
+  const netColor=net>=0?'var(--green)':'var(--red)';
+  const arrow=(pos,col)=>`<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="${pos?'2,9 6,3 10,9':'2,3 6,9 10,3'}" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  sc('ph-s0',`<div style="display:flex;align-items:center;gap:8px">${arrow(totalPnL>=0,pnlColor)}<div><div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${pnlColor};line-height:1">${(totalPnL>=0?'+':'-')+'\$'+Math.abs(totalPnL).toLocaleString()}</div>${lbl('Combined P&L')}</div></div>`);
+  sc('ph-s1',`<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent);line-height:1">${activeCount}</div>${lbl('Active Accounts')}</div>`);
+  sc('ph-s2',`<div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div style="display:flex;align-items:center;gap:4px">${arrow(true,'var(--green)')}<div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:var(--green);line-height:1">+\$${totalPayouts.toLocaleString()}</div></div>${lbl('Total Payouts')}</div>`);
+  sc('ph-s3',`<div style="display:flex;align-items:center;gap:8px">${arrow(net>=0,netColor)}<div><div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${netColor};line-height:1">${(net>=0?'+':'-')+'\$'+Math.abs(net).toLocaleString()}</div>${lbl('Net Profit')}</div></div>`);
 }
 
 // ── GOALS TAB ─────────────────────────────────────────────────────────────────
