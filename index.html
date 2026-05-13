@@ -5796,30 +5796,41 @@ function _propAcctPnL(a) {
 }
 function _calcPropDD(a, acTrades) {
   const dd = parseFloat(a.dd)||0;
-  if (!dd) return {ddUsed:0, ddRemaining:null, ddPct:0};
+  if (!dd) return {ddUsed:0, ddRemaining:null, ddPct:0, hwm:0, manualMode:false};
   const ddType = (a.ddType||'EOD').toUpperCase();
   const sorted = [...acTrades].sort((x,y)=>(x.datetime||'').localeCompare(y.datetime||''));
-  let ddUsed = 0;
-  let hwm = 0;
+  const totalPnL = sorted.reduce((s,t)=>s+calcPnL(t), 0);
+
+  // Manual floor override: user enters exact floor from prop firm dashboard
+  const manualFloor = parseFloat(a.ddFloor)||0;
+  const sizeK = (a.size||'').match(/^(\d+)K$/i);
+  const startBal = parseFloat(a.startBalance)||(sizeK ? parseInt(sizeK[1])*1000 : 0);
+  if (manualFloor && startBal) {
+    const currentBal = startBal + totalPnL;
+    const ddRemaining = Math.max(0, currentBal - manualFloor);
+    const ddUsed = Math.max(0, dd - ddRemaining);
+    const hwm = manualFloor + dd - startBal;
+    return {ddUsed, ddRemaining, ddPct:Math.min(100,(ddUsed/dd)*100), hwm, manualMode:true, currentBal, floor:manualFloor};
+  }
+
+  let hwm = 0, ddUsed = 0;
   if (ddType === 'INTRADAY') {
     let run=0, peak=0;
     sorted.forEach(t=>{ run+=calcPnL(t); if(run>peak)peak=run; });
     hwm = peak;
-    ddUsed = Math.max(0, peak - run);
+    ddUsed = Math.max(0, peak - totalPnL);
   } else if (ddType === 'EOD') {
     const byDay={};
     sorted.forEach(t=>{ const d=t.datetime?.slice(0,10); if(d) byDay[d]=(byDay[d]||0)+calcPnL(t); });
     let run=0, eodHigh=0;
     Object.keys(byDay).sort().forEach(d=>{ run+=byDay[d]; if(run>eodHigh)eodHigh=run; });
-    const totalPnL=sorted.reduce((s,t)=>s+calcPnL(t),0);
     hwm = eodHigh;
     ddUsed = Math.max(0, eodHigh - totalPnL);
   } else {
-    const totalPnL=sorted.reduce((s,t)=>s+calcPnL(t),0);
     hwm = Math.max(0, totalPnL);
     ddUsed = totalPnL<0 ? Math.abs(totalPnL) : 0;
   }
-  return {ddUsed, ddRemaining:Math.max(0,dd-ddUsed), ddPct:Math.min(100,(ddUsed/dd)*100), hwm};
+  return {ddUsed, ddRemaining:Math.max(0,dd-ddUsed), ddPct:Math.min(100,(ddUsed/dd)*100), hwm, manualMode:false};
 }
 function _propEquitySVG(acTrades, W=580, H=90) {
   const sorted=[...acTrades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
@@ -5998,7 +6009,7 @@ function openPropDetail(idx) {
   const acTrades = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm)).sort((x,y)=>(x.datetime||'').localeCompare(y.datetime||''));
   const pnl = acTrades.reduce((s,t)=>s+calcPnL(t),0);
   const dd=parseFloat(a.dd)||0, dll=parseFloat(a.dll)||0, target=parseFloat(a.target)||0;
-  const {ddUsed,ddRemaining,ddPct,hwm}=_calcPropDD(a,acTrades);
+  const {ddUsed,ddRemaining,ddPct,hwm,manualMode,currentBal}=_calcPropDD(a,acTrades);
   const ddType=a.ddType||'EOD';
   const wins=acTrades.filter(t=>t.outcome==='win').length;
   const wr=acTrades.length?Math.round(wins/acTrades.length*100):null;
@@ -6073,8 +6084,7 @@ function openPropDetail(idx) {
         <div style="flex:1;min-width:70px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Remaining</div><div style="font-size:18px;font-weight:800;font-family:var(--mono);color:${ddRemaining<dd*.2?'var(--red)':ddRemaining<dd*.5?'var(--amber)':'var(--green)'}">$${Math.round(ddRemaining).toLocaleString()}</div></div>
       </div>
       <div style="font-size:10px;color:var(--dim);margin-bottom:8px;font-family:var(--mono);background:var(--bg3);border-radius:6px;padding:6px 10px;line-height:1.8">
-        floor = $${Math.round(hwm).toLocaleString()} (high) − $${dd.toLocaleString()} (max DD) = ${(hwm-dd)>=0?'+':''}$${Math.round(hwm-dd).toLocaleString()}<br>
-        used = $${Math.round(hwm).toLocaleString()} (high) − $${Math.round(pnl).toLocaleString()} (current P&amp;L) = $${Math.round(ddUsed).toLocaleString()}
+        ${manualMode?`<span style="color:var(--accent);font-weight:700">▶ Manual floor mode</span><br>balance = $${Math.round(currentBal||0).toLocaleString()} · floor = $${parseFloat(a.ddFloor).toLocaleString()}<br>remaining = $${Math.round(currentBal||0).toLocaleString()} − $${parseFloat(a.ddFloor).toLocaleString()} = $${Math.round(ddRemaining).toLocaleString()}`:`floor = $${Math.round(hwm).toLocaleString()} (high) − $${dd.toLocaleString()} (max DD) = ${(hwm-dd)>=0?'+':''}$${Math.round(hwm-dd).toLocaleString()}<br>used = $${Math.round(hwm).toLocaleString()} (high) − $${Math.round(pnl).toLocaleString()} (P&amp;L) = $${Math.round(ddUsed).toLocaleString()}`}
       </div>
       <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden"><div style="height:100%;width:${ddPct}%;background:${ddPct>80?'#ff4d4d':ddPct>50?'#f5a623':'#00d084'};border-radius:4px;transition:width .5s"></div></div>`:''}
     </div>
@@ -6088,7 +6098,10 @@ function openPropDetail(idx) {
         <div class="pd-rule-field"><label>Max Drawdown ($)</label><input type="number" value="${dd||''}" onchange="savePropDetailField(${idx},'dd',this.value)"></div>
         <div class="pd-rule-field"><label>Daily Loss Limit ($)</label><input type="number" value="${dll||''}" onchange="savePropDetailField(${idx},'dll',this.value)"></div>
         <div class="pd-rule-field"><label>Profit Target ($)</label><input type="number" value="${target||''}" onchange="savePropDetailField(${idx},'target',this.value)"></div>
+        <div class="pd-rule-field"><label>Start Balance ($) <span style="color:var(--dim);font-weight:400;font-size:9px">auto from size</span></label><input type="number" value="${parseFloat(a.startBalance)||(((a.size||'').match(/^(\d+)K$/i)||[])[1]||0)*1000||''}" placeholder="e.g. 50000" onchange="savePropDetailField(${idx},'startBalance',this.value)"></div>
+        <div class="pd-rule-field"><label>DD Floor ($) <span style="color:var(--accent);font-weight:400;font-size:9px">from dashboard</span></label><input type="number" value="${parseFloat(a.ddFloor)||''}" placeholder="e.g. 48494.80" onchange="savePropDetailField(${idx},'ddFloor',this.value)" style="border-color:${a.ddFloor?'var(--accent)':''}"></div>
       </div>
+      <div style="margin-top:6px;font-size:10px;color:var(--dim);background:var(--bg3);border-radius:6px;padding:6px 10px">Set <strong style="color:var(--accent)">DD Floor</strong> to the exact floor shown on your prop firm dashboard for a precise remaining calculation. Leave blank to use the auto-calculated EOD trail.</div>
       <div style="margin-top:8px"><div class="pd-rule-field"><label>Notes</label><textarea rows="3" onchange="savePropDetailField(${idx},'notes',this.value)">${(a.notes||'').replace(/</g,'&lt;')}</textarea></div></div>
     </div>
 
