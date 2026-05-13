@@ -1246,7 +1246,7 @@ body.light-mode .metric-val{color:#0a0a14}
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s0">—</div><div class="phero-lbl">Total P&amp;L</div><div class="phero-sub" id="m-pnl-sub">0 trades</div></div>
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s1">—</div><div class="phero-lbl">Win Rate</div><div class="phero-sub" id="m-wr-sub">0W / 0L</div></div>
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s2">—</div><div class="phero-lbl">Avg Winner R</div><div class="phero-sub" id="m-avgl-sub">wins only</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s3">—</div><div class="phero-lbl">Expectancy</div><div class="phero-sub">per trade</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s3">—</div><div class="phero-lbl">Profit Factor</div><div class="phero-sub">gross P / gross L</div></div>
       <div class="phero-stat"><div class="phero-val neg" id="dh-s4">—</div><div class="phero-lbl">Max Drawdown</div><div class="phero-sub">peak→trough</div></div>
     </div>
   </div>
@@ -1603,7 +1603,7 @@ body.light-mode .metric-val{color:#0a0a14}
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s1">—</div><div class="phero-lbl">BEST WIN%</div></div>
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s2">—</div><div class="phero-lbl">BEST SETUP P&amp;L</div></div>
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s3">—</div><div class="phero-lbl">AVG WINNER R</div></div>
-      <div class="phero-stat"><div class="phero-val" id="sp-s4">—</div><div class="phero-lbl">EXPECTANCY</div></div>
+      <div class="phero-stat"><div class="phero-val" id="sp-s4">—</div><div class="phero-lbl">PROFIT FACTOR</div></div>
     </div>
   </div>
 
@@ -2911,8 +2911,9 @@ function renderDashboard() {
   const loserRRs  = validRRTrades.filter(t => t.outcome === 'loss').map(t => Math.abs(parseFloat(calcRR(t)) || parseFloat(t.quickRR)));
   const avgWinnerR = winnerRRs.length ? winnerRRs.reduce((a,b)=>a+b,0)/winnerRRs.length : null;
   const avgLoserR  = loserRRs.length  ? loserRRs.reduce((a,b)=>a+b,0)/loserRRs.length   : null;
-  const wrDecimal  = (wins.length + losses.length) ? wins.length / (wins.length + losses.length) : 0;
-  const expectancy = avgWinnerR && avgLoserR ? (wrDecimal * avgWinnerR) - ((1 - wrDecimal) * avgLoserR) : null;
+  const grossProfit = wins.reduce((a,t) => a + calcPnL(t), 0);
+  const grossLoss   = Math.abs(losses.reduce((a,t) => a + calcPnL(t), 0));
+  const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : null;
 
   // Populate hero banner with the 5 real stats
   const s0 = document.getElementById('dh-s0');
@@ -2922,7 +2923,7 @@ function renderDashboard() {
   const s2 = document.getElementById('dh-s2');
   if (s2) { s2.textContent = avgWinnerR ? avgWinnerR.toFixed(2)+'R' : '—'; s2.style.color = 'var(--accent)'; }
   const s3 = document.getElementById('dh-s3');
-  if (s3) { s3.textContent = expectancy != null ? (expectancy>=0?'+':'')+expectancy.toFixed(3)+'R' : '—'; s3.style.color = expectancy != null ? (expectancy>=0?'var(--green)':'var(--red)') : 'var(--muted)'; }
+  if (s3) { s3.textContent = profitFactor != null ? profitFactor.toFixed(2) : '—'; s3.style.color = profitFactor != null ? (profitFactor >= 1 ? 'var(--green)' : 'var(--red)') : 'var(--muted)'; }
   const s4 = document.getElementById('dh-s4');
   if (s4) { s4.textContent = dd ? '-$'+Math.abs(Math.round(dd)).toLocaleString() : '—'; s4.style.color = dd ? 'var(--red)' : 'var(--muted)'; }
   // Update subs
@@ -5928,13 +5929,14 @@ function renderSetupsPage() {
   const spLoserRRs  = spValidRR.filter(t => t.outcome === 'loss').map(t => Math.abs(parseFloat(calcRR(t)) || parseFloat(t.quickRR)));
   const spAvgWinnerR = spWinnerRRs.length ? spWinnerRRs.reduce((a,b)=>a+b,0)/spWinnerRRs.length : null;
   const spAvgLoserR  = spLoserRRs.length  ? spLoserRRs.reduce((a,b)=>a+b,0)/spLoserRRs.length   : null;
-  const spWins = T.filter(t => t.outcome === 'win').length;
-  const spLosses = T.filter(t => t.outcome === 'loss').length;
-  const spWRd = (spWins + spLosses) ? spWins / (spWins + spLosses) : 0;
-  const spExp = spAvgWinnerR && spAvgLoserR ? (spWRd * spAvgWinnerR) - ((1 - spWRd) * spAvgLoserR) : null;
+  const spWinTrades = T.filter(t => t.outcome === 'win');
+  const spLossTrades = T.filter(t => t.outcome === 'loss');
+  const spGrossProfit = spWinTrades.reduce((a,t) => a + calcPnL(t), 0);
+  const spGrossLoss   = Math.abs(spLossTrades.reduce((a,t) => a + calcPnL(t), 0));
+  const spPF = spGrossLoss > 0 ? spGrossProfit / spGrossLoss : null;
   const spAvgWinnerRStr = spAvgWinnerR ? spAvgWinnerR.toFixed(2)+'R' : '—';
-  const spExpStr = spExp != null ? (spExp >= 0 ? '+' : '') + spExp.toFixed(3) + 'R' : '—';
-  setHeroStats('sp',[spSetups.size,spBestWR,spBestPnL,spAvgWinnerRStr,spExpStr],['var(--accent)','var(--green)','var(--green)','var(--accent)',spExp != null ? (spExp >= 0 ? 'var(--green)' : 'var(--red)') : 'var(--muted)']);
+  const spPFStr = spPF != null ? spPF.toFixed(2) : '—';
+  setHeroStats('sp',[spSetups.size,spBestWR,spBestPnL,spAvgWinnerRStr,spPFStr],['var(--accent)','var(--green)','var(--green)','var(--accent)',spPF != null ? (spPF >= 1 ? 'var(--green)' : 'var(--red)') : 'var(--muted)']);
   startHeroCanvas('sp-c');
   if (!T.length) return;
 
