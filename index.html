@@ -6116,7 +6116,7 @@ function renderDashPropSummary() {
   document.getElementById('dash-prop-body').innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
       ${shown.map((a,i)=>{
-        const pnl=parseFloat(a.pnl)||0;
+        const pnl=_propAcctPnL(a);
         const acPay=payouts.filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
         return `<div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid ${statusColor[a.status]||'var(--border)'};border-radius:var(--r);padding:12px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
