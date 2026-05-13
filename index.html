@@ -3416,14 +3416,25 @@ CRITICAL GRADING RULES:
 3. If the trader tagged "Continuation" it IS a continuation setup. Do not call it a Mech Model.
 4. If the trader wrote a detailed description, use it — it's the ground truth for what happened in the trade.
 5. SETUP GRADE INDEPENDENCE: Setup grade and outcome are COMPLETELY INDEPENDENT. A losing trade can have an A+ setup grade if the setup was technically valid with proper confluence. A winning trade can have a D setup grade if it was a poor setup that got lucky. Never let the outcome influence the setup grade.
+6. YOU CANNOT SEE THE CHARTS. You only have trade data and notes. Do NOT penalize a setup grade because you "can't verify confluence" — you never can. Grade based on what the trader described, not on what you can't observe.
+7. POSITIVE DEFAULT: A named setup tag + trade notes = assume it was a real setup. Start at B+ and adjust from there. Only go below B if the trader's own notes or tags describe a specific problem with the setup itself (wrong location, counter-trend, no structure, etc.).
 
-SETUP GRADE criteria — evaluate the OPPORTUNITY quality, ignore the outcome completely:
-- A+/A: Full HTF confluence, clean entry zone, valid ICT structure, proper sponsorship, everything aligned
-- A-/B+: Strong setup, minor missing confluence, still a high-quality opportunity
-- B/B-: Decent setup, some gaps in confluence but tradeable
-- C+/C: Marginal setup, taking it is questionable but not wrong
-- C-/D: Poor setup, should not have been taken regardless of outcome
-- F: No valid setup, pure gamble
+SETUP GRADE criteria — evaluate the OPPORTUNITY quality based on trader's notes and tags:
+- A+/A: Trader describes clear ICT structure (FVG, liquidity sweep, inversion, structure alignment). All the elements they mention point to a high-quality entry zone. Notes show they saw and acted on the correct setup criteria.
+- A-/B+: Valid setup with solid structure described. Maybe one element was soft or unstated, but the core setup logic is sound.
+- B/B-: Setup is real and tradeable but notes suggest it was taken slightly early, late, or with one soft element (e.g. FVG was messy, structure was less clear, location was acceptable but not ideal).
+- C+/C: Notes or tags reveal a specific structural problem — e.g. no clear FVG, counter to HTF bias, entered in middle of a range, chased price, poor location. Use C only when you can point to a SPECIFIC problem in what the trader described.
+- C-/D: Notes describe a clear mistake in setup selection — traded against clear structure, no valid entry concept, ignored obvious bias. Must have clear evidence.
+- F: No valid setup whatsoever based on notes. Pure impulse trade.
+
+CALIBRATION: For a disciplined ICT scalper trading the correct session, 60-70% of setups should grade B+ or above. If you're giving more than 40% C grades, you are being too conservative. Uncertainty is NOT the same as a bad setup — when notes are sparse, give the benefit of the doubt and grade B.
+
+DO NOT lower the setup grade for:
+- Missing SL/TP data (common on imported trades — irrelevant to setup quality)
+- Early exits, chased entries, or other execution mistakes (execution grade only)
+- Trade being a loss (outcome never affects setup quality)
+- Notes being brief — brief notes mean trust the tag, not "I can't verify so I'll grade down"
+- The AI not being able to see the charts — you can never see the charts
 
 EXECUTION GRADE criteria — this IS affected by mistakes and execution quality:
 - A+/A: Followed the plan perfectly, proper entry, stop, held to target
