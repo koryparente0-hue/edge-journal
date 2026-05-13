@@ -1016,6 +1016,24 @@ body.light-mode .metric-val{color:#0a0a14}
   .page-title{font-size:18px}
   .metric-val{font-size:20px}
 }
+/* ─── PROP DETAIL PANEL ─── */
+#prop-detail-overlay{display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);backdrop-filter:blur(3px)}
+#prop-detail-overlay.open{display:block}
+#prop-detail-panel{position:fixed;top:0;right:0;bottom:0;width:min(700px,100vw);background:var(--bg);border-left:1px solid var(--border2);z-index:801;overflow-y:auto;transform:translateX(110%);transition:transform 340ms cubic-bezier(0.16,1,0.3,1)}
+#prop-detail-panel.open{transform:translateX(0)}
+.pd-hdr{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border2);padding:14px 20px;display:flex;align-items:center;gap:12px;z-index:2}
+.pd-section{padding:20px;border-bottom:1px solid var(--border)}
+.pd-sec-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.pd-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pd-stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 8px;text-align:center}
+.pd-stat-val{font-size:18px;font-weight:700;font-family:var(--mono);letter-spacing:-.5px;line-height:1}
+.pd-stat-lbl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+.pd-rule-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pd-rule-field{display:flex;flex-direction:column;gap:4px}
+.pd-rule-field label{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.03em}
+.pd-rule-field input,.pd-rule-field select,.pd-rule-field textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:7px 9px;font-size:12px;font-family:var(--mono);color:var(--text);width:100%}
+.pd-rule-field input:focus,.pd-rule-field select:focus,.pd-rule-field textarea:focus{outline:none;border-color:var(--accent)}
+.pd-dd-explain{font-size:11px;color:var(--muted);background:var(--bg3);border-radius:var(--r);padding:9px 12px;line-height:1.6;margin-bottom:12px}
 /* ─── PROP ACCOUNT CARDS ─── */
 .prop-acct-card{background:rgba(14,14,20,0.9);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;transition:transform .25s cubic-bezier(0.23,1,0.32,1),border-color .25s,box-shadow .25s;backdrop-filter:blur(12px)}
 .prop-acct-card:hover{transform:translateY(-4px);border-color:rgba(155,127,255,0.45);box-shadow:0 16px 48px rgba(155,127,255,0.16),0 4px 16px rgba(0,0,0,0.5)}
@@ -5776,6 +5794,43 @@ function _propAcctPnL(a) {
     .filter(t => (t.propAccounts||[]).includes(a.name) || (!t.propAccounts?.length && t.propFirm === a.firm))
     .reduce((s,t) => s + calcPnL(t), 0);
 }
+function _calcPropDD(a, acTrades) {
+  const dd = parseFloat(a.dd)||0;
+  if (!dd) return {ddUsed:0, ddRemaining:null, ddPct:0};
+  const ddType = (a.ddType||'EOD').toUpperCase();
+  const sorted = [...acTrades].sort((x,y)=>(x.datetime||'').localeCompare(y.datetime||''));
+  let ddUsed = 0;
+  if (ddType === 'INTRADAY') {
+    let run=0, peak=0;
+    sorted.forEach(t=>{ run+=calcPnL(t); if(run>peak)peak=run; });
+    ddUsed = Math.max(0, peak - run);
+  } else if (ddType === 'EOD') {
+    const byDay={};
+    sorted.forEach(t=>{ const d=t.datetime?.slice(0,10); if(d) byDay[d]=(byDay[d]||0)+calcPnL(t); });
+    let run=0, eodHigh=0;
+    Object.keys(byDay).sort().forEach(d=>{ run+=byDay[d]; if(run>eodHigh)eodHigh=run; });
+    const totalPnL=sorted.reduce((s,t)=>s+calcPnL(t),0);
+    ddUsed = Math.max(0, eodHigh - totalPnL);
+  } else {
+    const totalPnL=sorted.reduce((s,t)=>s+calcPnL(t),0);
+    ddUsed = totalPnL<0 ? Math.abs(totalPnL) : 0;
+  }
+  return {ddUsed, ddRemaining:Math.max(0,dd-ddUsed), ddPct:Math.min(100,(ddUsed/dd)*100)};
+}
+function _propEquitySVG(acTrades, W=580, H=90) {
+  const sorted=[...acTrades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
+  if(sorted.length<2)return'';
+  let run=0;
+  const pts=[0,...sorted.map(t=>{run+=calcPnL(t);return run;})];
+  const mn=Math.min(...pts),mx=Math.max(...pts),range=(mx-mn)||1;
+  const col=pts[pts.length-1]>=0?'#00d084':'#ff4d4d';
+  const pad=8;
+  const xs=pts.map((_,i)=>pad+(i/(pts.length-1))*(W-pad*2));
+  const ys=pts.map(v=>H-pad-((v-mn)/range)*(H-pad*2));
+  const coords=pts.map((_,i)=>`${xs[i].toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+  const fillPts=`${xs[0].toFixed(1)},${H} ${coords} ${xs[xs.length-1].toFixed(1)},${H}`;
+  return `<svg width="100%" viewBox="0 0 ${W} ${H}" fill="none" preserveAspectRatio="none"><defs><linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${col}" stop-opacity=".25"/><stop offset="100%" stop-color="${col}" stop-opacity=".02"/></linearGradient></defs><polygon points="${fillPts}" fill="url(#eqGrad)"/><polyline points="${coords}" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>`;
+}
 function renderPropCombinedStats() {
   const accounts = state.propAccounts || [];
   const payouts = state.propPayouts || [];
@@ -5828,9 +5883,7 @@ function renderPropAccountsSection() {
           const acPayouts = (state.propPayouts||[]).filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
           const pa        = isPA(a);
 
-          const ddUsed      = pnl < 0 ? Math.abs(pnl) : 0;
-          const ddRemaining = dd ? Math.max(0, dd - ddUsed) : null;
-          const ddPct       = dd ? Math.min(100,(ddUsed/dd)*100) : 0;
+          const {ddUsed, ddRemaining, ddPct} = _calcPropDD(a, acTrades);
           const progPct     = !pa && target && pnl > 0 ? Math.min(100,(pnl/target)*100) : 0;
 
           const acTrades  = state.trades.filter(t => (t.propAccounts||[]).includes(a.name) || (!t.propAccounts?.length && t.propFirm===a.firm));
@@ -5851,7 +5904,7 @@ function renderPropAccountsSection() {
           const pnlCol    = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
           const spark     = _propSparklineSVG(acTrades);
 
-          return `<div class="prop-acct-card${dllWarn?' dll-warn':''}">
+          return `<div class="prop-acct-card${dllWarn?' dll-warn':''}" onclick="openPropDetail(${a._idx})" style="cursor:pointer">
             <div class="prop-card-topbar" style="background:${dllWarn?'#ff4d4d':statusCol}"></div>
             <div style="padding:16px">
 
@@ -5923,9 +5976,9 @@ function renderPropAccountsSection() {
 
               <!-- ACTIONS -->
               <div style="display:flex;gap:6px">
-                <button class="btn btn-sm" onclick="quickUpdatePnL(${a._idx})" style="flex:1;text-align:center;justify-content:center">Update P&L</button>
-                <button class="btn btn-sm" onclick="openPropAccountModal(${a._idx})">Edit</button>
-                <button class="btn btn-sm" style="color:var(--red)" onclick="deletePropAccount(${a._idx})">✕</button>
+                <button class="btn btn-sm" onclick="event.stopPropagation();quickUpdatePnL(${a._idx})" style="flex:1;text-align:center;justify-content:center">Update P&L</button>
+                <button class="btn btn-sm" onclick="event.stopPropagation();openPropAccountModal(${a._idx})">Edit</button>
+                <button class="btn btn-sm" style="color:var(--red)" onclick="event.stopPropagation();deletePropAccount(${a._idx})">✕</button>
               </div>
             </div>
           </div>`;
@@ -5933,6 +5986,135 @@ function renderPropAccountsSection() {
       </div>
     </div>`;
   }).join('');
+}
+
+function openPropDetail(idx) {
+  const accounts = state.propAccounts||[];
+  const a = accounts[idx];
+  if (!a) return;
+  const acTrades = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm)).sort((x,y)=>(x.datetime||'').localeCompare(y.datetime||''));
+  const pnl = acTrades.reduce((s,t)=>s+calcPnL(t),0);
+  const dd=parseFloat(a.dd)||0, dll=parseFloat(a.dll)||0, target=parseFloat(a.target)||0;
+  const {ddUsed,ddRemaining,ddPct}=_calcPropDD(a,acTrades);
+  const ddType=a.ddType||'EOD';
+  const wins=acTrades.filter(t=>t.outcome==='win').length;
+  const wr=acTrades.length?Math.round(wins/acTrades.length*100):null;
+  const today=new Date().toISOString().slice(0,10);
+  const todayPnL=acTrades.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
+  const dllPct=dll&&todayPnL<0?Math.min(100,Math.abs(todayPnL)/dll*100):0;
+  const dllRemaining=dll?Math.max(0,dll+Math.min(0,todayPnL)):null;
+  const acPayouts=(state.propPayouts||[]).filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+  const dates=acTrades.map(t=>t.datetime?.slice(0,10)).filter(Boolean).sort();
+  const daysActive=dates[0]?Math.max(1,Math.floor((Date.now()-new Date(dates[0]))/86400000))+1:null;
+  const pnlCol=pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
+  const statusColor={eval:'var(--amber)',funded:'var(--green)',passed:'var(--blue)',blown:'var(--red)',inactive:'var(--dim)'};
+  const statusLabel={eval:'Eval',funded:'Funded / PA',passed:'Passed',blown:'Blown',inactive:'Inactive'};
+  const statusCol=statusColor[a.status]||'var(--dim)';
+  const ddTypeDesc={
+    EOD:'End-of-Day trailing: your drawdown limit follows your balance up at close of each trading day. Once it trails up, it never comes back down.',
+    Intraday:'Intraday trailing: your drawdown limit updates in real time after every winning trade throughout the day.',
+    Static:'Static drawdown: your max drawdown is fixed from your starting balance — it never moves regardless of profits.'
+  };
+  const equitySVG=_propEquitySVG(acTrades);
+  const recentTrades=[...acTrades].sort((a,b)=>(b.datetime||'').localeCompare(a.datetime||'')).slice(0,15);
+
+  document.getElementById('prop-detail-inner').innerHTML = `
+    <div class="pd-hdr">
+      <button onclick="closePropDetail()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;display:flex;align-items:center;border-radius:6px;transition:color .15s" onmouseenter="this.style.color='var(--text)'" onmouseleave="this.style.color='var(--muted)'">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.3px">${a.name||a.plan||'Account'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">${a.firm||''}${a.plan?' · '+a.plan:''}${a.size?' · '+a.size:''}</div>
+      </div>
+      <span style="color:${statusCol};background:${statusCol}18;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap">${statusLabel[a.status]||a.status||'—'}</span>
+    </div>
+
+    ${equitySVG?`<div style="border-bottom:1px solid var(--border)">
+      <div style="padding:14px 20px 0">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Equity Curve</div>
+        <div style="border-radius:var(--r);overflow:hidden;background:var(--bg2);height:90px">${equitySVG}</div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:4px;padding-bottom:12px">
+          <span>${dates[0]||'—'}</span><span style="font-family:var(--mono);font-weight:700;color:${pnlCol}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</span><span>${dates[dates.length-1]||'—'}</span>
+        </div>
+      </div>
+    </div>`:''}
+
+    <div class="pd-section">
+      <div class="pd-sec-title">Account Stats</div>
+      <div class="pd-stat-row">
+        <div class="pd-stat"><div class="pd-stat-val" style="color:${pnlCol}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</div><div class="pd-stat-lbl">Net P&amp;L</div></div>
+        <div class="pd-stat"><div class="pd-stat-val" style="color:${ddPct>80?'var(--red)':ddPct>50?'var(--amber)':'var(--green)'}">${Math.round(ddPct)}%</div><div class="pd-stat-lbl">DD Used</div></div>
+        <div class="pd-stat"><div class="pd-stat-val" style="color:${wr!==null?wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--red)':'var(--dim)'}">${wr!==null?wr+'%':'—'}</div><div class="pd-stat-lbl">Win Rate</div></div>
+        <div class="pd-stat"><div class="pd-stat-val" style="color:var(--text)">${acTrades.length}</div><div class="pd-stat-lbl">Trades</div></div>
+      </div>
+      <div class="pd-stat-row" style="margin-top:8px">
+        <div class="pd-stat"><div class="pd-stat-val" style="color:${ddRemaining!==null?ddRemaining/Math.max(dd,1)<.2?'var(--red)':'var(--green)':'var(--dim)'}">${ddRemaining!==null?'$'+ddRemaining.toLocaleString():'—'}</div><div class="pd-stat-lbl">DD Left</div></div>
+        <div class="pd-stat"><div class="pd-stat-val" style="color:${dllRemaining!==null?dllPct>80?'var(--red)':dllPct>50?'var(--amber)':'var(--green)':'var(--dim)'}">${dllRemaining!==null?'$'+dllRemaining.toLocaleString():'—'}</div><div class="pd-stat-lbl">Daily Left</div></div>
+        <div class="pd-stat"><div class="pd-stat-val" style="color:var(--green)">${acPayouts?'$'+acPayouts.toLocaleString():'—'}</div><div class="pd-stat-lbl">Paid Out</div></div>
+        <div class="pd-stat"><div class="pd-stat-val" style="color:var(--muted)">${daysActive||'—'}</div><div class="pd-stat-lbl">Days Active</div></div>
+      </div>
+      ${target?`<div style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px"><span style="text-transform:uppercase;letter-spacing:.04em">Profit Target</span><span style="font-weight:700;color:var(--amber)">$${Math.max(0,pnl).toLocaleString()} / $${target.toLocaleString()}</span></div>
+        <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.min(100,pnl>0?(pnl/target)*100:0)}%;background:linear-gradient(90deg,var(--accent),#00d084);border-radius:3px;transition:width .5s"></div></div>
+      </div>`:''}
+    </div>
+
+    <div class="pd-section">
+      <div class="pd-sec-title">Drawdown · ${ddType}</div>
+      <div class="pd-dd-explain">${ddTypeDesc[ddType]||'Drawdown type: '+ddType}</div>
+      ${dd?`<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="flex:1;min-width:80px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Max DD</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--red)">$${dd.toLocaleString()}</div></div>
+        <div style="flex:1;min-width:80px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Used</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:${ddPct>80?'var(--red)':ddPct>50?'var(--amber)':'var(--green)'}">$${ddUsed.toLocaleString()}</div></div>
+        <div style="flex:1;min-width:80px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Remaining</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--green)">$${ddRemaining.toLocaleString()}</div></div>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden"><div style="height:100%;width:${ddPct}%;background:${ddPct>80?'#ff4d4d':ddPct>50?'#f5a623':'#00d084'};border-radius:4px;transition:width .5s"></div></div>`:''}
+    </div>
+
+    <div class="pd-section">
+      <div class="pd-sec-title">Account Settings</div>
+      <div class="pd-rule-grid">
+        <div class="pd-rule-field"><label>Account Name</label><input type="text" value="${(a.name||'').replace(/"/g,'&quot;')}" onchange="savePropDetailField(${idx},'name',this.value)"></div>
+        <div class="pd-rule-field"><label>Status</label><select onchange="savePropDetailField(${idx},'status',this.value)">${['eval','funded','passed','blown','inactive'].map(s=>`<option value="${s}"${a.status===s?' selected':''}>${statusLabel[s]||s}</option>`).join('')}</select></div>
+        <div class="pd-rule-field"><label>DD Type</label><select onchange="savePropDetailField(${idx},'ddType',this.value)">${['EOD','Intraday','Static'].map(s=>`<option value="${s}"${ddType===s?' selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="pd-rule-field"><label>Max Drawdown ($)</label><input type="number" value="${dd||''}" onchange="savePropDetailField(${idx},'dd',this.value)"></div>
+        <div class="pd-rule-field"><label>Daily Loss Limit ($)</label><input type="number" value="${dll||''}" onchange="savePropDetailField(${idx},'dll',this.value)"></div>
+        <div class="pd-rule-field"><label>Profit Target ($)</label><input type="number" value="${target||''}" onchange="savePropDetailField(${idx},'target',this.value)"></div>
+      </div>
+      <div style="margin-top:8px"><div class="pd-rule-field"><label>Notes</label><textarea rows="3" onchange="savePropDetailField(${idx},'notes',this.value)">${(a.notes||'').replace(/</g,'&lt;')}</textarea></div></div>
+    </div>
+
+    ${recentTrades.length?`<div class="pd-section" style="border-bottom:none">
+      <div class="pd-sec-title">Recent Trades (${acTrades.length} total)</div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="color:var(--dim);font-size:9px;text-transform:uppercase;letter-spacing:.04em">
+          <th style="text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)">Date</th>
+          <th style="text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)">Setup</th>
+          <th style="text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)">P&amp;L</th>
+          <th style="text-align:center;padding:6px 4px;border-bottom:1px solid var(--border)">Result</th>
+        </tr></thead>
+        <tbody>${recentTrades.map(t=>{const tp=calcPnL(t);const tc=tp>0?'var(--green)':tp<0?'var(--red)':'var(--muted)';return`<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">${t.datetime?.slice(0,10)||'—'}</td><td style="padding:7px 4px;color:var(--text)">${t.setup||'—'}</td><td style="padding:7px 4px;text-align:right;color:${tc};font-family:var(--mono);font-weight:700">${tp>=0?'+':'-'}$${Math.abs(tp).toLocaleString()}</td><td style="padding:7px 4px;text-align:center"><span style="font-size:9px;font-weight:700;color:${tc};background:${tc}18;padding:2px 7px;border-radius:4px">${t.outcome||'—'}</span></td></tr>`;}).join('')}</tbody>
+      </table></div>
+    </div>`:''}
+  `;
+  document.getElementById('prop-detail-overlay').classList.add('open');
+  document.getElementById('prop-detail-panel').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closePropDetail() {
+  document.getElementById('prop-detail-overlay').classList.remove('open');
+  document.getElementById('prop-detail-panel').classList.remove('open');
+  document.body.style.overflow='';
+}
+function savePropDetailField(idx, field, value) {
+  const accounts=state.propAccounts||[];
+  if (!accounts[idx]) return;
+  accounts[idx][field]=value;
+  state.propAccounts=accounts;
+  saveState();
+  renderPropAccountsSection();
+  renderPropCombinedStats();
+  openPropDetail(idx);
 }
 
 function renderPropPayouts() {
@@ -9237,6 +9419,12 @@ function closeMobileSheet(){document.getElementById('mobile-sheet').classList.re
       <svg viewBox="0 0 16 16" fill="none"><path d="M9 2c0 3-3 4-3 7a4 4 0 008 0c0-4-5-7-5-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Streaks
     </button>
   </div>
+</div>
+
+<!-- PROP ACCOUNT DETAIL PANEL -->
+<div id="prop-detail-overlay" onclick="closePropDetail()"></div>
+<div id="prop-detail-panel">
+  <div id="prop-detail-inner"></div>
 </div>
 </body>
 </html>
