@@ -974,6 +974,48 @@ body.light-mode #journal-hero-canvas{opacity:.15}
 body.light-mode .trades-table tbody tr:nth-child(odd){background:#ffffff}
 body.light-mode .trades-table tbody tr:nth-child(even){background:#f8f8ff}
 body.light-mode .metric-val{color:#0a0a14}
+/* ─── MOBILE NAV ─── */
+#mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:56px;background:var(--bg2);border-top:1px solid var(--border2);z-index:900;align-items:stretch}
+.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--dim);font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-family:var(--display);transition:color .15s,opacity .1s;border:none;background:transparent;padding:4px 2px;min-width:0;-webkit-tap-highlight-color:transparent}
+.mob-tab svg{width:20px;height:20px;opacity:.5;transition:opacity .15s}
+.mob-tab.active{color:var(--accent)}
+.mob-tab.active svg{opacity:1}
+.mob-tab:active{opacity:.6}
+#mobile-sheet-overlay{display:none;position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);-webkit-tap-highlight-color:transparent}
+#mobile-sheet-overlay.open{display:block}
+#mobile-sheet{position:fixed;bottom:56px;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border2);border-radius:14px 14px 0 0;padding:20px 12px 12px;z-index:960;transform:translateY(100%);transition:transform 280ms cubic-bezier(0.16,1,0.3,1)}
+#mobile-sheet.open{transform:translateY(0)}
+.mob-sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border3);margin:0 auto 18px;display:block}
+.mob-sheet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.mob-sheet-item{display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 8px;border-radius:var(--r);cursor:pointer;color:var(--muted);font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-family:var(--display);transition:all .15s;border:none;background:transparent;width:100%;-webkit-tap-highlight-color:transparent}
+.mob-sheet-item svg{width:20px;height:20px}
+.mob-sheet-item:active{background:var(--bg3);color:var(--text)}
+/* ─── RESPONSIVE ─── */
+@media(max-width:768px){
+  .shell{flex-direction:column}
+  .sidebar{display:none!important}
+  #mobile-nav{display:flex}
+  .main{height:calc(100vh - 56px);min-height:0}
+  .page{padding:16px}
+  .page-hero-banner{overflow-x:auto!important;overflow-y:hidden!important;border-radius:12px!important}
+  .phero-grid{min-width:max-content;padding:12px 16px!important}
+  .phero-stat{min-width:128px}
+  .metrics{grid-template-columns:1fr 1fr}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .page-header{flex-direction:column;gap:10px;align-items:flex-start;margin-bottom:16px}
+  .page-header > div:last-child{display:flex;flex-wrap:wrap;gap:6px}
+  .card{padding:14px}
+  .modal-row{grid-template-columns:1fr}
+  .modal{width:calc(100vw - 24px)!important;max-height:82vh!important}
+  .chat-panel{display:none!important}
+  .review-sections{grid-template-columns:1fr}
+  .ins-do-dont{grid-template-columns:1fr}
+  .lp-nav{padding:14px 16px}
+  .lp-steps{grid-template-columns:1fr 1fr}
+  .lp-footer{flex-direction:column;gap:8px;text-align:center;padding:16px}
+  .page-title{font-size:18px}
+  .metric-val{font-size:20px}
+}
 </style>
 </head>
 <body>
@@ -1269,7 +1311,7 @@ body.light-mode .metric-val{color:#0a0a14}
 
   <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="dh-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:16px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
+    <div class="phero-grid" style="position:relative;z-index:1;padding:16px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
       <div id="dh-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="dh-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="dh-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
@@ -1545,7 +1587,7 @@ body.light-mode .metric-val{color:#0a0a14}
   </div>
   <div id="hi-hero-banner" class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="hi-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+    <div class="phero-grid" style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
       <div id="hi-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="hi-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="hi-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
@@ -1625,7 +1667,7 @@ body.light-mode .metric-val{color:#0a0a14}
 
   <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="sp-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:16px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
+    <div class="phero-grid" style="position:relative;z-index:1;padding:16px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
       <div id="sp-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="sp-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="sp-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
@@ -1878,7 +1920,7 @@ body.light-mode .metric-val{color:#0a0a14}
   <!-- HERO BANNER -->
   <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="ph-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+    <div class="phero-grid" style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
       <div id="ph-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="ph-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="ph-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
@@ -2007,7 +2049,7 @@ body.light-mode .metric-val{color:#0a0a14}
   </div>
   <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="ins-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+    <div class="phero-grid" style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
       <div id="ins-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="ins-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
       <div id="ins-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
@@ -2868,11 +2910,13 @@ function go(page) {
   if (_heroRaf) { cancelAnimationFrame(_heroRaf); _heroRaf = null; }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
   const pageEl = document.getElementById('page-'+page);
   if (pageEl) pageEl.classList.add('active');
-  // Activate the correct nav item by ID
   const navEl = document.getElementById('nav-'+page);
   if (navEl) navEl.classList.add('active');
+  const mobTab = document.getElementById('mob-tab-'+page);
+  if (mobTab) mobTab.classList.add('active');
   if (page==='setups')         { renderSetupsPage(); return; }
   if (page==='propfirms')      renderPropFirmsPage();
   if (page==='dashboard')      renderDashboard();
@@ -9077,6 +9121,57 @@ const _localDT = `${_now.getFullYear()}-${_pad(_now.getMonth()+1)}-${_pad(_now.g
 document.getElementById('q-datetime').value = _localDT;
 updateLogPropOptions();
 if (state.trades.length > 0) renderDashboard();
+function openMobileSheet(){document.getElementById('mobile-sheet').classList.add('open');document.getElementById('mobile-sheet-overlay').classList.add('open');}
+function closeMobileSheet(){document.getElementById('mobile-sheet').classList.remove('open');document.getElementById('mobile-sheet-overlay').classList.remove('open');}
 </script>
+
+<!-- MOBILE BOTTOM NAV -->
+<div id="mobile-nav">
+  <button class="mob-tab active" id="mob-tab-dashboard" onclick="go('dashboard')">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/></svg>
+    Dash
+  </button>
+  <button class="mob-tab" id="mob-tab-log" onclick="go('log')">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    Log
+  </button>
+  <button class="mob-tab" id="mob-tab-history" onclick="go('history')">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    History
+  </button>
+  <button class="mob-tab" id="mob-tab-setups" onclick="go('setups')">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M1 12l4-5 4 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Stats
+  </button>
+  <button class="mob-tab" onclick="openMobileSheet()">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/></svg>
+    More
+  </button>
+</div>
+
+<div id="mobile-sheet-overlay" onclick="closeMobileSheet()"></div>
+<div id="mobile-sheet">
+  <span class="mob-sheet-handle"></span>
+  <div class="mob-sheet-grid">
+    <button class="mob-sheet-item" onclick="closeMobileSheet();go('insights')">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" fill="currentColor" opacity=".5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>AI Insights
+    </button>
+    <button class="mob-sheet-item" onclick="closeMobileSheet();go('propfirms')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5V3.5A1.5 1.5 0 016.5 2h3A1.5 1.5 0 0111 3.5V5" stroke="currentColor" stroke-width="1.4"/><path d="M1 9h14" stroke="currentColor" stroke-width="1.4"/></svg>Prop Firms
+    </button>
+    <button class="mob-sheet-item" onclick="closeMobileSheet();go('journal')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5h5M5 8h5M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor" opacity=".2"/></svg>Journal
+    </button>
+    <button class="mob-sheet-item" onclick="closeMobileSheet();go('routine')">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Routine
+    </button>
+    <button class="mob-sheet-item" onclick="closeMobileSheet();go('risk')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14V6l4-4h6l2 2v10" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 14v-4h4v4" stroke="currentColor" stroke-width="1.3"/></svg>Risk
+    </button>
+    <button class="mob-sheet-item" onclick="closeMobileSheet();go('streaks')">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M9 2c0 3-3 4-3 7a4 4 0 008 0c0-4-5-7-5-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Streaks
+    </button>
+  </div>
+</div>
 </body>
 </html>
