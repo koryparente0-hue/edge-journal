@@ -5883,10 +5883,9 @@ function renderPropAccountsSection() {
           const acPayouts = (state.propPayouts||[]).filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
           const pa        = isPA(a);
 
+          const acTrades  = state.trades.filter(t => (t.propAccounts||[]).includes(a.name) || (!t.propAccounts?.length && t.propFirm===a.firm));
           const {ddUsed, ddRemaining, ddPct} = _calcPropDD(a, acTrades);
           const progPct     = !pa && target && pnl > 0 ? Math.min(100,(pnl/target)*100) : 0;
-
-          const acTrades  = state.trades.filter(t => (t.propAccounts||[]).includes(a.name) || (!t.propAccounts?.length && t.propFirm===a.firm));
           const acWins    = acTrades.filter(t=>t.outcome==='win').length;
           const acWR      = acTrades.length ? Math.round(acWins/acTrades.length*100) : null;
 
