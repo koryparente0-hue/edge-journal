@@ -1245,8 +1245,8 @@ body.light-mode .metric-val{color:#0a0a14}
     <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s0">—</div><div class="phero-lbl">Total P&amp;L</div><div class="phero-sub" id="m-pnl-sub">0 trades</div></div>
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s1">—</div><div class="phero-lbl">Win Rate</div><div class="phero-sub" id="m-wr-sub">0W / 0L</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val pos" id="dh-s2">—</div><div class="phero-lbl">Avg Win</div><div class="phero-sub" id="m-avgl-sub">avg loss —</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s3">—</div><div class="phero-lbl">Avg R:R</div><div class="phero-sub">planned</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s2">—</div><div class="phero-lbl">Avg Winner R</div><div class="phero-sub" id="m-avgl-sub">wins only</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="dh-s3">—</div><div class="phero-lbl">Expectancy</div><div class="phero-sub">per trade</div></div>
       <div class="phero-stat"><div class="phero-val neg" id="dh-s4">—</div><div class="phero-lbl">Max Drawdown</div><div class="phero-sub">peak→trough</div></div>
     </div>
   </div>
@@ -1598,11 +1598,12 @@ body.light-mode .metric-val{color:#0a0a14}
 
   <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="sp-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
+    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s0">—</div><div class="phero-lbl">SETUPS TRACKED</div></div>
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s1">—</div><div class="phero-lbl">BEST WIN%</div></div>
       <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s2">—</div><div class="phero-lbl">BEST SETUP P&amp;L</div></div>
-      <div class="phero-stat"><div class="phero-val" id="sp-s3">—</div><div class="phero-lbl">AVG R:R</div></div>
+      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="sp-s3">—</div><div class="phero-lbl">AVG WINNER R</div></div>
+      <div class="phero-stat"><div class="phero-val" id="sp-s4">—</div><div class="phero-lbl">EXPECTANCY</div></div>
     </div>
   </div>
 
@@ -2905,8 +2906,13 @@ function renderDashboard() {
   const avgL = losses.length ? Math.abs(losses.reduce((a,t)=>a+calcPnL(t),0)/losses.length) : 0;
   let peak=0,dd=0,run=0;
   for (const p of pnls) { run+=p; if(run>peak)peak=run; dd=Math.min(dd,run-peak); }
-  const rrs = T.filter(t=>calcRR(t)).map(t=>parseFloat(calcRR(t)));
-  const avgRR = rrs.length ? (rrs.reduce((a,b)=>a+b,0)/rrs.length).toFixed(2) : null;
+  const validRRTrades = T.filter(t => { const r = parseFloat(calcRR(t)) || parseFloat(t.quickRR) || 0; return r !== 0 && !isNaN(r); });
+  const winnerRRs = validRRTrades.filter(t => t.outcome === 'win').map(t => parseFloat(calcRR(t)) || parseFloat(t.quickRR));
+  const loserRRs  = validRRTrades.filter(t => t.outcome === 'loss').map(t => Math.abs(parseFloat(calcRR(t)) || parseFloat(t.quickRR)));
+  const avgWinnerR = winnerRRs.length ? winnerRRs.reduce((a,b)=>a+b,0)/winnerRRs.length : null;
+  const avgLoserR  = loserRRs.length  ? loserRRs.reduce((a,b)=>a+b,0)/loserRRs.length   : null;
+  const wrDecimal  = (wins.length + losses.length) ? wins.length / (wins.length + losses.length) : 0;
+  const expectancy = avgWinnerR && avgLoserR ? (wrDecimal * avgWinnerR) - ((1 - wrDecimal) * avgLoserR) : null;
 
   // Populate hero banner with the 5 real stats
   const s0 = document.getElementById('dh-s0');
@@ -2914,15 +2920,15 @@ function renderDashboard() {
   const s1 = document.getElementById('dh-s1');
   if (s1) { s1.textContent = T.length ? pct(wr) : '—'; s1.style.color = wr>=50?'var(--green)':'var(--amber)'; }
   const s2 = document.getElementById('dh-s2');
-  if (s2) { s2.textContent = avgW ? '$'+Math.round(avgW) : '—'; s2.style.color = 'var(--green)'; }
+  if (s2) { s2.textContent = avgWinnerR ? avgWinnerR.toFixed(2)+'R' : '—'; s2.style.color = 'var(--accent)'; }
   const s3 = document.getElementById('dh-s3');
-  if (s3) { s3.textContent = avgRR ? avgRR+'R' : '—'; s3.style.color = 'var(--accent)'; }
+  if (s3) { s3.textContent = expectancy != null ? (expectancy>=0?'+':'')+expectancy.toFixed(3)+'R' : '—'; s3.style.color = expectancy != null ? (expectancy>=0?'var(--green)':'var(--red)') : 'var(--muted)'; }
   const s4 = document.getElementById('dh-s4');
   if (s4) { s4.textContent = dd ? '-$'+Math.abs(Math.round(dd)).toLocaleString() : '—'; s4.style.color = dd ? 'var(--red)' : 'var(--muted)'; }
   // Update subs
   const pnlSub = document.getElementById('m-pnl-sub'); if(pnlSub) pnlSub.textContent = T.length+' trades';
   const wrSub  = document.getElementById('m-wr-sub');  if(wrSub)  wrSub.textContent  = wins.length+'W / '+losses.length+'L';
-  const avglSub= document.getElementById('m-avgl-sub');if(avglSub)avglSub.textContent= avgL ? 'avg loss $'+Math.round(avgL) : 'no losses';
+  const avglSub= document.getElementById('m-avgl-sub');if(avglSub)avglSub.textContent= avgLoserR ? 'avg loser '+avgLoserR.toFixed(2)+'R' : 'no losses';
   startHeroCanvas('dh-c');
 
   renderEquity(T, pnls);
@@ -5917,9 +5923,18 @@ function renderSetupsPage() {
     const bPnL=spActive.slice().sort((a,b)=>b[1].pnl-a[1].pnl)[0];
     spBestPnL=(bPnL[1].pnl>=0?'+':'')+'$'+Math.abs(Math.round(bPnL[1].pnl));
   }
-  const spRRs=T.filter(t=>calcRR(t)).map(t=>parseFloat(calcRR(t)));
-  const spAvgRR=spRRs.length?(spRRs.reduce((a,b)=>a+b,0)/spRRs.length).toFixed(2)+'R':'—';
-  setHeroStats('sp',[spSetups.size,spBestWR,spBestPnL,spAvgRR],['var(--accent)','var(--green)','var(--green)','var(--accent)']);
+  const spValidRR = T.filter(t => { const r = parseFloat(calcRR(t)) || parseFloat(t.quickRR) || 0; return r !== 0 && !isNaN(r); });
+  const spWinnerRRs = spValidRR.filter(t => t.outcome === 'win').map(t => parseFloat(calcRR(t)) || parseFloat(t.quickRR));
+  const spLoserRRs  = spValidRR.filter(t => t.outcome === 'loss').map(t => Math.abs(parseFloat(calcRR(t)) || parseFloat(t.quickRR)));
+  const spAvgWinnerR = spWinnerRRs.length ? spWinnerRRs.reduce((a,b)=>a+b,0)/spWinnerRRs.length : null;
+  const spAvgLoserR  = spLoserRRs.length  ? spLoserRRs.reduce((a,b)=>a+b,0)/spLoserRRs.length   : null;
+  const spWins = T.filter(t => t.outcome === 'win').length;
+  const spLosses = T.filter(t => t.outcome === 'loss').length;
+  const spWRd = (spWins + spLosses) ? spWins / (spWins + spLosses) : 0;
+  const spExp = spAvgWinnerR && spAvgLoserR ? (spWRd * spAvgWinnerR) - ((1 - spWRd) * spAvgLoserR) : null;
+  const spAvgWinnerRStr = spAvgWinnerR ? spAvgWinnerR.toFixed(2)+'R' : '—';
+  const spExpStr = spExp != null ? (spExp >= 0 ? '+' : '') + spExp.toFixed(3) + 'R' : '—';
+  setHeroStats('sp',[spSetups.size,spBestWR,spBestPnL,spAvgWinnerRStr,spExpStr],['var(--accent)','var(--green)','var(--green)','var(--accent)',spExp != null ? (spExp >= 0 ? 'var(--green)' : 'var(--red)') : 'var(--muted)']);
   startHeroCanvas('sp-c');
   if (!T.length) return;
 
@@ -5932,7 +5947,7 @@ function renderSetupsPage() {
   function groupStats(trades) {
     const n = trades.length;
     const w = trades.filter(wins).length;
-    const rrs = trades.map(rr).filter(v => v !== null && !isNaN(v));
+    const rrs = trades.map(rr).filter(v => v !== null && !isNaN(v) && v !== 0);
     const avgRR = rrs.length ? (rrs.reduce((a,b)=>a+b,0)/rrs.length) : null;
     const totalR = rrs.reduce((a,b)=>a+b,0);
     return { n, w, wr: n ? (w/n*100) : 0, avgRR, totalR };
