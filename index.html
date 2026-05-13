@@ -5732,11 +5732,16 @@ function renderPropFirmsPage() {
   populatePayoutAccountSelect();
 }
 
+function _propAcctPnL(a) {
+  return (state.trades||[])
+    .filter(t => (t.propAccounts||[]).includes(a.name) || (!t.propAccounts?.length && t.propFirm === a.firm))
+    .reduce((s,t) => s + calcPnL(t), 0);
+}
 function renderPropCombinedStats() {
   const accounts = state.propAccounts || [];
   const payouts = state.propPayouts || [];
   const active = accounts.filter(a => a.status !== 'blown' && a.status !== 'inactive');
-  const totalPnL = accounts.reduce((s,a) => s + (parseFloat(a.pnl)||0), 0);
+  const totalPnL = accounts.reduce((s,a) => s + _propAcctPnL(a), 0);
   const totalPayouts = payouts.reduce((s,p) => s + (parseFloat(p.amount)||0), 0);
   const totalFees = accounts.reduce((s,a) => s + (parseFloat(a.fee)||0) + (parseFloat(a.activation)||0), 0);
   const net = totalPayouts - totalFees;
@@ -5763,7 +5768,7 @@ function renderPropAccountsSection() {
   const isPA = a => a.status === 'funded' || a.status === 'passed';
 
   section.innerHTML = Object.entries(byFirm).map(([firm, accs]) => {
-    const firmPnL     = accs.reduce((s,a)=>s+(parseFloat(a.pnl)||0), 0);
+    const firmPnL     = accs.reduce((s,a)=>s+_propAcctPnL(a), 0);
     const firmPayouts = (state.propPayouts||[]).filter(p=>accs.some(a=>a.name===p.accountName)).reduce((s,p)=>s+(parseFloat(p.amount)||0), 0);
     const firmFees    = accs.reduce((s,a)=>s+(parseFloat(a.fee)||0)+(parseFloat(a.activation)||0), 0);
 
@@ -5777,7 +5782,7 @@ function renderPropAccountsSection() {
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
         ${accs.map(a => {
-          const pnl       = parseFloat(a.pnl)||0;
+          const pnl       = _propAcctPnL(a);
           const dd        = parseFloat(a.dd)||0;
           const target    = parseFloat(a.target)||0;
           const dll       = parseFloat(a.dll)||0;
