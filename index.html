@@ -293,8 +293,15 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .ci-icon{font-size:11px;min-width:14px;margin-top:1px}
 
 /* DASHBOARD FEED SECTION */
-.pattern-feed-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
-.pattern-feed-item:last-child{border-bottom:none}
+.pattern-feed-item{display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:6px;border-radius:var(--r);border-left:3px solid var(--accent);background:var(--bg3);animation:pfCardIn 220ms cubic-bezier(0.23,1,0.32,1) both}
+.pattern-feed-item:last-child{margin-bottom:0}
+.pf-icon{font-size:20px;flex-shrink:0;width:26px;text-align:center;line-height:1}
+.pf-body{flex:1;min-width:0}
+.pf-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:1px;line-height:1.3}
+.pf-sub{font-size:11px;color:var(--muted);line-height:1.4}
+.pf-badge{flex-shrink:0;font-size:11px;font-weight:700;font-family:var(--mono);padding:3px 9px;border-radius:20px;white-space:nowrap}
+.pf-timestamp{font-size:10px;color:var(--dim);text-align:right;margin-top:8px;padding:0 2px}
+@keyframes pfCardIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:translateX(0)}}
 
 /* LANDING PAGE */
 #login-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;overflow-y:auto;display:flex;flex-direction:column}
@@ -1359,12 +1366,13 @@ body.light-mode .metric-val{color:#0a0a14}
 
     <!-- QUICK MODE -->
     <div id="log-mode-quick">
-      <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px;margin-bottom:12px">
         <div class="qe-field"><label>Ticker</label><input id="q-ticker" placeholder="NQ" value="NQ"></div>
         <div class="qe-field"><label>P&amp;L ($)</label><input id="q-quick-pnl" type="number" placeholder="+500 or -250"></div>
         <div class="qe-field"><label>Planned R:R</label><input id="q-planned-rr" type="number" step="0.1" placeholder="e.g. 2.0" min="-5"></div>
         <div class="qe-field"><label>Realized R:R</label><input id="q-quick-rr" type="number" step="0.1" placeholder="actual taken" min="-5"></div>
         <div class="qe-field"><label>Hold Time <span style="color:var(--dim);font-weight:400;font-size:10px">mins</span></label><input id="q-hold-mins" type="number" step="1" min="0" placeholder="e.g. 12"></div>
+        <div class="qe-field"><label>TTC <span style="color:var(--dim);font-weight:400;font-size:10px">mins</span> <span title="Time to close through 1m gap after touch. Target: ≤6 min" style="color:var(--dim);cursor:help;font-size:10px">ⓘ</span></label><input id="q-ttc" type="number" step="0.5" min="0" placeholder="e.g. 3.5"></div>
         <div class="qe-field"><label>Date</label><input id="q-date" type="date"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
@@ -1416,8 +1424,9 @@ body.light-mode .metric-val{color:#0a0a14}
           </select>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
         <div class="qe-field"><label>Date &amp; Time <span style="color:var(--dim);font-weight:400;font-size:10px">(CST)</span></label><input id="q-datetime-d" type="datetime-local"></div>
+        <div class="qe-field"><label>TTC <span style="color:var(--dim);font-weight:400;font-size:10px">mins</span> <span title="Time to close through 1m gap after touch. Target: ≤6 min" style="color:var(--dim);cursor:help;font-size:10px">ⓘ</span></label><input id="det-ttc" type="number" step="0.5" min="0" placeholder="e.g. 3.5"></div>
       </div>
     </div>
 
@@ -1547,7 +1556,7 @@ body.light-mode .metric-val{color:#0a0a14}
       <div style="overflow-x:auto">
         <table class="trades-table">
           <thead><tr>
-            <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
+            <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>TTC</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
           </tr></thead>
           <tbody id="history-body"></tbody>
         </table>
@@ -1818,6 +1827,15 @@ body.light-mode .metric-val{color:#0a0a14}
       <span id="be-headline" style="font-size:11px;color:var(--text);font-weight:600"></span>
     </div>
     <div id="be-analysis-content"><div class="empty"><strong>No BE data yet</strong> — tag trades with BE → Win or BE → Loss outcomes to see this.</div></div>
+  </div>
+
+  <!-- TTC ANALYSIS (full width) -->
+  <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:20px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">⏱ TTC Analysis</div>
+      <span id="ttc-headline" style="font-size:11px;color:var(--text);font-weight:600"></span>
+    </div>
+    <div id="ttc-analysis-content"><div class="empty">No TTC data yet — add TTC when logging trades to see this analysis.</div></div>
   </div>
 
 </div>
@@ -2577,6 +2595,7 @@ body.light-mode .metric-val{color:#0a0a14}
         </select>
       </div>
       <div class="modal-field"><label class="modal-label">Hold Time <span style="color:var(--dim);font-weight:400;font-size:10px">mins</span></label><input class="modal-input" id="et-holdmins" type="number" min="0" step="1" placeholder="e.g. 12"></div>
+      <div class="modal-field"><label class="modal-label">TTC <span style="color:var(--dim);font-weight:400;font-size:10px">mins</span> <span title="Time to close through 1m gap after touch. Target: ≤6 min" style="color:var(--dim);cursor:help;font-size:10px">ⓘ</span></label><input class="modal-input" id="et-ttc" type="number" step="0.5" min="0" placeholder="e.g. 3.5"></div>
       <div class="modal-field"><label class="modal-label">Prop Firm</label><input class="modal-input" id="et-propfirm" placeholder="optional"></div>
     </div>
     <div class="modal-field" style="margin-bottom:12px"><label class="modal-label">Notes</label><textarea class="modal-input" id="et-notes" style="min-height:70px;resize:vertical"></textarea></div>
@@ -3169,8 +3188,9 @@ function buildTrade(withNotes) {
     const propAccount = propAccounts.join(', ');
     const entryTF = document.getElementById('q-entry-tf')?.value || '';
     const holdMins = parseFloat(document.getElementById('q-hold-mins')?.value)||null;
+    const ttc = parseFloat(document.getElementById('q-ttc')?.value)||null;
     const bePoint = (outcome === 'be_win' || outcome === 'be_loss') ? (document.getElementById('q-be-point')?.value.trim()||'') : '';
-    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF, holdMins, bePoint};
+    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF, holdMins, ttc, bePoint};
   } else {
     // Detailed mode
     entry = parseFloat(document.getElementById('q-entry').value);
@@ -3189,8 +3209,9 @@ function buildTrade(withNotes) {
     const propFirm = document.getElementById('q-prop-firm')?.value||'';
     const propAccounts = propFirm ? Array.from(document.querySelectorAll('#q-prop-account-checkboxes input:checked')).map(cb=>cb.value) : [];
     const propAccount = propAccounts.join(', ');
+    const ttc = parseFloat(document.getElementById('det-ttc')?.value)||null;
     const bePoint = (outcome === 'be_win' || outcome === 'be_loss') ? (document.getElementById('q-be-point')?.value.trim()||'') : '';
-    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, bePoint};
+    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, ttc, bePoint};
   }
 }
 
@@ -3223,6 +3244,8 @@ function fullLog(){
   const qrr=document.getElementById('q-quick-rr'); if(qrr) qrr.value='';
   const qprr=document.getElementById('q-planned-rr'); if(qprr) qprr.value='';
   const qhm=document.getElementById('q-hold-mins'); if(qhm) qhm.value='';
+  const qttc=document.getElementById('q-ttc'); if(qttc) qttc.value='';
+  const dttc=document.getElementById('det-ttc'); if(dttc) dttc.value='';
   const qod=document.getElementById('q-outcome-d'); if(qod) qod.value='';
   const qbp=document.getElementById('q-be-point'); if(qbp) qbp.value='';
   const bepf=document.getElementById('be-point-field'); if(bepf) bepf.style.display='none';
@@ -3294,6 +3317,25 @@ CRITICAL GRADING RULES:
 2. Read the trader's notes carefully. The notes describe what actually happened. Grade based on what they wrote, not on assumptions.
 3. If the trader tagged "Continuation" it IS a continuation setup. Do not call it a Mech Model.
 4. If the trader wrote a detailed description, use it — it's the ground truth for what happened in the trade.
+5. SETUP GRADE INDEPENDENCE: Setup grade and outcome are COMPLETELY INDEPENDENT. A losing trade can have an A+ setup grade if the setup was technically valid with proper confluence. A winning trade can have a D setup grade if it was a poor setup that got lucky. Never let the outcome influence the setup grade.
+
+SETUP GRADE criteria — evaluate the OPPORTUNITY quality, ignore the outcome completely:
+- A+/A: Full HTF confluence, clean entry zone, valid ICT structure, proper sponsorship, everything aligned
+- A-/B+: Strong setup, minor missing confluence, still a high-quality opportunity
+- B/B-: Decent setup, some gaps in confluence but tradeable
+- C+/C: Marginal setup, taking it is questionable but not wrong
+- C-/D: Poor setup, should not have been taken regardless of outcome
+- F: No valid setup, pure gamble
+
+EXECUTION GRADE criteria — this IS affected by mistakes and execution quality:
+- A+/A: Followed the plan perfectly, proper entry, stop, held to target
+- Deduct for: early exit, chased entry, moved BE early, oversized, ignored stop
+- A loss with perfect execution (stopped at original stop, no mistakes) = A execution grade
+- A win with multiple mistakes = C or D execution grade
+
+When mistakes are tagged (Early Exit, Chased Entry, FOMO, etc.) — these affect EXECUTION grade only, not setup grade.
+When a trade is a loss — evaluate WHY. If stopped at the original planned stop with no mistakes, the setup may still deserve B+ or higher. If the setup had no confluence, grade it low regardless.
+Never conflate "this setup failed" with "this was a bad setup." Most failed trades in ICT strategy are B+ setups that hit the 30-40% loss probability.
 
 THIS TRADE:
 ${t.ticker} ${t.side.toUpperCase()} | ${t.datetime||'unknown'} | Entry:${t.entry} Exit:${t.exit} Qty:${t.qty}
@@ -3481,11 +3523,12 @@ function switchReviewTab(tab, idx, loading) {
     const propPass = propChecks.filter(c=>c.pass).length;
 
     body.innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px">
         <div class="stat-card"><div class="stat-card-val ${pnl>=0?'pnl-pos':'pnl-neg'}">${pf(pnl)}</div><div class="stat-card-label">P&L</div></div>
         <div class="stat-card"><div class="stat-card-val">${t.plannedRR?t.plannedRR+'R':'—'}</div><div class="stat-card-label">Planned R:R</div></div>
         <div class="stat-card"><div class="stat-card-val" style="${t.plannedRR&&rr&&parseFloat(rr)<parseFloat(t.plannedRR)?'color:var(--amber)':''}">${rr?rr+'R':'—'}</div><div class="stat-card-label">Realized R:R</div></div>
         <div class="stat-card"><div class="stat-card-val">${t.holdMins!=null?t.holdMins+'m':'—'}</div><div class="stat-card-label">Hold Time</div></div>
+        <div class="stat-card"><div class="stat-card-val" style="${t.ttc!=null?(t.ttc<=3?'color:var(--green)':t.ttc<=6?'color:var(--amber)':'color:var(--red)'):''}">${t.ttc!=null?t.ttc+'m':'—'}</div><div class="stat-card-label">TTC</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
         <div style="background:var(--bg3);border-radius:var(--r);padding:14px">
@@ -3641,7 +3684,7 @@ function renderHistory() {
 
   document.getElementById('history-count').textContent=filtered.length+' trades shown';
   const body=document.getElementById('history-body');
-  if(!filtered.length){body.innerHTML=`<tr><td colspan="13" style="text-align:center;padding:30px;color:var(--muted)">No trades match your filters</td></tr>`;return;}
+  if(!filtered.length){body.innerHTML=`<tr><td colspan="16" style="text-align:center;padding:30px;color:var(--muted)">No trades match your filters</td></tr>`;return;}
   body.innerHTML=filtered.map(t=>{
     const pnl=calcPnL(t); const rr=calcRR(t); const idx=state.trades.indexOf(t);
     return `<tr onclick="openTradeModal(${idx})">
@@ -3655,6 +3698,7 @@ function renderHistory() {
       <td><strong class="${pnl>=0?'pnl-pos':'pnl-neg'}">${pf(pnl)}</strong></td>
       <td>${t.outcome?`<span class="tag-pill ${t.outcome==='win'?'setup-pill':t.outcome==='loss'?'mistake-pill':'amber-pill'}">${{win:'Win',loss:'Loss',be_win:'BE → Win',be_loss:'BE → Loss'}[t.outcome]}</span>`:'<span style="color:var(--dim)">—</span>'}</td>
       <td style="color:var(--muted)">${rr?rr+'R':'—'}</td>
+      <td style="font-family:var(--mono);font-size:11px;font-weight:600;color:${t.ttc!=null?(t.ttc<=3?'var(--green)':t.ttc<=6?'var(--amber)':'var(--red)'):'var(--muted)'}">${t.ttc!=null?t.ttc+'m':'—'}</td>
       <td style="color:var(--muted);font-size:11px">${t.propFirm?`<span style="color:var(--text);font-size:11px">${t.propFirm}</span>${t.propAccount?`<br><span style="color:var(--dim)">${t.propAccount}</span>`:''}` : '<span style="color:var(--dim)">—</span>'}</td>
       <td>${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
       <td>${(t.mistakes||[]).map(m=>`<span class="tag-pill mistake-pill">${m}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
@@ -3985,6 +4029,93 @@ function renderBEAnalysis(T) {
     </div>`;
 }
 
+// ─── TTC ANALYSIS ─────────────────────────────────────────────────────────────
+function renderTTCAnalysis(T) {
+  const el = document.getElementById('ttc-analysis-content');
+  const headEl = document.getElementById('ttc-headline');
+  if (!el || !headEl) return;
+
+  const withTTC = T.filter(t => t.ttc != null && !isNaN(t.ttc));
+  if (withTTC.length < 3) {
+    el.innerHTML = '<div class="empty">No TTC data yet — add TTC when logging trades to see this analysis.</div>';
+    headEl.textContent = '';
+    return;
+  }
+
+  const winTTC = withTTC.filter(t => t.outcome === 'win');
+  const lossTTC = withTTC.filter(t => t.outcome === 'loss');
+  const avgWinTTC = winTTC.length ? (winTTC.reduce((a,t) => a + t.ttc, 0) / winTTC.length).toFixed(1) : null;
+  const avgLossTTC = lossTTC.length ? (lossTTC.reduce((a,t) => a + t.ttc, 0) / lossTTC.length).toFixed(1) : null;
+
+  // Buckets
+  const fast = withTTC.filter(t => t.ttc <= 3);
+  const mid  = withTTC.filter(t => t.ttc > 3 && t.ttc <= 6);
+  const slow = withTTC.filter(t => t.ttc > 6);
+  const wr = arr => arr.length ? Math.round(arr.filter(t => t.outcome === 'win').length / arr.length * 100) : null;
+  const fastWR = wr(fast); const midWR = wr(mid); const slowWR = wr(slow);
+
+  headEl.textContent = `${withTTC.length} trades with TTC · avg ${(withTTC.reduce((a,t)=>a+t.ttc,0)/withTTC.length).toFixed(1)}m`;
+
+  const bar = (n, total, color) => {
+    const pct = total ? Math.round(n / total * 100) : 0;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="flex:1;height:8px;background:var(--bg4);border-radius:4px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:4px;transition:width .4s cubic-bezier(0.23,1,0.32,1)"></div>
+      </div>
+      <span style="font-size:11px;font-family:var(--mono);font-weight:700;color:${color};min-width:24px;text-align:right">${n}</span>
+    </div>`;
+  };
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div style="background:var(--bg3);border-radius:var(--r);padding:14px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Avg TTC by Outcome</div>
+        <div style="display:flex;gap:16px">
+          <div style="flex:1;text-align:center">
+            <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--green)">${avgWinTTC != null ? avgWinTTC+'m' : '—'}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">Winning trades</div>
+          </div>
+          <div style="width:1px;background:var(--border2)"></div>
+          <div style="flex:1;text-align:center">
+            <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--red)">${avgLossTTC != null ? avgLossTTC+'m' : '—'}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">Losing trades</div>
+          </div>
+        </div>
+        ${avgWinTTC && avgLossTTC ? `<div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center">${parseFloat(avgWinTTC) < parseFloat(avgLossTTC) ? '✅ Wins close faster — confirms the edge' : '⚠️ Losses close faster — review setup quality'}</div>` : ''}
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--r);padding:14px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Distribution</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">≤ 3 min (fast)</div>
+        ${bar(fast.length, withTTC.length, 'var(--green)')}
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">3 – 6 min</div>
+        ${bar(mid.length, withTTC.length, 'var(--amber)')}
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">&gt; 6 min (slow)</div>
+        ${bar(slow.length, withTTC.length, 'var(--red)')}
+      </div>
+    </div>
+    <div style="background:var(--bg3);border-radius:var(--r);padding:14px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Win Rate by TTC Bucket</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+        <div style="text-align:center;background:var(--bg4);border-radius:var(--r);padding:12px;border:1px solid rgba(0,208,132,.2)">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">≤ 3 min</div>
+          <div style="font-size:26px;font-weight:800;font-family:var(--mono);color:var(--green)">${fastWR != null ? fastWR+'%' : '—'}</div>
+          <div style="font-size:10px;color:var(--dim);margin-top:3px">${fast.length} trades</div>
+        </div>
+        <div style="text-align:center;background:var(--bg4);border-radius:var(--r);padding:12px;border:1px solid rgba(245,166,35,.2)">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">3 – 6 min</div>
+          <div style="font-size:26px;font-weight:800;font-family:var(--mono);color:var(--amber)">${midWR != null ? midWR+'%' : '—'}</div>
+          <div style="font-size:10px;color:var(--dim);margin-top:3px">${mid.length} trades</div>
+        </div>
+        <div style="text-align:center;background:var(--bg4);border-radius:var(--r);padding:12px;border:1px solid rgba(255,77,77,.2)">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">&gt; 6 min</div>
+          <div style="font-size:26px;font-weight:800;font-family:var(--mono);color:var(--red)">${slowWR != null ? slowWR+'%' : '—'}</div>
+          <div style="font-size:10px;color:var(--dim);margin-top:3px">${slow.length} trades</div>
+        </div>
+      </div>
+      ${(fastWR != null && slowWR != null) ? `<div style="margin-top:12px;font-size:12px;color:var(--muted);text-align:center">Trades closing in ≤3 min win <strong style="color:var(--text)">${fastWR}%</strong> of the time vs <strong style="color:var(--text)">${slowWR}%</strong> for &gt;6 min</div>` : ''}
+    </div>`;
+}
+
 // ─── AI INSIGHTS ──────────────────────────────────────────────────────────────
 async function runInsights() {
   if (!isPro()) { openUpgradeModal(); return; }
@@ -4199,15 +4330,15 @@ function refreshPatternFeed() {
   T.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(t.outcome==='win')hourPnL[h].wins++;});
   const bestHour=Object.entries(hourPnL).sort((a,b)=>b[1].pnl-a[1].pnl)[0];
   const worstHour=Object.entries(hourPnL).sort((a,b)=>a[1].pnl-b[1].pnl)[0];
-  if(bestHour&&bestHour[1].n>=2)patterns.push({color:'#9B7FFF',text:`Your best hour is <strong>${bestHour[0]}:00 EST</strong> — ${Math.round(bestHour[1].wins/bestHour[1].n*100)}% win rate, avg +$${Math.round(bestHour[1].pnl/bestHour[1].n)} per trade.`,badge:'+$'+Math.round(bestHour[1].pnl/bestHour[1].n)});
-  if(worstHour&&worstHour[1].n>=2&&worstHour[0]!==bestHour[0])patterns.push({color:'#ff4d4d',text:`You lose most at <strong>${worstHour[0]}:00 EST</strong> — avg $${Math.round(worstHour[1].pnl/worstHour[1].n)} per trade (${worstHour[1].n} trades). Consider skipping this hour.`,badge:'$'+Math.round(worstHour[1].pnl/worstHour[1].n)});
+  if(bestHour&&bestHour[1].n>=2)patterns.push({color:'#4a9eff',icon:'🕐',title:`Best hour: ${bestHour[0]}:00 EST`,subtitle:`${Math.round(bestHour[1].wins/bestHour[1].n*100)}% win rate · avg +$${Math.round(bestHour[1].pnl/bestHour[1].n)}/trade`,badge:'+$'+Math.round(bestHour[1].pnl/bestHour[1].n)});
+  if(worstHour&&worstHour[1].n>=2&&worstHour[0]!==bestHour[0])patterns.push({color:'#ff4d4d',icon:'⚠️',title:`Avoid ${worstHour[0]}:00 EST`,subtitle:`${worstHour[1].n} trades · avg $${Math.round(worstHour[1].pnl/worstHour[1].n)}/trade`,badge:'$'+Math.round(worstHour[1].pnl/worstHour[1].n)});
 
   // Setup win rates
   const setupStats={};
   T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(t.outcome==='win')setupStats[s].wins++;}));
   const setups=Object.entries(setupStats).filter(([,v])=>v.n>=2).sort((a,b)=>b[1].wins/b[1].n-a[1].wins/a[1].n);
-  if(setups.length)patterns.push({color:'#9B7FFF',text:`Your best setup is <strong>${setups[0][0]}</strong> — ${Math.round(setups[0][1].wins/setups[0][1].n*100)}% win rate over ${setups[0][1].n} trades.`,badge:Math.round(setups[0][1].wins/setups[0][1].n*100)+'% WR'});
-  if(setups.length>1){const worst=setups[setups.length-1];patterns.push({color:'#f5a623',text:`<strong>${worst[0]}</strong> is your weakest setup — only ${Math.round(worst[1].wins/worst[1].n*100)}% win rate. Consider reducing size or avoiding it.`,badge:Math.round(worst[1].wins/worst[1].n*100)+'% WR'});}
+  if(setups.length)patterns.push({color:'#9B7FFF',icon:'🎯',title:`${setups[0][0]} is strongest`,subtitle:`${Math.round(setups[0][1].wins/setups[0][1].n*100)}% win rate over ${setups[0][1].n} trades`,badge:Math.round(setups[0][1].wins/setups[0][1].n*100)+'% WR'});
+  if(setups.length>1){const worst=setups[setups.length-1];patterns.push({color:'#f5a623',icon:'📉',title:`${worst[0]} underperforming`,subtitle:`${Math.round(worst[1].wins/worst[1].n*100)}% WR — reduce size or avoid`,badge:Math.round(worst[1].wins/worst[1].n*100)+'% WR'});}
 
   // Mistake costs
   const mistakeCost={};
@@ -4215,7 +4346,7 @@ function refreshPatternFeed() {
     const pnl = calcPnL(t);
     (t.mistakes||[]).forEach(m=>{
       if(!mistakeCost[m])mistakeCost[m]={cost:0,n:0};
-      let cost = pnl < 0 ? pnl : 0; // default: only count losses
+      let cost = pnl < 0 ? pnl : 0;
       if (m === 'Early Exit' && t.plannedRR && t.quickRR) {
         const lostR = parseFloat(t.plannedRR) - parseFloat(t.quickRR);
         if (lostR > 0 && parseFloat(t.quickRR) !== 0) {
@@ -4227,30 +4358,32 @@ function refreshPatternFeed() {
     });
   });
   const topMistake=Object.entries(mistakeCost).sort((a,b)=>a[1].cost-b[1].cost)[0];
-  if(topMistake)patterns.push({color:'#ff4d4d',text:`<strong>${topMistake[0]}</strong> has cost you <strong>$${Math.abs(Math.round(topMistake[1].cost))}</strong> across ${topMistake[1].n} trades — your single most expensive behavior.`,badge:'-$'+Math.abs(Math.round(topMistake[1].cost))});
+  if(topMistake)patterns.push({color:'#ff4d4d',icon:'💸',title:`${topMistake[0]} costs most`,subtitle:`$${Math.abs(Math.round(topMistake[1].cost))} lost across ${topMistake[1].n} trades`,badge:'-$'+Math.abs(Math.round(topMistake[1].cost))});
 
   // Win/loss after loss
   const afterLoss=T.filter((t,i)=>i>0&&calcPnL(T[i-1])<0);
-  if(afterLoss.length>=3){const wr=Math.round(afterLoss.filter(t=>t.outcome==='win').length/afterLoss.length*100);const dir=wr>=50;patterns.push({color:dir?'#9B7FFF':'#ff4d4d',text:`After a losing trade, your win rate is <strong>${wr}%</strong> (${afterLoss.length} samples). ${wr<40?'Consider taking a break after losses.':wr>=60?'You bounce back well after losses.':'Mixed results after losses.'}`,badge:wr+'% after loss'});}
+  if(afterLoss.length>=3){const wr=Math.round(afterLoss.filter(t=>t.outcome==='win').length/afterLoss.length*100);const dir=wr>=50;patterns.push({color:dir?'#9B7FFF':'#ff4d4d',icon:'📊',title:`After a loss: ${wr}% win rate`,subtitle:`${afterLoss.length} samples · ${wr<40?'Take a break after losses':wr>=60?'You bounce back well':'Mixed recovery'}`,badge:wr+'% WR'});}
 
   // Revenge trading speed
   const quickEntries=T.filter((t,i)=>{if(i===0)return false;const prev=T[i-1];if(calcPnL(prev)>=0)return false;if(!prev.datetime||!t.datetime)return false;return (new Date(t.datetime)-new Date(prev.datetime))/60000<=5;});
-  if(quickEntries.length>=2){const revWR=Math.round(quickEntries.filter(t=>t.outcome==='win').length/quickEntries.length*100);patterns.push({color:'#ff4d4d',text:`You've entered <strong>${quickEntries.length} trades within 5 min of a loss</strong> — potential revenge trading. Win rate on those: ${revWR}%.`,badge:revWR+'% WR'});}
+  if(quickEntries.length>=2){const revWR=Math.round(quickEntries.filter(t=>t.outcome==='win').length/quickEntries.length*100);patterns.push({color:'#ff4d4d',icon:'🔄',title:`Revenge entries flagged`,subtitle:`${quickEntries.length} trades within 5m of a loss · ${revWR}% WR`,badge:revWR+'% WR'});}
 
-  // Consistency
-  const pnls=T.map(t=>calcPnL(t));
-  const avg=pnls.reduce((a,b)=>a+b,0)/pnls.length;
+  // Win/loss ratio
   const wins=T.filter(t=>t.outcome==='win');const losses=T.filter(t=>t.outcome==='loss');
   const avgW=wins.length?wins.reduce((a,t)=>a+calcPnL(t),0)/wins.length:0;
   const avgL=losses.length?Math.abs(losses.reduce((a,t)=>a+calcPnL(t),0)/losses.length):0;
-  if(avgW&&avgL)patterns.push({color:avgW/avgL>=1.5?'#9B7FFF':'#f5a623',text:`Your average win is <strong>$${Math.round(avgW)}</strong> and average loss is <strong>$${Math.round(avgL)}</strong> — a ${(avgW/avgL).toFixed(2)}:1 win/loss ratio. ${avgW/avgL>=2?'Excellent.':avgW/avgL>=1?'Acceptable, keep it above 1.5x.':'Your losses are too large relative to wins.'}`,badge:(avgW/avgL).toFixed(2)+'x W/L'});
+  if(avgW&&avgL){const ratio=avgW/avgL;patterns.push({color:ratio>=1.5?'#00d084':'#f5a623',icon:ratio>=1.5?'💰':'⚖️',title:`${ratio.toFixed(2)}:1 win/loss ratio`,subtitle:`Avg win $${Math.round(avgW)} · avg loss $${Math.round(avgL)} · ${ratio>=2?'Excellent':ratio>=1?'Keep above 1.5x':'Losses too large'}`,badge:ratio.toFixed(2)+'x'});}
 
-  el.innerHTML=patterns.slice(0,6).map(p=>`
-    <div class="pattern-feed-item">
-      <span style="width:8px;height:8px;border-radius:50%;background:${p.color};flex-shrink:0;margin-top:4px"></span>
-      <span style="font-size:12px;line-height:1.6;flex:1">${p.text}</span>
-      <span style="font-size:11px;font-weight:700;font-family:var(--mono);color:${p.color};white-space:nowrap;margin-left:8px">${p.badge}</span>
-    </div>`).join('');
+  const timeStr=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  el.innerHTML=patterns.slice(0,6).map((p,i)=>`
+    <div class="pattern-feed-item" style="border-left-color:${p.color};animation-delay:${i*50}ms">
+      <span class="pf-icon">${p.icon}</span>
+      <div class="pf-body">
+        <div class="pf-title">${p.title}</div>
+        <div class="pf-sub">${p.subtitle}</div>
+      </div>
+      <span class="pf-badge" style="color:${p.color};background:${p.color}22">${p.badge}</span>
+    </div>`).join('')+`<div class="pf-timestamp">Updated ${timeStr}</div>`;
 }
 
 // ─── TRADE COPILOT ────────────────────────────────────────────────────────────
@@ -6023,6 +6156,7 @@ function renderSetupsPage() {
   }
 
   renderBEAnalysis(T);
+  renderTTCAnalysis(T);
 
   // ── LONG vs SHORT ──
   const sideGroups = { long: [], short: [] };
@@ -6180,6 +6314,7 @@ function openEditTradeModal(idx) {
   document.getElementById('et-tp').value = t.tp||'';
   document.getElementById('et-entrytf').value = t.entryTF||'';
   document.getElementById('et-holdmins').value = t.holdMins != null ? t.holdMins : '';
+  document.getElementById('et-ttc').value = t.ttc != null ? t.ttc : '';
   document.getElementById('et-propfirm').value = t.propFirm||'';
   document.getElementById('et-notes').value = t.notes||'';
 
@@ -6246,6 +6381,8 @@ function saveEditTrade(reReview = false) {
   t.entryTF = document.getElementById('et-entrytf').value;
   const hm = document.getElementById('et-holdmins').value;
   t.holdMins = hm !== '' ? parseFloat(hm) : null;
+  const tc = document.getElementById('et-ttc').value;
+  t.ttc = tc !== '' ? parseFloat(tc) : null;
   t.propFirm = document.getElementById('et-propfirm').value.trim();
   t.notes = document.getElementById('et-notes').value.trim();
   t.setups = [...editingTradeSetups];
