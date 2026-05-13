@@ -5800,9 +5800,11 @@ function _calcPropDD(a, acTrades) {
   const ddType = (a.ddType||'EOD').toUpperCase();
   const sorted = [...acTrades].sort((x,y)=>(x.datetime||'').localeCompare(y.datetime||''));
   let ddUsed = 0;
+  let hwm = 0;
   if (ddType === 'INTRADAY') {
     let run=0, peak=0;
     sorted.forEach(t=>{ run+=calcPnL(t); if(run>peak)peak=run; });
+    hwm = peak;
     ddUsed = Math.max(0, peak - run);
   } else if (ddType === 'EOD') {
     const byDay={};
@@ -5810,12 +5812,14 @@ function _calcPropDD(a, acTrades) {
     let run=0, eodHigh=0;
     Object.keys(byDay).sort().forEach(d=>{ run+=byDay[d]; if(run>eodHigh)eodHigh=run; });
     const totalPnL=sorted.reduce((s,t)=>s+calcPnL(t),0);
+    hwm = eodHigh;
     ddUsed = Math.max(0, eodHigh - totalPnL);
   } else {
     const totalPnL=sorted.reduce((s,t)=>s+calcPnL(t),0);
+    hwm = Math.max(0, totalPnL);
     ddUsed = totalPnL<0 ? Math.abs(totalPnL) : 0;
   }
-  return {ddUsed, ddRemaining:Math.max(0,dd-ddUsed), ddPct:Math.min(100,(ddUsed/dd)*100)};
+  return {ddUsed, ddRemaining:Math.max(0,dd-ddUsed), ddPct:Math.min(100,(ddUsed/dd)*100), hwm};
 }
 function _propEquitySVG(acTrades, W=580, H=90) {
   const sorted=[...acTrades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
@@ -5994,7 +5998,7 @@ function openPropDetail(idx) {
   const acTrades = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm)).sort((x,y)=>(x.datetime||'').localeCompare(y.datetime||''));
   const pnl = acTrades.reduce((s,t)=>s+calcPnL(t),0);
   const dd=parseFloat(a.dd)||0, dll=parseFloat(a.dll)||0, target=parseFloat(a.target)||0;
-  const {ddUsed,ddRemaining,ddPct}=_calcPropDD(a,acTrades);
+  const {ddUsed,ddRemaining,ddPct,hwm}=_calcPropDD(a,acTrades);
   const ddType=a.ddType||'EOD';
   const wins=acTrades.filter(t=>t.outcome==='win').length;
   const wr=acTrades.length?Math.round(wins/acTrades.length*100):null;
@@ -6062,10 +6066,15 @@ function openPropDetail(idx) {
     <div class="pd-section">
       <div class="pd-sec-title">Drawdown · ${ddType}</div>
       <div class="pd-dd-explain">${ddTypeDesc[ddType]||'Drawdown type: '+ddType}</div>
-      ${dd?`<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
-        <div style="flex:1;min-width:80px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Max DD</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--red)">$${dd.toLocaleString()}</div></div>
-        <div style="flex:1;min-width:80px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Used</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:${ddPct>80?'var(--red)':ddPct>50?'var(--amber)':'var(--green)'}">$${ddUsed.toLocaleString()}</div></div>
-        <div style="flex:1;min-width:80px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Remaining</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--green)">$${ddRemaining.toLocaleString()}</div></div>
+      ${dd?`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <div style="flex:1;min-width:70px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Max DD</div><div style="font-size:18px;font-weight:800;font-family:var(--mono);color:var(--red)">$${dd.toLocaleString()}</div></div>
+        <div style="flex:1;min-width:70px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">${ddType==='EOD'?'EOD High':'Peak P&L'}</div><div style="font-size:18px;font-weight:800;font-family:var(--mono);color:var(--accent)">$${Math.round(hwm).toLocaleString()}</div></div>
+        <div style="flex:1;min-width:70px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Used</div><div style="font-size:18px;font-weight:800;font-family:var(--mono);color:${ddPct>80?'var(--red)':ddPct>50?'var(--amber)':'var(--green)'}">$${Math.round(ddUsed).toLocaleString()}</div></div>
+        <div style="flex:1;min-width:70px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Remaining</div><div style="font-size:18px;font-weight:800;font-family:var(--mono);color:${ddRemaining<dd*.2?'var(--red)':ddRemaining<dd*.5?'var(--amber)':'var(--green)'}">$${Math.round(ddRemaining).toLocaleString()}</div></div>
+      </div>
+      <div style="font-size:10px;color:var(--dim);margin-bottom:8px;font-family:var(--mono);background:var(--bg3);border-radius:6px;padding:6px 10px;line-height:1.8">
+        floor = $${Math.round(hwm).toLocaleString()} (high) − $${dd.toLocaleString()} (max DD) = ${(hwm-dd)>=0?'+':''}$${Math.round(hwm-dd).toLocaleString()}<br>
+        used = $${Math.round(hwm).toLocaleString()} (high) − $${Math.round(pnl).toLocaleString()} (current P&amp;L) = $${Math.round(ddUsed).toLocaleString()}
       </div>
       <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden"><div style="height:100%;width:${ddPct}%;background:${ddPct>80?'#ff4d4d':ddPct>50?'#f5a623':'#00d084'};border-radius:4px;transition:width .5s"></div></div>`:''}
     </div>
