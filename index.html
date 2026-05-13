@@ -5832,19 +5832,26 @@ function _calcPropDD(a, acTrades) {
   }
   return {ddUsed, ddRemaining:Math.max(0,dd-ddUsed), ddPct:Math.min(100,(ddUsed/dd)*100), hwm, manualMode:false};
 }
-function _propEquitySVG(acTrades, W=580, H=90) {
+function _propEquitySVG(acTrades, W=580, H=90, floorPnL=null) {
   const sorted=[...acTrades].sort((a,b)=>(a.datetime||'').localeCompare(b.datetime||''));
   if(sorted.length<2)return'';
   let run=0;
   const pts=[0,...sorted.map(t=>{run+=calcPnL(t);return run;})];
-  const mn=Math.min(...pts),mx=Math.max(...pts),range=(mx-mn)||1;
+  const allVals=floorPnL!=null?[...pts,floorPnL]:pts;
+  const mn=Math.min(...allVals),mx=Math.max(...allVals),range=(mx-mn)||1;
   const col=pts[pts.length-1]>=0?'#00d084':'#ff4d4d';
   const pad=8;
   const xs=pts.map((_,i)=>pad+(i/(pts.length-1))*(W-pad*2));
   const ys=pts.map(v=>H-pad-((v-mn)/range)*(H-pad*2));
   const coords=pts.map((_,i)=>`${xs[i].toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
   const fillPts=`${xs[0].toFixed(1)},${H} ${coords} ${xs[xs.length-1].toFixed(1)},${H}`;
-  return `<svg width="100%" viewBox="0 0 ${W} ${H}" fill="none" preserveAspectRatio="none"><defs><linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${col}" stop-opacity=".25"/><stop offset="100%" stop-color="${col}" stop-opacity=".02"/></linearGradient></defs><polygon points="${fillPts}" fill="url(#eqGrad)"/><polyline points="${coords}" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>`;
+  let floorSVG='';
+  if(floorPnL!=null){
+    const fy=H-pad-((floorPnL-mn)/range)*(H-pad*2);
+    floorSVG=`<rect x="${pad}" y="${fy.toFixed(1)}" width="${(W-pad*2).toFixed(1)}" height="${(H-fy).toFixed(1)}" fill="#ff4d4d" opacity="0.07"/>
+    <line x1="${pad}" y1="${fy.toFixed(1)}" x2="${(W-pad).toFixed(1)}" y2="${fy.toFixed(1)}" stroke="#ff4d4d" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.75"/>`;
+  }
+  return `<svg width="100%" viewBox="0 0 ${W} ${H}" fill="none" preserveAspectRatio="none"><defs><linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${col}" stop-opacity=".25"/><stop offset="100%" stop-color="${col}" stop-opacity=".02"/></linearGradient></defs>${floorSVG}<polygon points="${fillPts}" fill="url(#eqGrad)"/><polyline points="${coords}" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>`;
 }
 function renderPropCombinedStats() {
   const accounts = state.propAccounts || [];
@@ -6029,7 +6036,26 @@ function openPropDetail(idx) {
     Intraday:'Intraday trailing: your drawdown limit updates in real time after every winning trade throughout the day.',
     Static:'Static drawdown: your max drawdown is fixed from your starting balance — it never moves regardless of profits.'
   };
-  const equitySVG=_propEquitySVG(acTrades);
+  // Floor line for equity chart
+  const sizeK2=(a.size||'').match(/^(\d+)K$/i);
+  const startBal2=parseFloat(a.startBalance)||(sizeK2?parseInt(sizeK2[1])*1000:0);
+  const floorPnL=dd?(a.ddFloor&&startBal2?parseFloat(a.ddFloor)-startBal2:hwm-dd):null;
+
+  // Payout / winning days progress
+  const winDayMin=parseFloat(a.winDayMin)||200;
+  const winDaysReq=parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
+  const consistencyMax=parseFloat(a.consistencyMax)||40;
+  const byDayMap={};
+  acTrades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDayMap[d]=(byDayMap[d]||0)+calcPnL(t);});
+  const winDays=Object.values(byDayMap).filter(p=>p>=winDayMin);
+  const winDayCount=winDays.length;
+  const totalWinProfit=winDays.reduce((s,p)=>s+p,0);
+  const bestDayProfit=winDays.length?Math.max(...winDays):0;
+  const conPct=totalWinProfit>0?Math.round(bestDayProfit/totalWinProfit*100):0;
+  const conOk=conPct<=consistencyMax;
+  const daysToGo=Math.max(0,winDaysReq-winDayCount);
+
+  const equitySVG=_propEquitySVG(acTrades,580,90,floorPnL);
   const recentTrades=[...acTrades].sort((a,b)=>(b.datetime||'').localeCompare(a.datetime||'')).slice(0,15);
 
   document.getElementById('prop-detail-inner').innerHTML = `
@@ -6046,10 +6072,15 @@ function openPropDetail(idx) {
 
     ${equitySVG?`<div style="border-bottom:1px solid var(--border)">
       <div style="padding:14px 20px 0">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Equity Curve</div>
-        <div style="border-radius:var(--r);overflow:hidden;background:var(--bg2);height:90px">${equitySVG}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Equity Curve</span>
+          ${floorPnL!=null?`<span style="display:flex;align-items:center;gap:5px;font-size:9px;color:rgba(255,77,77,0.7)"><svg width="16" height="6" viewBox="0 0 16 6"><line x1="0" y1="3" x2="16" y2="3" stroke="#ff4d4d" stroke-width="1.5" stroke-dasharray="4,2"/></svg>DD floor</span>`:''}
+        </div>
+        <div style="border-radius:var(--r);overflow:hidden;background:var(--bg2);height:110px">${equitySVG}</div>
         <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:4px;padding-bottom:12px">
-          <span>${dates[0]||'—'}</span><span style="font-family:var(--mono);font-weight:700;color:${pnlCol}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</span><span>${dates[dates.length-1]||'—'}</span>
+          <span>${dates[0]||'—'}</span>
+          <span style="font-family:var(--mono);font-weight:700;color:${pnlCol}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</span>
+          <span>${dates[dates.length-1]||'—'}</span>
         </div>
       </div>
     </div>`:''}
@@ -6073,6 +6104,38 @@ function openPropDetail(idx) {
         <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.min(100,pnl>0?(pnl/target)*100:0)}%;background:linear-gradient(90deg,var(--accent),#00d084);border-radius:3px;transition:width .5s"></div></div>
       </div>`:''}
     </div>
+
+    ${winDaysReq>0?`<div class="pd-section">
+      <div class="pd-sec-title">Payout Progress</div>
+      <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <span style="font-size:30px;font-weight:800;font-family:var(--mono);letter-spacing:-1px;color:${winDayCount>=winDaysReq?'var(--green)':'var(--text)'}">${winDayCount}<span style="font-size:16px;color:var(--muted)">/${winDaysReq}</span></span>
+            <span style="font-size:11px;color:var(--muted)">winning days</span>
+          </div>
+          ${daysToGo>0?`<span style="font-size:11px;color:var(--amber);font-weight:600">${daysToGo} more needed</span>`:`<span style="font-size:11px;color:var(--green);font-weight:700">✓ Days met</span>`}
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:10px">
+          <div style="height:100%;width:${Math.min(100,winDaysReq?winDayCount/winDaysReq*100:0)}%;background:${winDayCount>=winDaysReq?'var(--green)':'var(--accent)'};border-radius:3px;transition:width .5s"></div>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          ${Array.from({length:winDaysReq},(_,i)=>`<div style="width:28px;height:28px;border-radius:6px;background:${i<winDayCount?'rgba(0,208,132,0.15)':'rgba(255,255,255,0.04)'};border:1px solid ${i<winDayCount?'rgba(0,208,132,0.5)':'var(--border2)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${i<winDayCount?'var(--green)':'var(--dim)'}">${i<winDayCount?'✓':i+1}</div>`).join('')}
+        </div>
+        <div style="font-size:9px;color:var(--dim);margin-top:8px">Winning day = $${winDayMin.toLocaleString()}+ net profit</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--r);padding:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Consistency Rule</span>
+          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:${conOk?'rgba(0,208,132,0.12)':'rgba(255,77,77,0.12)'};color:${conOk?'var(--green)':'var(--red)'}">${conOk?'✓ Pass':'✗ Fail'}</span>
+        </div>
+        <div style="font-size:10px;color:var(--dim);margin-bottom:10px">Best single day must be ≤ ${consistencyMax}% of total winning profit</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+          <div style="text-align:center"><div style="font-size:15px;font-weight:800;font-family:var(--mono);color:var(--green)">$${Math.round(bestDayProfit).toLocaleString()}</div><div style="font-size:8px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Best Day</div></div>
+          <div style="text-align:center"><div style="font-size:15px;font-weight:800;font-family:var(--mono);color:var(--muted)">$${Math.round(totalWinProfit).toLocaleString()}</div><div style="font-size:8px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Total Win P&amp;L</div></div>
+          <div style="text-align:center;border:1px solid ${conOk?'rgba(0,208,132,0.3)':'rgba(255,77,77,0.3)'};border-radius:var(--r);padding:4px"><div style="font-size:15px;font-weight:800;font-family:var(--mono);color:${conOk?'var(--green)':'var(--red)'}">${conPct}%</div><div style="font-size:8px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Best / Total</div></div>
+        </div>
+      </div>
+    </div>`:''}
 
     <div class="pd-section">
       <div class="pd-sec-title">Drawdown · ${ddType}</div>
@@ -6100,6 +6163,9 @@ function openPropDetail(idx) {
         <div class="pd-rule-field"><label>Profit Target ($)</label><input type="number" value="${target||''}" onchange="savePropDetailField(${idx},'target',this.value)"></div>
         <div class="pd-rule-field"><label>Start Balance ($) <span style="color:var(--dim);font-weight:400;font-size:9px">auto from size</span></label><input type="number" value="${parseFloat(a.startBalance)||(((a.size||'').match(/^(\d+)K$/i)||[])[1]||0)*1000||''}" placeholder="e.g. 50000" onchange="savePropDetailField(${idx},'startBalance',this.value)"></div>
         <div class="pd-rule-field"><label>DD Floor ($) <span style="color:var(--accent);font-weight:400;font-size:9px">from dashboard</span></label><input type="number" value="${parseFloat(a.ddFloor)||''}" placeholder="e.g. 48494.80" onchange="savePropDetailField(${idx},'ddFloor',this.value)" style="border-color:${a.ddFloor?'var(--accent)':''}"></div>
+        <div class="pd-rule-field"><label>Win Day Min ($) <span style="color:var(--dim);font-weight:400;font-size:9px">for payout</span></label><input type="number" value="${parseFloat(a.winDayMin)||200}" placeholder="200" onchange="savePropDetailField(${idx},'winDayMin',this.value)"></div>
+        <div class="pd-rule-field"><label>Win Days Required</label><input type="number" value="${parseInt(a.winDaysReq)||(parseInt(a.minDays)||0)||''}" placeholder="e.g. 5" onchange="savePropDetailField(${idx},'winDaysReq',this.value)"></div>
+        <div class="pd-rule-field"><label>Consistency Max % <span style="color:var(--dim);font-weight:400;font-size:9px">best/total</span></label><input type="number" value="${parseFloat(a.consistencyMax)||40}" placeholder="40" onchange="savePropDetailField(${idx},'consistencyMax',this.value)"></div>
       </div>
       <div style="margin-top:6px;font-size:10px;color:var(--dim);background:var(--bg3);border-radius:6px;padding:6px 10px">Set <strong style="color:var(--accent)">DD Floor</strong> to the exact floor shown on your prop firm dashboard for a precise remaining calculation. Leave blank to use the auto-calculated EOD trail.</div>
       <div style="margin-top:8px"><div class="pd-rule-field"><label>Notes</label><textarea rows="3" onchange="savePropDetailField(${idx},'notes',this.value)">${(a.notes||'').replace(/</g,'&lt;')}</textarea></div></div>
