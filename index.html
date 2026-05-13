@@ -943,9 +943,9 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 .cc-hud-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(155,127,255,.6);font-weight:700;margin-bottom:3px}
 .cc-hud-node{font-size:11px;color:rgba(255,255,255,.25);letter-spacing:.05em}
 .cc-corner{position:absolute;bottom:18px;right:22px;z-index:2;pointer-events:none;font-size:9px;color:rgba(255,255,255,.14);font-family:var(--mono);letter-spacing:.1em;text-align:right}
-.phero-stat{display:flex;align-items:center;justify-content:center;padding:10px 8px}
+.phero-stat{display:flex;align-items:center;justify-content:center;padding:14px 10px}
 .phero-val{font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent)}
-.phero-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+.phero-lbl{font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-top:5px}
 .phero-sub{font-size:10px;color:rgba(255,255,255,.3);margin-top:2px}
 @keyframes calDetailIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 body.light-mode .page-hero-banner{background:linear-gradient(135deg,#f0f0ff,#e8e8f8)!important;border-color:rgba(155,127,255,.25)!important}
@@ -1343,7 +1343,7 @@ body.light-mode .metric-val{color:#0a0a14}
     </div>
   </div>
 
-  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:170px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="dh-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div class="phero-grid" style="position:relative;z-index:1;padding:16px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
       <div id="dh-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
@@ -1699,7 +1699,7 @@ body.light-mode .metric-val{color:#0a0a14}
     </div>
   </div>
 
-  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
+  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:170px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="sp-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
     <div class="phero-grid" style="position:relative;z-index:1;padding:16px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
       <div id="sp-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
@@ -6492,7 +6492,8 @@ function renderSetupsPage() {
   const spPF = spGrossLoss > 0 ? spGrossProfit / spGrossLoss : null;
   const spAvgWinnerRStr = spAvgWinnerR ? spAvgWinnerR.toFixed(2)+'R' : '—';
   const spPFStr = spPF != null ? spPF.toFixed(2) : '—';
-  renderStatsHero(T, spSetups, spBestWR, spBestPnL, spAvgWinnerR, spAvgLoserR, spPF);
+  const spWR = T.length ? Math.round(T.filter(t=>t.outcome==='win').length/T.length*100) : 0;
+  renderStatsHero(T, spSetups, spBestWR, spBestPnL, spAvgWinnerR, spAvgLoserR, spPF, spWR);
   startHeroCanvas('sp-c');
   if (!T.length) return;
 
@@ -8044,52 +8045,62 @@ function setHeroStats(prefix, vals, cols) {
 
 // ── HERO BANNER SVG HELPERS ────────────────────────────────────────────────────
 function _sparklineSVG(trades, color) {
-  if (trades.length < 2) return `<svg width="60" height="30" viewBox="0 0 60 30" fill="none"><line x1="4" y1="15" x2="56" y2="15" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/></svg>`;
+  if (trades.length < 2) return `<svg width="90" height="44" viewBox="0 0 90 44" fill="none"><line x1="6" y1="22" x2="84" y2="22" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/></svg>`;
   let run = 0;
   const pts = [0, ...trades.map(t => { run += calcPnL(t); return run; })];
-  const min = Math.min(...pts), max = Math.max(...pts);
-  const range = (max - min) || 1;
+  const mn = Math.min(...pts), mx = Math.max(...pts);
+  const range = (mx - mn) || 1;
+  const pad = 5;
+  const W = 90, H = 44;
   const coords = pts.map((v, i) => {
-    const x = (i / (pts.length - 1)) * 56 + 2;
-    const y = 26 - ((v - min) / range) * 22;
+    const x = pad + (i / (pts.length - 1)) * (W - pad * 2);
+    const y = (H - pad) - ((v - mn) / range) * (H - pad * 2);
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
-  return `<svg width="60" height="30" viewBox="0 0 60 30" fill="none"><polygon points="2,28 ${coords} 58,28" fill="${color}" opacity="0.1"/><polyline points="${coords}" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" fill="none" opacity="0.9"/></svg>`;
+  const x0 = pad.toFixed(1), xN = (W - pad).toFixed(1), yB = (H - pad).toFixed(1);
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none"><defs><linearGradient id="slg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.28"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><polygon points="${x0},${yB} ${coords} ${xN},${yB}" fill="url(#slg)"/><polyline points="${coords}" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>`;
 }
 
 function _donutSVG(winPct) {
-  const r = 15, cx = 22, cy = 22, circ = 2 * Math.PI * r;
+  const r = 22, cx = 30, cy = 30, circ = 2 * Math.PI * r;
   const pct = Math.min(Math.max(winPct || 0, 0), 100);
+  const lossPct = 100 - pct;
   const winArc = (pct / 100) * circ;
+  const lossArc = (lossPct / 100) * circ;
   const pctStr = pct > 0 ? Math.round(pct) + '%' : '—';
-  return `<svg width="44" height="44" viewBox="0 0 44 44" fill="none"><circle cx="${cx}" cy="${cy}" r="${r}" stroke="rgba(255,77,77,0.6)" stroke-width="5" fill="none"/><circle cx="${cx}" cy="${cy}" r="${r}" stroke="rgba(0,208,132,0.9)" stroke-width="5" fill="none" stroke-dasharray="${winArc.toFixed(2)} ${circ.toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="8.5" font-weight="700" font-family="Geist Mono,monospace" fill="#EEEEF2">${pctStr}</text></svg>`;
+  return `<svg width="60" height="60" viewBox="0 0 60 60" fill="none"><circle cx="${cx}" cy="${cy}" r="${r}" stroke="rgba(255,77,77,0.55)" stroke-width="6" fill="none"/><circle cx="${cx}" cy="${cy}" r="${r}" stroke="#00d084" stroke-width="6" fill="none" stroke-dasharray="${winArc.toFixed(2)} ${circ.toFixed(2)}" transform="rotate(-90 ${cx} ${cy})" opacity="0.9"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="700" font-family="Geist Mono,monospace" fill="#EEEEF2">${pctStr}</text></svg>`;
 }
 
 function _rrBarsSVG(winR, lossR) {
   const maxR = Math.max(winR || 0, lossR || 0, 0.01);
-  const winW = Math.max(Math.round((winR || 0) / maxR * 66), 2);
-  const lossW = Math.max(Math.round((lossR || 0) / maxR * 66), 2);
-  return `<svg width="70" height="18" viewBox="0 0 70 18" fill="none"><rect x="0" y="0" width="68" height="5" rx="2.5" fill="rgba(255,255,255,0.07)"/><rect x="0" y="0" width="${winW}" height="5" rx="2.5" fill="#00d084" opacity="0.85"/><rect x="0" y="11" width="68" height="5" rx="2.5" fill="rgba(255,255,255,0.07)"/><rect x="0" y="11" width="${lossW}" height="5" rx="2.5" fill="#ff4d4d" opacity="0.85"/></svg>`;
+  const trackW = 84;
+  const winW = Math.max(Math.round((winR || 0) / maxR * trackW), 3);
+  const lossW = Math.max(Math.round((lossR || 0) / maxR * trackW), 3);
+  return `<svg width="88" height="22" viewBox="0 0 88 22" fill="none"><rect x="0" y="0" width="${trackW}" height="6" rx="3" fill="rgba(255,255,255,0.07)"/><rect x="0" y="0" width="${winW}" height="6" rx="3" fill="#00d084" opacity="0.85"/><rect x="0" y="13" width="${trackW}" height="6" rx="3" fill="rgba(255,255,255,0.07)"/><rect x="0" y="13" width="${lossW}" height="6" rx="3" fill="#ff4d4d" opacity="0.85"/></svg>`;
 }
 
 function _gaugeSVG(value) {
   // Semi-circle gauge: left=0, top=1.0 marker, right=2.0 max
-  // Background arc: M 8,36 A 28,28 0 0,0 64,36 (CCW through top)
-  // Red arc: from left to 1.0 position (same path, dasharray)
-  // Green arc: from top M 36,8 A 28,28 0 0,1 64,36 (CW to right)
-  const pathLen = Math.PI * 28;
+  // cx=48,cy=50,r=38 → left(10,50) top(48,12) right(86,50)
+  const cx = 48, cy = 50, r = 38;
+  const pathLen = Math.PI * r;   // full semicircle length
+  const halfLen = pathLen / 2;   // each half
   const cap = 2.0;
   const v = Math.min(value || 0, cap);
+  const bgPath  = `M ${cx-r},${cy} A ${r},${r} 0 0,0 ${cx+r},${cy}`;
+  const rightArc = `M ${cx},${cy-r} A ${r},${r} 0 0,1 ${cx+r},${cy}`; // CW quarter: top→right
   let arcs = '';
   if (v > 0) {
-    const redLen = Math.min(v, 1.0) / cap * pathLen;
-    arcs += `<path d="M 8,36 A 28,28 0 0,0 64,36" stroke="#ff4d4d" stroke-width="6" stroke-linecap="round" fill="none" stroke-dasharray="${redLen.toFixed(2)} ${pathLen.toFixed(2)}"/>`;
+    const redLen = (Math.min(v, 1.0) / 1.0) * halfLen;
+    arcs += `<path d="${bgPath}" stroke="#ff4d4d" stroke-width="7" stroke-linecap="round" fill="none" stroke-dasharray="${redLen.toFixed(2)} ${pathLen.toFixed(2)}"/>`;
   }
   if (v > 1.0) {
-    const greenLen = (v - 1.0) / cap * pathLen;
-    arcs += `<path d="M 36,8 A 28,28 0 0,1 64,36" stroke="#00d084" stroke-width="6" stroke-linecap="round" fill="none" stroke-dasharray="${greenLen.toFixed(2)} ${pathLen.toFixed(2)}"/>`;
+    const greenLen = ((v - 1.0) / 1.0) * halfLen;
+    arcs += `<path d="${rightArc}" stroke="#00d084" stroke-width="7" stroke-linecap="round" fill="none" stroke-dasharray="${greenLen.toFixed(2)} ${halfLen.toFixed(2)}"/>`;
   }
-  return `<svg width="72" height="40" viewBox="0 0 72 40" fill="none"><path d="M 8,36 A 28,28 0 0,0 64,36" stroke="rgba(255,255,255,0.08)" stroke-width="6" stroke-linecap="round" fill="none"/>${arcs}<line x1="36" y1="5" x2="36" y2="14" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  // 1.0 tick at top of arc
+  const tickX = cx, tickY1 = cy - r - 5, tickY2 = cy - r + 7;
+  return `<svg width="96" height="54" viewBox="0 0 96 54" fill="none"><path d="${bgPath}" stroke="rgba(255,255,255,0.08)" stroke-width="7" stroke-linecap="round" fill="none"/>${arcs}<line x1="${tickX}" y1="${tickY1}" x2="${tickX}" y2="${tickY2}" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round"/></svg>`;
 }
 
 function renderDashHero(T) {
@@ -8127,14 +8138,16 @@ function renderDashHero(T) {
   if(s4)s4.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polyline points="3,4 7,10 11,4" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="font-size:26px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${ddColor};line-height:1">${ddStr}</div></div>${lbl('Max Drawdown','peak to trough')}</div>`;
 }
 
-function renderStatsHero(T, spSetups, spBestWRStr, spBestPnLStr, spAvgWinnerR, spAvgLoserR, spPF) {
-  const bestWRNum = parseFloat(spBestWRStr) || 0;
+function renderStatsHero(T, spSetups, spBestWRStr, spBestPnLStr, spAvgWinnerR, spAvgLoserR, spPF, spWR) {
+  const wrNum = spWR != null ? spWR : 0;
+  const winCount = T.filter(t=>t.outcome==='win').length;
+  const lossCount = T.filter(t=>t.outcome==='loss').length;
   const pfColor = spPF!=null?(spPF>=1?'var(--green)':'var(--red)'):'var(--muted)';
   const lbl=s=>`<div class="phero-lbl">${s}</div>`;
   const s0=document.getElementById('sp-s0');
   if(s0)s0.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="font-size:32px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:var(--accent);line-height:1">${spSetups.size||'—'}</div>${lbl('Setups Tracked')}</div>`;
   const s1=document.getElementById('sp-s1');
-  if(s1)s1.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">${_donutSVG(bestWRNum)}${lbl('Best Win%')}</div>`;
+  if(s1)s1.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px">${_donutSVG(wrNum)}${lbl('Win Rate')}<div class="phero-sub">${winCount}W / ${lossCount}L</div></div>`;
   const s2=document.getElementById('sp-s2');
   if(s2){const isPos=spBestPnLStr!=='—'&&!spBestPnLStr.startsWith('-');const bc=spBestPnLStr==='—'?'var(--muted)':isPos?'var(--green)':'var(--red)';s2.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="${isPos?'2,9 6,3 10,9':'2,3 6,9 10,3'}" stroke="${bc}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${bc};line-height:1">${spBestPnLStr}</div></div>${lbl('Best Setup P&L')}</div>`;}
   const s3=document.getElementById('sp-s3');
