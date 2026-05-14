@@ -1056,20 +1056,15 @@ body.light-mode .metric-val{color:#0a0a14}
 /* ─── PROP DETAIL PANEL ─── */
 #prop-detail-overlay{display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.5);backdrop-filter:blur(3px)}
 #prop-detail-overlay.open{display:block}
-#prop-detail-panel{position:fixed;top:0;right:0;bottom:0;width:min(700px,100vw);background:var(--bg);border-left:1px solid var(--border2);z-index:801;overflow-y:auto;transform:translateX(110%);transition:transform 340ms cubic-bezier(0.16,1,0.3,1)}
+#prop-detail-panel{position:fixed;top:0;right:0;bottom:0;width:min(780px,100vw);background:var(--bg);border-left:1px solid var(--border2);z-index:801;overflow-y:auto;transform:translateX(110%);transition:transform 340ms cubic-bezier(0.16,1,0.3,1)}
 #prop-detail-panel.open{transform:translateX(0)}
-/* ─── PROP PERFORMANCE MODAL ─── */
-#perf-modal-overlay{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.88);backdrop-filter:blur(18px);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity 220ms cubic-bezier(0.23,1,0.32,1)}
-#perf-modal-overlay.open{opacity:1;pointer-events:all}
-#perf-modal{background:var(--bg);border:1px solid rgba(155,127,255,0.14);border-radius:20px;width:min(880px,100%);margin:auto;flex-shrink:0;transform:scale(0.95);transition:transform 220ms cubic-bezier(0.23,1,0.32,1);box-shadow:0 60px 120px rgba(0,0,0,.82)}
-#perf-modal-overlay.open #perf-modal{transform:scale(1)}
-.pm-hdr{display:flex;align-items:center;gap:10px;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap}
-.pm-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:20px 24px 0}
-.pm-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
-.pm-card-lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.pm-pill-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 24px 24px}
-.pm-pill{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center}
-.pm-period-sel{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:inherit;padding:6px 10px;cursor:pointer;outline:none;transition:border-color .15s}
+/* ─── PROP PERF PANEL ─── */
+.pm-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 20px 0}
+.pm-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.pm-card-lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.pm-pill-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 20px 16px}
+.pm-pill{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center}
+.pm-period-sel{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:inherit;padding:5px 9px;cursor:pointer;outline:none;transition:border-color .15s}
 .pm-period-sel:hover{border-color:rgba(155,127,255,.4)}
 @media(max-width:640px){.pm-stat-grid{grid-template-columns:1fr!important}.pm-pill-row{grid-template-columns:repeat(2,1fr)!important}}
 .pd-hdr{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border2);padding:14px 20px;display:flex;align-items:center;gap:12px;z-index:2}
@@ -6188,7 +6183,6 @@ function renderPropAccountsSection() {
               <!-- ACTIONS -->
               <div style="display:flex;gap:6px">
                 <button class="btn btn-sm" onclick="event.stopPropagation();quickUpdatePnL(${a._idx})" style="flex:1;text-align:center;justify-content:center">Update P&L</button>
-                <button class="btn btn-sm" onclick="event.stopPropagation();openPropPerformanceModal(${a._idx})" style="color:var(--accent);border-color:rgba(155,127,255,.3)">Performance</button>
                 <button class="btn btn-sm" onclick="event.stopPropagation();openPropAccountModal(${a._idx})">Edit</button>
                 <button class="btn btn-sm" style="color:var(--red)" onclick="event.stopPropagation();deletePropAccount(${a._idx})">✕</button>
               </div>
@@ -6200,17 +6194,25 @@ function renderPropAccountsSection() {
   }).join('');
 }
 
-function openPropDetail(idx) {
+function openPropDetail(idx, period) {
+  period = period || document.getElementById('prop-detail-panel').dataset.period || 'all';
+  document.getElementById('prop-detail-panel').dataset.period = period;
   const accounts = state.propAccounts||[];
   const a = accounts[idx];
   if (!a) return;
-  const acTrades = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm)).sort((x,y)=>(x.datetime||'').localeCompare(y.datetime||''));
+
+  // ── All-time trades (for drawdown, equity SVG, recent trades table)
+  const allTrades = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
+  const acTrades = [...allTrades].sort((x,y)=>(x.datetime||'').localeCompare(y.datetime||''));
+  // ── Period-filtered trades (for performance stat cards and chart)
+  const trades = _perfFilterByPeriod(allTrades, period);
+
+  // ── All-time calcs (for drawdown / settings sections)
   const pnl = acTrades.reduce((s,t)=>s+calcPnL(t),0);
   const dd=parseFloat(a.dd)||0, dll=parseFloat(a.dll)||0, target=parseFloat(a.target)||0;
   const {ddUsed,ddRemaining,ddPct,hwm,manualMode,currentBal}=_calcPropDD(a,acTrades);
   const ddType=a.ddType||'EOD';
-  const wins=acTrades.filter(t=>t.outcome==='win').length;
-  const wr=acTrades.length?Math.round(wins/acTrades.length*100):null;
+  const wr=acTrades.length?Math.round(acTrades.filter(t=>t.outcome==='win').length/acTrades.length*100):null;
   const today=new Date().toISOString().slice(0,10);
   const todayPnL=acTrades.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
   const dllPct=dll&&todayPnL<0?Math.min(100,Math.abs(todayPnL)/dll*100):0;
@@ -6222,17 +6224,10 @@ function openPropDetail(idx) {
   const statusColor={eval:'var(--amber)',funded:'var(--green)',passed:'var(--blue)',blown:'var(--red)',inactive:'var(--dim)'};
   const statusLabel={eval:'Eval',funded:'Funded / PA',passed:'Passed',blown:'Blown',inactive:'Inactive'};
   const statusCol=statusColor[a.status]||'var(--dim)';
-  const ddTypeDesc={
-    EOD:'End-of-Day trailing: your drawdown limit follows your balance up at close of each trading day. Once it trails up, it never comes back down.',
-    Intraday:'Intraday trailing: your drawdown limit updates in real time after every winning trade throughout the day.',
-    Static:'Static drawdown: your max drawdown is fixed from your starting balance — it never moves regardless of profits.'
-  };
-  // Floor line for equity chart
+  const ddTypeDesc={EOD:'End-of-Day trailing: your drawdown limit follows your balance up at close of each trading day. Once it trails up, it never comes back down.',Intraday:'Intraday trailing: your drawdown limit updates in real time after every winning trade throughout the day.',Static:'Static drawdown: your max drawdown is fixed from your starting balance — it never moves regardless of profits.'};
   const sizeK2=(a.size||'').match(/^(\d+)K$/i);
   const startBal2=parseFloat(a.startBalance)||(sizeK2?parseInt(sizeK2[1])*1000:0);
   const floorPnL=dd?(a.ddFloor&&startBal2?parseFloat(a.ddFloor)-startBal2:hwm-dd):null;
-
-  // Payout / winning days progress
   const winDayMin=parseFloat(a.winDayMin)||200;
   const winDaysReq=parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
   const consistencyMax=parseFloat(a.consistencyMax)||40;
@@ -6245,29 +6240,147 @@ function openPropDetail(idx) {
   const conPct=totalWinProfit>0?Math.round(bestDayProfit/totalWinProfit*100):0;
   const conOk=conPct<=consistencyMax;
   const daysToGo=Math.max(0,winDaysReq-winDayCount);
-
   const equitySVG=_propEquitySVG(acTrades,580,90,floorPnL);
   const recentTrades=[...acTrades].sort((a,b)=>(b.datetime||'').localeCompare(a.datetime||'')).slice(0,15);
 
+  // ── Period-filtered perf calcs
+  const totalPnLf=trades.reduce((s,t)=>s+calcPnL(t),0);
+  const tradeCount=trades.length;
+  const winsF=trades.filter(t=>t.outcome==='win');
+  const lossesF=trades.filter(t=>t.outcome==='loss');
+  const winCountF=winsF.length, lossCountF=lossesF.length;
+  const winPctF=tradeCount?Math.round(winCountF/tradeCount*100):0;
+  const avgWin=winCountF?winsF.reduce((s,t)=>s+calcPnL(t),0)/winCountF:0;
+  const avgLoss=lossCountF?Math.abs(lossesF.reduce((s,t)=>s+calcPnL(t),0)/lossCountF):0;
+  const grossWin=winsF.reduce((s,t)=>s+calcPnL(t),0);
+  const grossLoss=Math.abs(lossesF.reduce((s,t)=>s+calcPnL(t),0));
+  const pfNum=grossLoss>0?grossWin/grossLoss:null;
+  const pfLabel=pfNum===null?(grossWin>0?'∞':'—'):pfNum.toFixed(2);
+  const byDayF={};
+  trades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDayF[d]=(byDayF[d]||0)+calcPnL(t);});
+  const dayEntriesF=Object.entries(byDayF).sort((a,b)=>a[0].localeCompare(b[0]));
+  const dayValsF=Object.values(byDayF);
+  const greenDays=dayValsF.filter(v=>v>0).length;
+  const totalDays=dayValsF.length;
+  const dayWinPct=totalDays?Math.round(greenDays/totalDays*100):0;
+  const bestDayEntry=dayEntriesF.length?[...dayEntriesF].sort((a,b)=>b[1]-a[1])[0]:null;
+  const bestDayPnL=bestDayEntry?bestDayEntry[1]:0;
+  const bestDayPct=totalPnLf>0&&bestDayPnL>0?Math.round(bestDayPnL/totalPnLf*100):null;
+  const holdMinsArr=trades.filter(t=>t.holdMins!=null).map(t=>t.holdMins);
+  const avgHold=holdMinsArr.length?Math.round(holdMinsArr.reduce((s,v)=>s+v,0)/holdMinsArr.length):null;
+  const pnlVals=trades.map(t=>calcPnL(t));
+  const bestTrade=pnlVals.length?Math.max(...pnlVals):null;
+  const worstTrade=pnlVals.length?Math.min(...pnlVals):null;
+  const totalFees=trades.reduce((s,t)=>s+(t.fees||0),0);
+  const pnlColF=totalPnLf>=0?'var(--green)':'var(--red)';
+  const fmt=v=>(v>=0?'+':'-')+'$'+Math.abs(Math.round(v)).toLocaleString();
+  const winGaugeSVG=_perfWinGaugeSVG(winCountF,tradeCount);
+  const donutSVG=_perfDonutSVG(grossWin,grossLoss,pfLabel);
+
   document.getElementById('prop-detail-inner').innerHTML = `
     <div class="pd-hdr">
-      <button onclick="closePropDetail()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;display:flex;align-items:center;border-radius:6px;transition:color .15s" onmouseenter="this.style.color='var(--text)'" onmouseleave="this.style.color='var(--muted)'">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
       <div style="flex:1;min-width:0">
-        <div style="font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.3px">${a.name||a.plan||'Account'}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:1px">${a.firm||''}${a.plan?' · '+a.plan:''}${a.size?' · '+a.size:''}</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px">${a.name||a.plan||'Account'}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:1px">${a.firm||''}${a.plan?' · '+a.plan:''}${a.size?' · '+a.size:''}</div>
       </div>
-      <span style="color:${statusCol};background:${statusCol}18;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap">${statusLabel[a.status]||a.status||'—'}</span>
+      <span style="color:${statusCol};background:${statusCol}18;font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;white-space:nowrap">${statusLabel[a.status]||a.status||'—'}</span>
+      <select class="pm-period-sel" onchange="openPropDetail(${idx},this.value)">
+        <option value="all" ${period==='all'?'selected':''}>All time</option>
+        <option value="week" ${period==='week'?'selected':''}>This week</option>
+        <option value="month" ${period==='month'?'selected':''}>This month</option>
+        <option value="year" ${period==='year'?'selected':''}>This year</option>
+      </select>
+      <button onclick="closePropDetail()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:5px;display:flex;align-items:center;justify-content:center;border-radius:7px;transition:all .15s;flex-shrink:0" onmouseenter="this.style.color='var(--text)';this.style.background='rgba(255,255,255,.06)'" onmouseleave="this.style.color='var(--muted)';this.style.background='none'">
+        <svg width="17" height="17" viewBox="0 0 18 18" fill="none"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </div>
 
+    <!-- ROW 1: Total P&L · Win % · Avg Win/Loss -->
+    <div class="pm-stat-grid">
+      <div class="pm-card">
+        <div class="pm-card-lbl">Total P&amp;L</div>
+        <div style="font-size:28px;font-weight:800;font-family:var(--mono);color:${pnlColF};letter-spacing:-.5px;line-height:1;text-shadow:${totalPnLf>=0?'0 0 26px rgba(0,208,132,.35)':'0 0 26px rgba(255,77,77,.35)'}">${fmt(totalPnLf)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">${tradeCount} trade${tradeCount!==1?'s':''}</div>
+      </div>
+      <div class="pm-card">
+        <div class="pm-card-lbl">Trade Win %</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:26px;font-weight:800;font-family:var(--mono);color:${winPctF>=50?'var(--green)':'var(--red)'};flex-shrink:0;letter-spacing:-.5px;line-height:1">${winPctF}%</div>
+          <div style="flex:1;display:flex;justify-content:center;align-items:center">${winGaugeSVG}</div>
+        </div>
+      </div>
+      <div class="pm-card">
+        <div class="pm-card-lbl">Avg Win / Avg Loss</div>
+        ${_perfAvgBarHTML(avgWin,avgLoss)}
+      </div>
+    </div>
+
+    <!-- ROW 2: Day Win % · Profit Factor · Best Day -->
+    <div class="pm-stat-grid" style="padding-top:10px">
+      <div class="pm-card">
+        <div class="pm-card-lbl">Day Win %</div>
+        <div style="font-size:26px;font-weight:800;font-family:var(--mono);color:${dayWinPct>=50?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1">${dayWinPct}%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px">${greenDays} of ${totalDays} day${totalDays!==1?'s':''} green</div>
+        ${totalDays>0?`<div style="margin-top:8px;display:flex;gap:3px;flex-wrap:wrap">${dayEntriesF.map(([d,v])=>`<div title="${d}: ${fmt(v)}" style="width:9px;height:9px;border-radius:2px;background:${v>0?'rgba(0,208,132,.55)':'rgba(255,77,77,.45)'}"></div>`).join('')}</div>`:''}
+      </div>
+      <div class="pm-card">
+        <div class="pm-card-lbl">Profit Factor</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div>
+            <div style="font-size:26px;font-weight:800;font-family:var(--mono);color:${pfNum===null||(pfNum&&pfNum>=1)?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1">${pfLabel}</div>
+            <div style="margin-top:6px"><div style="font-size:10px;color:var(--green);font-family:var(--mono)">+$${Math.round(grossWin).toLocaleString()}</div><div style="font-size:10px;color:var(--red);font-family:var(--mono)">-$${Math.round(grossLoss).toLocaleString()}</div></div>
+          </div>
+          <div style="flex:1;display:flex;justify-content:center;align-items:center">${donutSVG}</div>
+        </div>
+      </div>
+      <div class="pm-card">
+        <div class="pm-card-lbl">Best Day</div>
+        ${bestDayEntry?`<div style="font-size:26px;font-weight:800;font-family:var(--mono);color:${bestDayPnL>=0?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1;text-shadow:${bestDayPnL>=0?'0 0 20px rgba(0,208,132,.35)':'0 0 20px rgba(255,77,77,.35)'}">${fmt(bestDayPnL)}</div><div style="font-size:11px;color:var(--muted);margin-top:5px">${bestDayEntry[0]}${bestDayPct!==null?' · '+bestDayPct+'% of total':''}</div>`:`<div style="font-size:20px;font-weight:700;color:var(--dim);margin-top:4px">—</div>`}
+      </div>
+    </div>
+
+    <!-- DAILY BALANCE CHART -->
+    <div style="padding:14px 20px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Daily Balance</span>
+        <span style="font-size:11px;font-family:var(--mono);font-weight:700;color:${pnlColF}">${fmt(totalPnLf)}</span>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;height:170px;position:relative">
+        <canvas id="perf-balance-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- STAT PILLS -->
+    <div class="pm-pill-row">
+      <div class="pm-pill">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Avg Hold</div>
+        <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--text)">${avgHold!=null?avgHold+'m':'—'}</div>
+      </div>
+      <div class="pm-pill">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Best Trade</div>
+        <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--green)">${bestTrade!=null?fmt(bestTrade):'—'}</div>
+      </div>
+      <div class="pm-pill">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Worst Trade</div>
+        <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--red)">${worstTrade!=null?fmt(worstTrade):'—'}</div>
+      </div>
+      <div class="pm-pill">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Total Fees</div>
+        <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--amber)">$${Math.round(totalFees).toLocaleString()}</div>
+      </div>
+    </div>
+
+    <!-- DIVIDER -->
+    <div style="height:1px;background:rgba(155,127,255,0.1);margin:0 20px 4px"></div>
+
+    <!-- EQUITY CURVE (all-time) -->
     ${equitySVG?`<div style="border-bottom:1px solid var(--border)">
       <div style="padding:14px 20px 0">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Equity Curve</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Equity Curve <span style="color:var(--dim);font-weight:400">(all time)</span></span>
           ${floorPnL!=null?`<span style="display:flex;align-items:center;gap:5px;font-size:9px;color:rgba(255,77,77,0.7)"><svg width="16" height="6" viewBox="0 0 16 6"><line x1="0" y1="3" x2="16" y2="3" stroke="#ff4d4d" stroke-width="1.5" stroke-dasharray="4,2"/></svg>DD floor</span>`:''}
         </div>
-        <div style="border-radius:var(--r);overflow:hidden;background:var(--bg2);height:110px">${equitySVG}</div>
+        <div style="border-radius:var(--r);overflow:hidden;background:var(--bg2);height:90px">${equitySVG}</div>
         <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:4px;padding-bottom:12px">
           <span>${dates[0]||'—'}</span>
           <span style="font-family:var(--mono);font-weight:700;color:${pnlCol}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</span>
@@ -6276,6 +6389,7 @@ function openPropDetail(idx) {
       </div>
     </div>`:''}
 
+    <!-- ACCOUNT STATS (all-time) -->
     <div class="pd-section">
       <div class="pd-sec-title">Account Stats</div>
       <div class="pd-stat-row">
@@ -6378,11 +6492,13 @@ function openPropDetail(idx) {
   document.getElementById('prop-detail-overlay').classList.add('open');
   document.getElementById('prop-detail-panel').classList.add('open');
   document.body.style.overflow='hidden';
+  requestAnimationFrame(() => _renderPerfBalanceChart(trades));
 }
 function closePropDetail() {
   document.getElementById('prop-detail-overlay').classList.remove('open');
   document.getElementById('prop-detail-panel').classList.remove('open');
   document.body.style.overflow='';
+  if (window._perfChart) { window._perfChart.destroy(); window._perfChart = null; }
 }
 function savePropDetailField(idx, field, value) {
   const accounts=state.propAccounts||[];
@@ -6449,16 +6565,7 @@ function deletePropPayout(idx) {
   save(); renderPropFirmsPage();
 }
 
-// ─── PROP PERFORMANCE MODAL ───────────────────────────────────────────────────
-function openPropPerformanceModal(idx) {
-  document.getElementById('perf-modal-overlay').dataset.idx = idx;
-  _renderPerfModal(idx, 'all');
-  document.getElementById('perf-modal-overlay').classList.add('open');
-}
-function closePropPerformanceModal() {
-  document.getElementById('perf-modal-overlay').classList.remove('open');
-  if (window._perfChart) { window._perfChart.destroy(); window._perfChart = null; }
-}
+// ─── PROP PERF HELPERS ────────────────────────────────────────────────────────
 function _perfFilterByPeriod(trades, period) {
   const now = new Date();
   if (period === 'week') {
@@ -6580,145 +6687,6 @@ function _renderPerfBalanceChart(trades) {
       }
     }
   });
-}
-function _renderPerfModal(idx, period) {
-  const a = (state.propAccounts||[])[idx];
-  if (!a) return;
-  const baseTrades = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
-  const trades = _perfFilterByPeriod(baseTrades, period);
-  const statusColor={eval:'var(--amber)',funded:'var(--green)',passed:'var(--blue)',blown:'var(--red)',inactive:'var(--dim)'};
-  const statusLabel={eval:'Eval',funded:'Funded PA',passed:'Passed',blown:'Blown',inactive:'Inactive'};
-  const statusCol=statusColor[a.status]||'var(--dim)';
-
-  const totalPnL = trades.reduce((s,t)=>s+calcPnL(t),0);
-  const tradeCount = trades.length;
-  const wins = trades.filter(t=>t.outcome==='win');
-  const losses = trades.filter(t=>t.outcome==='loss');
-  const winCount=wins.length, lossCount=losses.length;
-  const winPct = tradeCount ? Math.round(winCount/tradeCount*100) : 0;
-  const avgWin = winCount ? wins.reduce((s,t)=>s+calcPnL(t),0)/winCount : 0;
-  const avgLoss = lossCount ? Math.abs(losses.reduce((s,t)=>s+calcPnL(t),0)/lossCount) : 0;
-  const grossWin = wins.reduce((s,t)=>s+calcPnL(t),0);
-  const grossLoss = Math.abs(losses.reduce((s,t)=>s+calcPnL(t),0));
-  const pfNum = grossLoss > 0 ? grossWin/grossLoss : null;
-  const pfLabel = pfNum===null ? (grossWin>0?'∞':'—') : pfNum.toFixed(2);
-
-  const byDay={};
-  trades.forEach(t=>{ const d=t.datetime?.slice(0,10); if(d) byDay[d]=(byDay[d]||0)+calcPnL(t); });
-  const dayEntries=Object.entries(byDay).sort((a,b)=>a[0].localeCompare(b[0]));
-  const dayVals=Object.values(byDay);
-  const greenDays=dayVals.filter(v=>v>0).length;
-  const totalDays=dayVals.length;
-  const dayWinPct=totalDays?Math.round(greenDays/totalDays*100):0;
-  const bestDayEntry=dayEntries.length?[...dayEntries].sort((a,b)=>b[1]-a[1])[0]:null;
-  const bestDayPnL=bestDayEntry?bestDayEntry[1]:0;
-  const bestDayPct=totalPnL>0&&bestDayPnL>0?Math.round(bestDayPnL/totalPnL*100):null;
-
-  const holdMinsArr=trades.filter(t=>t.holdMins!=null).map(t=>t.holdMins);
-  const avgHold=holdMinsArr.length?Math.round(holdMinsArr.reduce((s,v)=>s+v,0)/holdMinsArr.length):null;
-  const pnlVals=trades.map(t=>calcPnL(t));
-  const bestTrade=pnlVals.length?Math.max(...pnlVals):null;
-  const worstTrade=pnlVals.length?Math.min(...pnlVals):null;
-  const totalFees=trades.reduce((s,t)=>s+(t.fees||0),0);
-
-  const pnlCol=totalPnL>=0?'var(--green)':'var(--red)';
-  const fmt=v=>(v>=0?'+':'-')+'$'+Math.abs(Math.round(v)).toLocaleString();
-  const winGaugeSVG=_perfWinGaugeSVG(winCount,tradeCount);
-  const donutSVG=_perfDonutSVG(grossWin,grossLoss,pfLabel);
-
-  document.getElementById('perf-modal-inner').innerHTML = `
-    <div class="pm-hdr">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.3px">${a.name||a.plan||'Account'}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${a.firm||''}${a.plan?' · '+a.plan:''}${a.size?' · '+a.size:''}</div>
-      </div>
-      <span style="color:${statusCol};background:${statusCol}18;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap">${statusLabel[a.status]||a.status||'—'}</span>
-      <select class="pm-period-sel" onchange="_renderPerfModal(${idx},this.value)">
-        <option value="all" ${period==='all'?'selected':''}>All time</option>
-        <option value="week" ${period==='week'?'selected':''}>This week</option>
-        <option value="month" ${period==='month'?'selected':''}>This month</option>
-        <option value="year" ${period==='year'?'selected':''}>This year</option>
-      </select>
-      <button onclick="closePropPerformanceModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all .15s;flex-shrink:0" onmouseenter="this.style.color='var(--text)';this.style.background='rgba(255,255,255,.06)'" onmouseleave="this.style.color='var(--muted)';this.style.background='none'">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-
-    <div class="pm-stat-grid">
-      <div class="pm-card">
-        <div class="pm-card-lbl">Total P&amp;L</div>
-        <div style="font-size:34px;font-weight:800;font-family:var(--mono);color:${pnlCol};letter-spacing:-.5px;line-height:1;text-shadow:${totalPnL>=0?'0 0 30px rgba(0,208,132,.35)':'0 0 30px rgba(255,77,77,.35)'}">${fmt(totalPnL)}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:8px">${tradeCount} trade${tradeCount!==1?'s':''}</div>
-      </div>
-      <div class="pm-card">
-        <div class="pm-card-lbl">Trade Win %</div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="font-size:32px;font-weight:800;font-family:var(--mono);color:${winPct>=50?'var(--green)':'var(--red)'};flex-shrink:0;letter-spacing:-.5px;line-height:1">${winPct}%</div>
-          <div style="flex:1;display:flex;justify-content:center;align-items:center">${winGaugeSVG}</div>
-        </div>
-      </div>
-      <div class="pm-card">
-        <div class="pm-card-lbl">Avg Win / Avg Loss</div>
-        ${_perfAvgBarHTML(avgWin,avgLoss)}
-      </div>
-    </div>
-
-    <div class="pm-stat-grid" style="padding-top:12px">
-      <div class="pm-card">
-        <div class="pm-card-lbl">Day Win %</div>
-        <div style="font-size:30px;font-weight:800;font-family:var(--mono);color:${dayWinPct>=50?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1">${dayWinPct}%</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px">${greenDays} of ${totalDays} day${totalDays!==1?'s':''} green</div>
-        ${totalDays>0?`<div style="margin-top:12px;display:flex;gap:3px;flex-wrap:wrap">${dayEntries.map(([d,v])=>`<div title="${d}: ${fmt(v)}" style="width:10px;height:10px;border-radius:2px;background:${v>0?'rgba(0,208,132,.55)':'rgba(255,77,77,.45)'}"></div>`).join('')}</div>`:''}
-      </div>
-      <div class="pm-card">
-        <div class="pm-card-lbl">Profit Factor</div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <div>
-            <div style="font-size:30px;font-weight:800;font-family:var(--mono);color:${pfNum===null||(pfNum&&pfNum>=1)?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1">${pfLabel}</div>
-            <div style="margin-top:8px"><div style="font-size:10px;color:var(--green);font-family:var(--mono)">+$${Math.round(grossWin).toLocaleString()}</div><div style="font-size:10px;color:var(--red);font-family:var(--mono)">-$${Math.round(grossLoss).toLocaleString()}</div></div>
-          </div>
-          <div style="flex:1;display:flex;justify-content:center;align-items:center">${donutSVG}</div>
-        </div>
-      </div>
-      <div class="pm-card">
-        <div class="pm-card-lbl">Best Day</div>
-        ${bestDayEntry?`
-          <div style="font-size:30px;font-weight:800;font-family:var(--mono);color:${bestDayPnL>=0?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1;text-shadow:${bestDayPnL>=0?'0 0 24px rgba(0,208,132,.35)':'0 0 24px rgba(255,77,77,.35)'}">${fmt(bestDayPnL)}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:6px">${bestDayEntry[0]}${bestDayPct!==null?' · '+bestDayPct+'% of total':''}</div>
-        `:`<div style="font-size:22px;font-weight:700;color:var(--dim);margin-top:4px">—</div><div style="font-size:11px;color:var(--dim);margin-top:6px">No trades in period</div>`}
-      </div>
-    </div>
-
-    <div style="padding:16px 24px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Daily Account Balance</span>
-        <span style="font-size:11px;font-family:var(--mono);font-weight:700;color:${pnlCol}">${fmt(totalPnL)}</span>
-      </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;height:200px;position:relative">
-        <canvas id="perf-balance-chart"></canvas>
-      </div>
-    </div>
-
-    <div class="pm-pill-row">
-      <div class="pm-pill">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Avg Hold</div>
-        <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--text)">${avgHold!=null?avgHold+'m':'—'}</div>
-      </div>
-      <div class="pm-pill">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Best Trade</div>
-        <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--green)">${bestTrade!=null?fmt(bestTrade):'—'}</div>
-      </div>
-      <div class="pm-pill">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Worst Trade</div>
-        <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--red)">${worstTrade!=null?fmt(worstTrade):'—'}</div>
-      </div>
-      <div class="pm-pill">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Total Fees</div>
-        <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--amber)">$${Math.round(totalFees).toLocaleString()}</div>
-      </div>
-    </div>
-  `;
-  requestAnimationFrame(() => _renderPerfBalanceChart(trades));
 }
 
 // ─── PROP ACCOUNT MODAL ───────────────────────────────────────────────────────
@@ -10164,19 +10132,5 @@ if (state.trades.length > 0) renderDashboard();
   <div id="prop-detail-inner"></div>
 </div>
 
-<!-- PROP PERFORMANCE MODAL -->
-<div id="perf-modal-overlay" onclick="if(event.target===this)closePropPerformanceModal()">
-  <div id="perf-modal">
-    <div id="perf-modal-inner"></div>
-  </div>
-</div>
-
-<script>
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && document.getElementById('perf-modal-overlay')?.classList.contains('open')) {
-    closePropPerformanceModal();
-  }
-});
-</script>
 </body>
 </html>
