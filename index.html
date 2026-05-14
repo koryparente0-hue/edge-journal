@@ -916,7 +916,18 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 .qc-cat-pill{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .14s}
 .qc-cat-pill.active{background:rgba(155,127,255,.15);border-color:var(--accent);color:var(--accent)}
 /* capture card */
-.cap-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;margin-bottom:8px}
+.cap-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;margin-bottom:8px;position:relative}
+.cap-card:hover .cap-del-btn{opacity:1}
+.cap-del-btn{position:absolute;top:8px;right:8px;background:rgba(255,77,77,.12);border:1px solid rgba(255,77,77,.25);color:#ff4d4d;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer;opacity:0;transition:opacity .15s}
+.cap-del-btn:hover{background:rgba(255,77,77,.22)}
+.cap-filter-pill{padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .14s;white-space:nowrap}
+.cap-filter-pill:hover{border-color:var(--accent);color:var(--accent)}
+.cap-filter-pill.cap-filter-active{background:rgba(155,127,255,.15);border-color:var(--accent);color:var(--accent)}
+.cap-search{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:6px 12px;color:var(--text);font-size:12px;font-family:var(--display);outline:none;width:180px;transition:border-color .18s}
+.cap-search:focus{border-color:rgba(155,127,255,.4)}
+.cap-date-hdr{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.cap-date-hdr:first-child{margin-top:0}
+.cap-cat-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em}
 /* weekly reset */
 .wr-ta{width:100%;min-height:90px;background:var(--bg3);border:1px solid var(--border2);border-radius:0 var(--r) var(--r) 0;padding:11px 13px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.7;box-sizing:border-box;outline:none}
 .wr-ta:focus{border-color:rgba(155,127,255,.4);box-shadow:0 0 0 2px rgba(155,127,255,.08)}
@@ -2214,6 +2225,7 @@ body.light-mode .metric-val{color:#0a0a14}
         <button id="jtab-goals-btn" onclick="switchJournalTab('goals')" class="jtab jtab-active">Goals</button>
         <button id="jtab-daily-btn" onclick="switchJournalTab('daily')" class="jtab">Daily Log</button>
         <button id="jtab-weekly-btn" onclick="switchJournalTab('weekly')" class="jtab">Weekly Reset</button>
+        <button id="jtab-captures-btn" onclick="switchJournalTab('captures')" class="jtab">⚡ Captures</button>
       </div>
       <button class="btn btn-green" id="journal-add-btn" onclick="journalAddAction()">+ Add Goal</button>
     </div>
@@ -2417,6 +2429,22 @@ body.light-mode .metric-val{color:#0a0a14}
         <div id="daily-history-list"></div>
       </div>
     </div>
+  </div>
+
+  <!-- CAPTURES TAB -->
+  <div id="jtab-captures" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap">
+      <div style="font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.3px">Quick Captures</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <button class="cap-filter-pill cap-filter-active" data-filter="all" onclick="setCaptureFilter('all')">All</button>
+        <button class="cap-filter-pill" data-filter="thought" onclick="setCaptureFilter('thought')">💭 Thought</button>
+        <button class="cap-filter-pill" data-filter="idea" onclick="setCaptureFilter('idea')">💡 Idea</button>
+        <button class="cap-filter-pill" data-filter="tradeobs" onclick="setCaptureFilter('tradeobs')">📈 Trade Obs</button>
+        <button class="cap-filter-pill" data-filter="content" onclick="setCaptureFilter('content')">🎬 Content</button>
+        <input id="cap-search" class="cap-search" placeholder="Search captures..." oninput="renderCapturesTab()">
+      </div>
+    </div>
+    <div id="captures-list-wrap"></div>
   </div>
 </div>
 
@@ -8424,21 +8452,26 @@ function renderJournalPage() {
 function updateJournalAddBtn() {
   const btn = document.getElementById('journal-add-btn');
   if (!btn) return;
-  btn.textContent = journalTab === 'goals' ? '+ Add Goal' : journalTab === 'weekly' ? '+ Weekly Reset' : '+ Log Today';
-  btn.onclick = journalTab === 'goals' ? () => openGoalModal() : journalTab === 'weekly' ? () => saveWeeklyReset() : () => switchJournalTab('daily');
+  if (journalTab === 'goals')         { btn.textContent = '+ Add Goal';      btn.onclick = () => openGoalModal(); }
+  else if (journalTab === 'weekly')   { btn.textContent = '+ Weekly Reset';  btn.onclick = () => saveWeeklyReset(); }
+  else if (journalTab === 'captures') { btn.textContent = '+ Capture';       btn.onclick = () => openQCModal(); }
+  else                                { btn.textContent = '+ Log Today';     btn.onclick = () => switchJournalTab('daily'); }
 }
 function switchJournalTab(tab) {
   journalTab = tab;
-  document.getElementById('jtab-goals').style.display   = tab==='goals'  ? '' : 'none';
-  document.getElementById('jtab-daily').style.display   = tab==='daily'  ? '' : 'none';
-  document.getElementById('jtab-weekly').style.display  = tab==='weekly' ? '' : 'none';
-  document.getElementById('jtab-goals-btn').classList.toggle('jtab-active', tab==='goals');
-  document.getElementById('jtab-daily-btn').classList.toggle('jtab-active', tab==='daily');
-  document.getElementById('jtab-weekly-btn').classList.toggle('jtab-active', tab==='weekly');
+  document.getElementById('jtab-goals').style.display      = tab==='goals'    ? '' : 'none';
+  document.getElementById('jtab-daily').style.display      = tab==='daily'    ? '' : 'none';
+  document.getElementById('jtab-weekly').style.display     = tab==='weekly'   ? '' : 'none';
+  document.getElementById('jtab-captures').style.display   = tab==='captures' ? '' : 'none';
+  document.getElementById('jtab-goals-btn').classList.toggle('jtab-active',    tab==='goals');
+  document.getElementById('jtab-daily-btn').classList.toggle('jtab-active',    tab==='daily');
+  document.getElementById('jtab-weekly-btn').classList.toggle('jtab-active',   tab==='weekly');
+  document.getElementById('jtab-captures-btn').classList.toggle('jtab-active', tab==='captures');
   updateJournalAddBtn();
-  if (tab==='goals') { renderGoalsTab(); startJournalHeroCanvas(); }
-  else if (tab==='weekly') { weeklyViewKey=_getMondayKey(new Date()); renderWeeklyTab(); }
-  else renderDailyTab();
+  if (tab==='goals')         { renderGoalsTab(); startJournalHeroCanvas(); }
+  else if (tab==='weekly')   { weeklyViewKey=_getMondayKey(new Date()); renderWeeklyTab(); }
+  else if (tab==='captures') { renderCapturesTab(); }
+  else                       { renderDailyTab(); }
 }
 
 // ── HERO CANVAS (cursor-following orbs) ──────────────────────────────────────
@@ -9473,6 +9506,7 @@ function saveQCCapture(){
   j.captures.unshift({text,category:_qcCat,createdAt:new Date().toISOString()});
   state.journal=j;save(true);closeQCModal();
   if(journalTab==='daily')renderDailyCapturesList();
+  else if(journalTab==='captures')renderCapturesTab();
 }
 function renderDailyCapturesList(){
   const el=document.getElementById('daily-captures-list');if(!el)return;
@@ -9484,6 +9518,72 @@ function renderDailyCapturesList(){
   if(!caps.length){el.innerHTML='';return;}
   const catIcons={'thought':'💭','idea':'💡','tradeobs':'📈','content':'🎬'};
   el.innerHTML=caps.map(c=>`<div class="cap-card"><div style="display:flex;align-items:flex-start;gap:10px"><span style="font-size:15px">${catIcons[c.category]||'💭'}</span><div style="flex:1"><div style="font-size:13px;color:var(--text);line-height:1.55">${c.text}</div><div style="font-size:10px;color:var(--dim);margin-top:4px">${new Date(c.createdAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div></div></div></div>`).join('');
+}
+
+// ── CAPTURES TAB ───────────────────────────────────────────────────────────────
+let _capFilter='all';
+function setCaptureFilter(f){
+  _capFilter=f;
+  document.querySelectorAll('.cap-filter-pill').forEach(p=>p.classList.toggle('cap-filter-active',p.dataset.filter===f));
+  renderCapturesTab();
+}
+function deleteCapture(iso){
+  const j=getJournal();
+  j.captures=j.captures.filter(c=>c.createdAt!==iso);
+  state.journal=j;save(true);
+  if(journalTab==='captures')renderCapturesTab();
+  renderDailyCapturesList();
+}
+function renderCapturesTab(){
+  const wrap=document.getElementById('captures-list-wrap');if(!wrap)return;
+  const j=getJournal();
+  const query=(document.getElementById('cap-search')?.value||'').toLowerCase().trim();
+  const catIcons={'thought':'💭','idea':'💡','tradeobs':'📈','content':'🎬'};
+  const catColors={'thought':'rgba(155,127,255,.18)','idea':'rgba(245,166,35,.18)','tradeobs':'rgba(0,208,132,.18)','content':'rgba(74,158,255,.18)'};
+  const catTextColors={'thought':'#9B7FFF','idea':'#f5a623','tradeobs':'#00d084','content':'#4a9eff'};
+  const catLabels={'thought':'Thought','idea':'Idea','tradeobs':'Trade Obs','content':'Content'};
+
+  let caps=[...j.captures];
+  if(_capFilter!=='all')caps=caps.filter(c=>c.category===_capFilter);
+  if(query)caps=caps.filter(c=>c.text.toLowerCase().includes(query));
+
+  if(!caps.length){
+    wrap.innerHTML=`<div class="card" style="text-align:center;padding:48px 24px"><div style="font-size:40px;margin-bottom:14px">⚡</div><div style="font-size:15px;font-weight:700;margin-bottom:8px;color:var(--text)">${_capFilter==='all'&&!query?'No captures yet':'No captures match'}</div><div style="font-size:13px;color:var(--muted)">${_capFilter==='all'&&!query?'Use the <span style="color:var(--accent)">+ Capture</span> button above or the floating + button to add your first capture.':'Try a different filter or search term.'}</div></div>`;
+    return;
+  }
+
+  // Group by date (Today / Yesterday / formatted date)
+  const groups={};
+  const todayStr=new Date().toISOString().slice(0,10);
+  const yesterStr=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  caps.forEach(c=>{
+    const d=c.createdAt.slice(0,10);
+    let label;
+    if(d===todayStr)label='Today';
+    else if(d===yesterStr)label='Yesterday';
+    else label=new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    if(!groups[d])groups[d]={label,items:[]};
+    groups[d].items.push(c);
+  });
+
+  const sortedDates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  let html='';
+  sortedDates.forEach(d=>{
+    const {label,items}=groups[d];
+    html+=`<div class="cap-date-hdr">${label}</div>`;
+    items.forEach(c=>{
+      const iso=c.createdAt;
+      const cat=c.category||'thought';
+      const bg=catColors[cat]||catColors.thought;
+      const tc=catTextColors[cat]||catTextColors.thought;
+      const icon=catIcons[cat]||'💭';
+      const lbl=catLabels[cat]||'Thought';
+      const time=new Date(iso).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+      const safeIso=iso.replace(/'/g,"\\'");
+      html+=`<div class="cap-card"><button class="cap-del-btn" onclick="deleteCapture('${safeIso}')">✕ Delete</button><div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1"><div style="margin-bottom:7px"><span class="cap-cat-badge" style="background:${bg};color:${tc}">${icon} ${lbl}</span></div><div style="font-size:13px;color:var(--text);line-height:1.6">${c.text}</div><div style="font-size:10px;color:var(--dim);margin-top:6px">${time}</div></div></div></div>`;
+    });
+  });
+  wrap.innerHTML=html;
 }
 
 // ── WEEKLY RESET ───────────────────────────────────────────────────────────────
