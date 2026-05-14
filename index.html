@@ -1058,6 +1058,20 @@ body.light-mode .metric-val{color:#0a0a14}
 #prop-detail-overlay.open{display:block}
 #prop-detail-panel{position:fixed;top:0;right:0;bottom:0;width:min(700px,100vw);background:var(--bg);border-left:1px solid var(--border2);z-index:801;overflow-y:auto;transform:translateX(110%);transition:transform 340ms cubic-bezier(0.16,1,0.3,1)}
 #prop-detail-panel.open{transform:translateX(0)}
+/* ─── PROP PERFORMANCE MODAL ─── */
+#perf-modal-overlay{position:fixed;inset:0;z-index:1500;background:rgba(0,0,0,.88);backdrop-filter:blur(18px);display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity 220ms cubic-bezier(0.23,1,0.32,1)}
+#perf-modal-overlay.open{opacity:1;pointer-events:all}
+#perf-modal{background:var(--bg);border:1px solid rgba(155,127,255,0.14);border-radius:20px;width:min(880px,100%);margin:auto;flex-shrink:0;transform:scale(0.95);transition:transform 220ms cubic-bezier(0.23,1,0.32,1);box-shadow:0 60px 120px rgba(0,0,0,.82)}
+#perf-modal-overlay.open #perf-modal{transform:scale(1)}
+.pm-hdr{display:flex;align-items:center;gap:10px;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap}
+.pm-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:20px 24px 0}
+.pm-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.pm-card-lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.pm-pill-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 24px 24px}
+.pm-pill{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center}
+.pm-period-sel{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:inherit;padding:6px 10px;cursor:pointer;outline:none;transition:border-color .15s}
+.pm-period-sel:hover{border-color:rgba(155,127,255,.4)}
+@media(max-width:640px){.pm-stat-grid{grid-template-columns:1fr!important}.pm-pill-row{grid-template-columns:repeat(2,1fr)!important}}
 .pd-hdr{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border2);padding:14px 20px;display:flex;align-items:center;gap:12px;z-index:2}
 .pd-section{padding:20px;border-bottom:1px solid var(--border)}
 .pd-sec-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
@@ -6174,6 +6188,7 @@ function renderPropAccountsSection() {
               <!-- ACTIONS -->
               <div style="display:flex;gap:6px">
                 <button class="btn btn-sm" onclick="event.stopPropagation();quickUpdatePnL(${a._idx})" style="flex:1;text-align:center;justify-content:center">Update P&L</button>
+                <button class="btn btn-sm" onclick="event.stopPropagation();openPropPerformanceModal(${a._idx})" style="color:var(--accent);border-color:rgba(155,127,255,.3)">Performance</button>
                 <button class="btn btn-sm" onclick="event.stopPropagation();openPropAccountModal(${a._idx})">Edit</button>
                 <button class="btn btn-sm" style="color:var(--red)" onclick="event.stopPropagation();deletePropAccount(${a._idx})">✕</button>
               </div>
@@ -6432,6 +6447,278 @@ function deletePropPayout(idx) {
   if (!confirm('Remove this payout?')) return;
   state.propPayouts.splice(idx,1);
   save(); renderPropFirmsPage();
+}
+
+// ─── PROP PERFORMANCE MODAL ───────────────────────────────────────────────────
+function openPropPerformanceModal(idx) {
+  document.getElementById('perf-modal-overlay').dataset.idx = idx;
+  _renderPerfModal(idx, 'all');
+  document.getElementById('perf-modal-overlay').classList.add('open');
+}
+function closePropPerformanceModal() {
+  document.getElementById('perf-modal-overlay').classList.remove('open');
+  if (window._perfChart) { window._perfChart.destroy(); window._perfChart = null; }
+}
+function _perfFilterByPeriod(trades, period) {
+  const now = new Date();
+  if (period === 'week') {
+    const cut = new Date(now - 7*86400000).toISOString().slice(0,10);
+    return trades.filter(t => (t.datetime||'').slice(0,10) >= cut);
+  }
+  if (period === 'month') {
+    const cut = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+    return trades.filter(t => (t.datetime||'').slice(0,10) >= cut);
+  }
+  if (period === 'year') {
+    const cut = `${now.getFullYear()}-01-01`;
+    return trades.filter(t => (t.datetime||'').slice(0,10) >= cut);
+  }
+  return trades;
+}
+function _perfWinGaugeSVG(wins, total) {
+  const cx=65, cy=66, r=50, W=130, H=80;
+  const lossCount = total - wins;
+  const track = `<path d="M ${cx-r},${cy} A ${r},${r} 0 0,0 ${cx+r},${cy}" stroke="rgba(255,255,255,0.06)" stroke-width="10" stroke-linecap="round" fill="none"/>`;
+  const filters = `<defs><filter id="pgf" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="prf" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  if (!total) {
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none">${filters}${track}<text x="${cx}" y="${cy-18}" text-anchor="middle" font-size="14" font-weight="700" font-family="Geist Mono,monospace" fill="rgba(255,255,255,0.2)">—%</text></svg>`;
+  }
+  const wf = wins/total;
+  const sa = Math.PI - wf * Math.PI;
+  const sx = (cx + r * Math.cos(sa)).toFixed(2);
+  const sy = (cy - r * Math.sin(sa)).toFixed(2);
+  const greenArc = wf < 0.001 ? '' : wf >= 0.999
+    ? `<path d="M ${cx-r},${cy} A ${r},${r} 0 0,0 ${cx+r},${cy}" stroke="#00d084" stroke-width="10" stroke-linecap="round" fill="none" filter="url(#pgf)"/>`
+    : `<path d="M ${cx-r},${cy} A ${r},${r} 0 0,0 ${sx},${sy}" stroke="#00d084" stroke-width="10" stroke-linecap="round" fill="none" filter="url(#pgf)"/>`;
+  const redArc = wf > 0.999 ? '' : wf <= 0.001
+    ? `<path d="M ${cx-r},${cy} A ${r},${r} 0 0,0 ${cx+r},${cy}" stroke="#ff4d4d" stroke-width="10" stroke-linecap="round" fill="none" filter="url(#prf)"/>`
+    : `<path d="M ${sx},${sy} A ${r},${r} 0 0,0 ${cx+r},${cy}" stroke="#ff4d4d" stroke-width="10" stroke-linecap="round" fill="none" filter="url(#prf)"/>`;
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none">${filters}${track}${greenArc}${redArc}
+    <text x="${cx-r}" y="${cy+14}" text-anchor="middle" font-size="9" font-weight="700" font-family="Geist,sans-serif" fill="#00d084">${wins}W</text>
+    <text x="${cx+r}" y="${cy+14}" text-anchor="middle" font-size="9" font-weight="700" font-family="Geist,sans-serif" fill="#ff4d4d">${lossCount}L</text>
+  </svg>`;
+}
+function _perfAvgBarHTML(avgWin, avgLoss) {
+  if (!avgWin && !avgLoss) return `<div style="height:50px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:12px">No trades yet</div>`;
+  const total = avgWin + avgLoss;
+  const gPct = (avgWin/total*100).toFixed(1);
+  return `<div>
+    <div style="height:12px;border-radius:6px;overflow:hidden;display:flex;margin-bottom:12px">
+      <div style="width:${gPct}%;background:rgba(0,208,132,0.75);border-radius:6px 0 0 6px;box-shadow:2px 0 8px rgba(0,208,132,.3)"></div>
+      <div style="flex:1;background:rgba(255,77,77,0.65);border-radius:0 6px 6px 0"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between">
+      <div><div style="font-size:15px;font-weight:700;font-family:var(--mono);color:var(--green)">+$${Math.round(avgWin).toLocaleString()}</div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Avg Win</div></div>
+      <div style="text-align:right"><div style="font-size:15px;font-weight:700;font-family:var(--mono);color:var(--red)">-$${Math.round(avgLoss).toLocaleString()}</div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Avg Loss</div></div>
+    </div>
+  </div>`;
+}
+function _perfDonutSVG(grossWin, grossLoss, pfLabel) {
+  const cx=55, cy=55, r=38, W=110, H=110, C=2*Math.PI*r;
+  const filters = `<defs><filter id="pdfg" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="pdfr" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  const track = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="rgba(255,255,255,0.06)" stroke-width="10" fill="none"/>`;
+  if (!grossWin && !grossLoss) {
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none">${filters}${track}</svg>`;
+  }
+  const total = grossWin + grossLoss;
+  const gLen = (grossWin/total*C).toFixed(2);
+  const rLen = (grossLoss/total*C).toFixed(2);
+  const gArc = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="#00d084" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="${gLen} ${C.toFixed(2)}" transform="rotate(-90 ${cx} ${cy})" filter="url(#pdfg)"/>`;
+  const rArc = grossLoss > 0 ? `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="#ff4d4d" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="0 ${gLen} ${rLen} ${C.toFixed(2)}" transform="rotate(-90 ${cx} ${cy})" filter="url(#pdfr)"/>` : '';
+  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none">${filters}${track}${gArc}${rArc}
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="13" font-weight="800" font-family="Geist Mono,monospace" fill="var(--text)">${pfLabel}</text>
+    <text x="${cx}" y="${cy+11}" text-anchor="middle" font-size="7" font-family="Geist,sans-serif" fill="rgba(255,255,255,0.28)" letter-spacing="0.06em">P.FACTOR</text>
+  </svg>`;
+}
+function _renderPerfBalanceChart(trades) {
+  if (window._perfChart) { window._perfChart.destroy(); window._perfChart = null; }
+  const canvas = document.getElementById('perf-balance-chart');
+  if (!canvas || !trades.length) return;
+  const sorted = [...trades].sort((a,b) => (a.datetime||'').localeCompare(b.datetime||''));
+  const byDay = {};
+  sorted.forEach(t => { const d=t.datetime?.slice(0,10); if(d) byDay[d]=(byDay[d]||0)+calcPnL(t); });
+  const days = Object.keys(byDay).sort();
+  if (!days.length) return;
+  let run=0;
+  const data = days.map(d => { run+=byDay[d]; return parseFloat(run.toFixed(2)); });
+  const isPos = data[data.length-1] >= 0;
+  const lineColor = isPos ? '#00d084' : '#ff4d4d';
+  const ctx = canvas.getContext('2d');
+  window._perfChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:days, datasets:[{
+      data, borderColor:lineColor, borderWidth:2,
+      pointRadius: data.length > 25 ? 0 : 3,
+      pointBackgroundColor:lineColor,
+      pointHoverRadius:5, pointHoverBackgroundColor:lineColor,
+      pointHoverBorderColor:'#fff', pointHoverBorderWidth:2,
+      fill:true,
+      backgroundColor:(c)=>{
+        const g=c.chart.ctx.createLinearGradient(0,0,0,190);
+        g.addColorStop(0,isPos?'rgba(0,208,132,0.18)':'rgba(255,77,77,0.18)');
+        g.addColorStop(1,'transparent');
+        return g;
+      },
+      tension:0.38
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{ duration:600, easing:'easeInOutQuart' },
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          backgroundColor:'rgba(10,10,11,0.92)',
+          borderColor:lineColor, borderWidth:1, padding:10,
+          titleColor:'#888', bodyColor:'#f0f0f0',
+          callbacks:{ label:c=>' $'+c.parsed.y.toLocaleString() }
+        }
+      },
+      scales:{
+        x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:10},maxTicksLimit:8} },
+        y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:10,family:'Geist Mono'},callback:v=>'$'+v.toLocaleString()} }
+      }
+    }
+  });
+}
+function _renderPerfModal(idx, period) {
+  const a = (state.propAccounts||[])[idx];
+  if (!a) return;
+  const baseTrades = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
+  const trades = _perfFilterByPeriod(baseTrades, period);
+  const statusColor={eval:'var(--amber)',funded:'var(--green)',passed:'var(--blue)',blown:'var(--red)',inactive:'var(--dim)'};
+  const statusLabel={eval:'Eval',funded:'Funded PA',passed:'Passed',blown:'Blown',inactive:'Inactive'};
+  const statusCol=statusColor[a.status]||'var(--dim)';
+
+  const totalPnL = trades.reduce((s,t)=>s+calcPnL(t),0);
+  const tradeCount = trades.length;
+  const wins = trades.filter(t=>t.outcome==='win');
+  const losses = trades.filter(t=>t.outcome==='loss');
+  const winCount=wins.length, lossCount=losses.length;
+  const winPct = tradeCount ? Math.round(winCount/tradeCount*100) : 0;
+  const avgWin = winCount ? wins.reduce((s,t)=>s+calcPnL(t),0)/winCount : 0;
+  const avgLoss = lossCount ? Math.abs(losses.reduce((s,t)=>s+calcPnL(t),0)/lossCount) : 0;
+  const grossWin = wins.reduce((s,t)=>s+calcPnL(t),0);
+  const grossLoss = Math.abs(losses.reduce((s,t)=>s+calcPnL(t),0));
+  const pfNum = grossLoss > 0 ? grossWin/grossLoss : null;
+  const pfLabel = pfNum===null ? (grossWin>0?'∞':'—') : pfNum.toFixed(2);
+
+  const byDay={};
+  trades.forEach(t=>{ const d=t.datetime?.slice(0,10); if(d) byDay[d]=(byDay[d]||0)+calcPnL(t); });
+  const dayEntries=Object.entries(byDay).sort((a,b)=>a[0].localeCompare(b[0]));
+  const dayVals=Object.values(byDay);
+  const greenDays=dayVals.filter(v=>v>0).length;
+  const totalDays=dayVals.length;
+  const dayWinPct=totalDays?Math.round(greenDays/totalDays*100):0;
+  const bestDayEntry=dayEntries.length?[...dayEntries].sort((a,b)=>b[1]-a[1])[0]:null;
+  const bestDayPnL=bestDayEntry?bestDayEntry[1]:0;
+  const bestDayPct=totalPnL>0&&bestDayPnL>0?Math.round(bestDayPnL/totalPnL*100):null;
+
+  const holdMinsArr=trades.filter(t=>t.holdMins!=null).map(t=>t.holdMins);
+  const avgHold=holdMinsArr.length?Math.round(holdMinsArr.reduce((s,v)=>s+v,0)/holdMinsArr.length):null;
+  const pnlVals=trades.map(t=>calcPnL(t));
+  const bestTrade=pnlVals.length?Math.max(...pnlVals):null;
+  const worstTrade=pnlVals.length?Math.min(...pnlVals):null;
+  const totalFees=trades.reduce((s,t)=>s+(t.fees||0),0);
+
+  const pnlCol=totalPnL>=0?'var(--green)':'var(--red)';
+  const fmt=v=>(v>=0?'+':'-')+'$'+Math.abs(Math.round(v)).toLocaleString();
+  const winGaugeSVG=_perfWinGaugeSVG(winCount,tradeCount);
+  const donutSVG=_perfDonutSVG(grossWin,grossLoss,pfLabel);
+
+  document.getElementById('perf-modal-inner').innerHTML = `
+    <div class="pm-hdr">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.3px">${a.name||a.plan||'Account'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${a.firm||''}${a.plan?' · '+a.plan:''}${a.size?' · '+a.size:''}</div>
+      </div>
+      <span style="color:${statusCol};background:${statusCol}18;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap">${statusLabel[a.status]||a.status||'—'}</span>
+      <select class="pm-period-sel" onchange="_renderPerfModal(${idx},this.value)">
+        <option value="all" ${period==='all'?'selected':''}>All time</option>
+        <option value="week" ${period==='week'?'selected':''}>This week</option>
+        <option value="month" ${period==='month'?'selected':''}>This month</option>
+        <option value="year" ${period==='year'?'selected':''}>This year</option>
+      </select>
+      <button onclick="closePropPerformanceModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all .15s;flex-shrink:0" onmouseenter="this.style.color='var(--text)';this.style.background='rgba(255,255,255,.06)'" onmouseleave="this.style.color='var(--muted)';this.style.background='none'">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="pm-stat-grid">
+      <div class="pm-card">
+        <div class="pm-card-lbl">Total P&amp;L</div>
+        <div style="font-size:34px;font-weight:800;font-family:var(--mono);color:${pnlCol};letter-spacing:-.5px;line-height:1;text-shadow:${totalPnL>=0?'0 0 30px rgba(0,208,132,.35)':'0 0 30px rgba(255,77,77,.35)'}">${fmt(totalPnL)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">${tradeCount} trade${tradeCount!==1?'s':''}</div>
+      </div>
+      <div class="pm-card">
+        <div class="pm-card-lbl">Trade Win %</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:32px;font-weight:800;font-family:var(--mono);color:${winPct>=50?'var(--green)':'var(--red)'};flex-shrink:0;letter-spacing:-.5px;line-height:1">${winPct}%</div>
+          <div style="flex:1;display:flex;justify-content:center;align-items:center">${winGaugeSVG}</div>
+        </div>
+      </div>
+      <div class="pm-card">
+        <div class="pm-card-lbl">Avg Win / Avg Loss</div>
+        ${_perfAvgBarHTML(avgWin,avgLoss)}
+      </div>
+    </div>
+
+    <div class="pm-stat-grid" style="padding-top:12px">
+      <div class="pm-card">
+        <div class="pm-card-lbl">Day Win %</div>
+        <div style="font-size:30px;font-weight:800;font-family:var(--mono);color:${dayWinPct>=50?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1">${dayWinPct}%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">${greenDays} of ${totalDays} day${totalDays!==1?'s':''} green</div>
+        ${totalDays>0?`<div style="margin-top:12px;display:flex;gap:3px;flex-wrap:wrap">${dayEntries.map(([d,v])=>`<div title="${d}: ${fmt(v)}" style="width:10px;height:10px;border-radius:2px;background:${v>0?'rgba(0,208,132,.55)':'rgba(255,77,77,.45)'}"></div>`).join('')}</div>`:''}
+      </div>
+      <div class="pm-card">
+        <div class="pm-card-lbl">Profit Factor</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div>
+            <div style="font-size:30px;font-weight:800;font-family:var(--mono);color:${pfNum===null||(pfNum&&pfNum>=1)?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1">${pfLabel}</div>
+            <div style="margin-top:8px"><div style="font-size:10px;color:var(--green);font-family:var(--mono)">+$${Math.round(grossWin).toLocaleString()}</div><div style="font-size:10px;color:var(--red);font-family:var(--mono)">-$${Math.round(grossLoss).toLocaleString()}</div></div>
+          </div>
+          <div style="flex:1;display:flex;justify-content:center;align-items:center">${donutSVG}</div>
+        </div>
+      </div>
+      <div class="pm-card">
+        <div class="pm-card-lbl">Best Day</div>
+        ${bestDayEntry?`
+          <div style="font-size:30px;font-weight:800;font-family:var(--mono);color:${bestDayPnL>=0?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1;text-shadow:${bestDayPnL>=0?'0 0 24px rgba(0,208,132,.35)':'0 0 24px rgba(255,77,77,.35)'}">${fmt(bestDayPnL)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">${bestDayEntry[0]}${bestDayPct!==null?' · '+bestDayPct+'% of total':''}</div>
+        `:`<div style="font-size:22px;font-weight:700;color:var(--dim);margin-top:4px">—</div><div style="font-size:11px;color:var(--dim);margin-top:6px">No trades in period</div>`}
+      </div>
+    </div>
+
+    <div style="padding:16px 24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Daily Account Balance</span>
+        <span style="font-size:11px;font-family:var(--mono);font-weight:700;color:${pnlCol}">${fmt(totalPnL)}</span>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;height:200px;position:relative">
+        <canvas id="perf-balance-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="pm-pill-row">
+      <div class="pm-pill">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Avg Hold</div>
+        <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--text)">${avgHold!=null?avgHold+'m':'—'}</div>
+      </div>
+      <div class="pm-pill">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Best Trade</div>
+        <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--green)">${bestTrade!=null?fmt(bestTrade):'—'}</div>
+      </div>
+      <div class="pm-pill">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Worst Trade</div>
+        <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--red)">${worstTrade!=null?fmt(worstTrade):'—'}</div>
+      </div>
+      <div class="pm-pill">
+        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:6px">Total Fees</div>
+        <div style="font-size:17px;font-weight:700;font-family:var(--mono);color:var(--amber)">$${Math.round(totalFees).toLocaleString()}</div>
+      </div>
+    </div>
+  `;
+  requestAnimationFrame(() => _renderPerfBalanceChart(trades));
 }
 
 // ─── PROP ACCOUNT MODAL ───────────────────────────────────────────────────────
@@ -9876,5 +10163,20 @@ if (state.trades.length > 0) renderDashboard();
 <div id="prop-detail-panel">
   <div id="prop-detail-inner"></div>
 </div>
+
+<!-- PROP PERFORMANCE MODAL -->
+<div id="perf-modal-overlay" onclick="if(event.target===this)closePropPerformanceModal()">
+  <div id="perf-modal">
+    <div id="perf-modal-inner"></div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('perf-modal-overlay')?.classList.contains('open')) {
+    closePropPerformanceModal();
+  }
+});
+</script>
 </body>
 </html>
