@@ -2295,13 +2295,16 @@ body.light-mode .metric-val{color:#0a0a14}
       <div class="card" style="margin-bottom:0;overflow:hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div id="daily-date-label"></div>
-          <div style="display:flex;gap:6px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <div id="daily-edit-btn-wrap"></div>
             <button class="btn btn-sm" onclick="dailyNavDay(-1)">← Prev</button>
             <button class="btn btn-sm" onclick="dailyNavDay(1)" id="daily-next-btn">Next →</button>
           </div>
         </div>
         <div id="daily-main-content">
           <div id="daily-trade-summary" style="margin-bottom:14px"></div>
+          <div id="daily-ro-view" style="display:none"></div>
+          <div id="daily-edit-form">
           <!-- SCORECARD -->
           <div style="margin-bottom:18px">
             <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Daily Scorecard</div>
@@ -2390,11 +2393,12 @@ body.light-mode .metric-val{color:#0a0a14}
           </div>
           <div id="daily-goal-checkins" style="margin-bottom:16px"></div>
           <button class="btn btn-green" style="width:100%;justify-content:center" onclick="saveDailyEntry()">Save entry</button>
-          <!-- TODAY'S CAPTURES -->
+          </div><!-- /daily-edit-form -->
+          <!-- TODAY'S CAPTURES — always shown -->
           <div id="daily-captures-section" style="margin-top:22px">
-            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Today's Captures</div>
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Captures</div>
             <div id="daily-captures-list"></div>
-            <div style="font-size:11px;color:var(--dim);margin-top:6px">Use the <span style="color:var(--accent)">+</span> button (bottom right) to add a capture.</div>
+            <div id="daily-captures-hint" style="font-size:11px;color:var(--dim);margin-top:6px">Use the <span style="color:var(--accent)">+</span> button (bottom right) to add a capture.</div>
           </div>
         </div>
       </div>
@@ -8145,8 +8149,9 @@ function getJournal() {
 
 let journalTab = 'goals';
 let dailyViewDate = new Date().toISOString().slice(0,10);
+let _dailyEditMode = false;
 let editingGoalIdx = null;
-let weeklyViewKey = _getWeekKey(new Date());
+let weeklyViewKey = _getMondayKey(new Date());
 
 const CAT_COLORS = { trading:'#9B7FFF', money:'#f5a623', audience:'#4a9eff', fitness:'#00d084', skills:'#9B7FFF', network:'#00d4ff', discipline:'#ff7eb3', other:'#aaa',
   // Legacy keys for backward compat
@@ -8177,7 +8182,7 @@ function switchJournalTab(tab) {
   document.getElementById('jtab-weekly-btn').classList.toggle('jtab-active', tab==='weekly');
   updateJournalAddBtn();
   if (tab==='goals') { renderGoalsTab(); startJournalHeroCanvas(); }
-  else if (tab==='weekly') renderWeeklyTab();
+  else if (tab==='weekly') { weeklyViewKey=_getMondayKey(new Date()); renderWeeklyTab(); }
   else renderDailyTab();
 }
 
@@ -9153,18 +9158,16 @@ function saveWeeklyUpdate() {
 }
 
 // ── JOURNAL HELPERS ───────────────────────────────────────────────────────────
-function _getWeekKey(d) {
+function _getMondayKey(d) {
   const dt=new Date(d);dt.setHours(12,0,0,0);
-  const day=dt.getDay()||7;dt.setDate(dt.getDate()-day+1);
-  const y=dt.getFullYear();const wk=Math.ceil(((dt-new Date(y,0,1))/86400000+1)/7);
-  return `${y}-W${String(wk).padStart(2,'0')}`;
+  const day=dt.getDay();dt.setDate(dt.getDate()-(day===0?6:day-1));
+  return dt.toISOString().slice(0,10);
 }
 function _getWeekRange(key) {
-  const [y,w]=key.split('-W');const year=parseInt(y),wn=parseInt(w);
-  const jan1=new Date(year,0,1);const mon=new Date(jan1.getTime()+(wn-1)*7*86400000-(jan1.getDay()||7)*86400000+86400000);
+  const mon=new Date(key+'T12:00:00');
   const sun=new Date(mon.getTime()+6*86400000);
   const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  return`${fmt(mon)} – ${fmt(sun)}, ${year}`;
+  return`${fmt(mon)} – ${fmt(sun)}, ${mon.getFullYear()}`;
 }
 
 function updateSliderFill(sl) {
@@ -9220,24 +9223,35 @@ function renderDailyCapturesList(){
   const el=document.getElementById('daily-captures-list');if(!el)return;
   const j=getJournal();
   const today=new Date().toISOString().slice(0,10);
-  const todayCaps=j.captures.filter(c=>c.createdAt.slice(0,10)===today||c.createdAt.slice(0,10)===dailyViewDate);
-  if(!todayCaps.length){el.innerHTML='';return;}
+  const hint=document.getElementById('daily-captures-hint');
+  if(hint)hint.style.display=dailyViewDate===today?'':'none';
+  const caps=j.captures.filter(c=>c.createdAt.slice(0,10)===dailyViewDate);
+  if(!caps.length){el.innerHTML='';return;}
   const catIcons={'thought':'💭','idea':'💡','tradeobs':'📈','content':'🎬'};
-  el.innerHTML=todayCaps.map((c,i)=>`<div class="cap-card"><div style="display:flex;align-items:flex-start;gap:10px"><span style="font-size:15px">${catIcons[c.category]||'💭'}</span><div style="flex:1"><div style="font-size:13px;color:var(--text);line-height:1.55">${c.text}</div><div style="font-size:10px;color:var(--dim);margin-top:4px">${new Date(c.createdAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div></div></div></div>`).join('');
+  el.innerHTML=caps.map(c=>`<div class="cap-card"><div style="display:flex;align-items:flex-start;gap:10px"><span style="font-size:15px">${catIcons[c.category]||'💭'}</span><div style="flex:1"><div style="font-size:13px;color:var(--text);line-height:1.55">${c.text}</div><div style="font-size:10px;color:var(--dim);margin-top:4px">${new Date(c.createdAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div></div></div></div>`).join('');
 }
 
 // ── WEEKLY RESET ───────────────────────────────────────────────────────────────
 function renderWeeklyTab(){
   const j=getJournal();
-  const lbl=document.getElementById('wr-week-label');if(lbl)lbl.textContent=_getWeekRange(weeklyViewKey)+' ('+weeklyViewKey+')';
-  const nb=document.getElementById('wr-next-btn');if(nb)nb.disabled=weeklyViewKey>=_getWeekKey(new Date());
+  const lbl=document.getElementById('wr-week-label');if(lbl)lbl.textContent=_getWeekRange(weeklyViewKey);
+  const currentMonday=_getMondayKey(new Date());
+  const nb=document.getElementById('wr-next-btn');if(nb)nb.disabled=weeklyViewKey>=currentMonday;
   const wr=j.weeklyResets[weeklyViewKey]||{};
   ['wins','losses','lessons','continue','stop','focus'].forEach(k=>{const el=document.getElementById('wr-'+k);if(el)el.value=wr[k]||'';});
 }
+function _saveWeeklyResetSilent(){
+  const data={};
+  ['wins','losses','lessons','continue','stop','focus'].forEach(k=>{const el=document.getElementById('wr-'+k);if(el)data[k]=el.value;});
+  if(!Object.values(data).some(v=>(v||'').trim()))return;
+  const j=getJournal();data.savedAt=new Date().toISOString();
+  j.weeklyResets[weeklyViewKey]=data;state.journal=j;save(true);
+}
 function weeklyNavWeek(dir){
-  const d=new Date(weeklyViewKey.replace(/-W(\d+)/,(_,w)=>'-01-01'));
-  d.setDate(d.getDate()+parseInt(weeklyViewKey.split('-W')[1])*7*dir);
-  weeklyViewKey=_getWeekKey(d);
+  _saveWeeklyResetSilent();
+  const d=new Date(weeklyViewKey+'T12:00:00');
+  d.setDate(d.getDate()+dir*7);
+  weeklyViewKey=d.toISOString().slice(0,10);
   renderWeeklyTab();
 }
 function saveWeeklyReset(){
@@ -9252,11 +9266,75 @@ function saveWeeklyReset(){
 }
 
 // ── DAILY LOG TAB ─────────────────────────────────────────────────────────────
+function _dailySetEditMode(edit){_dailyEditMode=edit;renderDailyTab();}
+
+function _buildROView(entry,j){
+  const ruleLabels={risk:'Respected risk limits',confirmation:'Waited for confirmation',noRevenge:'No revenge trades',noImpulsive:'No impulsive entries',journaled:'Journaled today',maxLoss:'Stopped at max loss'};
+  const parts=[];
+  // Scorecard
+  const sc=entry.scorecard||{};
+  const scKeys=['execution','discipline','energy','focus','confidence'];
+  if(scKeys.some(k=>sc[k]!=null)){
+    const bars=scKeys.filter(k=>sc[k]!=null).map(k=>{
+      const v=sc[k],pct=v/10*100;
+      return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px"><div style="font-size:11px;color:var(--muted);width:82px;flex-shrink:0;font-weight:600;text-transform:capitalize">${k}</div><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden"><div style="width:${pct}%;height:100%;border-radius:3px;background:var(--accent)"></div></div><div style="font-size:13px;font-weight:700;color:var(--text);font-family:var(--mono);width:22px;text-align:right">${v}</div></div>`;
+    }).join('');
+    const rs=sc.respectedSelf;
+    const rsBadge=rs?`<div style="margin-top:10px"><span style="display:inline-block;padding:3px 14px;border-radius:20px;font-size:11px;font-weight:700;background:${rs==='yes'?'rgba(0,208,132,.15)':'rgba(255,77,77,.12)'};border:1px solid ${rs==='yes'?'rgba(0,208,132,.35)':'rgba(255,77,77,.3)'};color:${rs==='yes'?'var(--green)':'var(--red)'}">Respected self: ${rs.toUpperCase()}</span></div>`:'';
+    parts.push(`<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Daily Scorecard</div>${bars}${rsBadge}</div>`);
+  }
+  // Energy
+  const en=entry.energy||{};
+  const enPills=[];
+  if(en.sleep!=null)enPills.push(`😴 ${en.sleep}hrs`);
+  if(en.gym)enPills.push(en.gym==='yes'?'🏋️ Gym ✓':'🏋️ No gym');
+  if(en.ate)enPills.push(en.ate==='yes'?'🥗 Ate well':'🥗 Skipped');
+  const cafMap={none:'☕ No caffeine',some:'☕ Some caffeine',alot:'☕ A lot of caffeine'};
+  if(en.caffeine)enPills.push(cafMap[en.caffeine]||en.caffeine);
+  if(en.stress)enPills.push(`Stress ${en.stress}/5`);
+  if(en.motivation)enPills.push(`Motivation ${en.motivation}/5`);
+  if(enPills.length)parts.push(`<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Energy</div><div style="display:flex;flex-wrap:wrap;gap:6px">${enPills.map(p=>`<span style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--muted)">${p}</span>`).join('')}</div></div>`);
+  // Mood
+  if(entry.mood!=null){
+    const me=MOODS[entry.mood]||'',ml=MOOD_NAMES[entry.mood]||'';
+    parts.push(`<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Mood</div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:26px">${me}</span><span style="font-size:14px;color:var(--text);font-weight:600">${ml}</span></div></div>`);
+  }
+  // Notes
+  if((entry.notes||'').trim()){
+    const safe=entry.notes.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    parts.push(`<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Journal</div><div style="background:var(--bg3);border-radius:0 var(--r) var(--r) 0;border:1px solid var(--border2);border-left:2px solid var(--accent);padding:12px 14px;font-size:13px;color:var(--text);line-height:1.75;white-space:pre-wrap">${safe}</div></div>`);
+  }
+  // Rules
+  const rl=entry.rules||{};
+  const ruleKeys=['risk','confirmation','noRevenge','noImpulsive','journaled','maxLoss'];
+  if(ruleKeys.some(k=>rl[k]!=null)){
+    const onCount=ruleKeys.filter(k=>rl[k]).length;
+    const col=onCount>=5?'var(--green)':onCount>=3?'var(--amber)':'var(--red)';
+    const rows=ruleKeys.map(k=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:13px;color:${rl[k]?'var(--green)':'var(--dim)'}">${rl[k]?'✓':'✗'}</span><span style="font-size:12px;color:${rl[k]?'var(--text)':'var(--dim)'}">${ruleLabels[k]}</span></div>`).join('');
+    parts.push(`<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Rule Adherence</div><div style="background:var(--bg3);border-radius:var(--r);border:1px solid var(--border);padding:8px 12px">${rows}</div><div style="margin-top:8px;font-size:12px;font-weight:700;color:${col}">${onCount}/${ruleKeys.length} rules followed</div></div>`);
+  }
+  // Goal check-ins
+  const activeGoals=j.goals.filter(g=>g.status!=='done');
+  const ciData=activeGoals.filter(g=>{const i=j.goals.indexOf(g);return(entry.goalCheckins||{})[i]||(entry.goalValues||{})[i];});
+  if(ciData.length){
+    const cards=ciData.map(g=>{
+      const i=j.goals.indexOf(g);const col=CAT_COLORS[g.category]||'#9B7FFF';
+      const val=(entry.goalValues||{})[i],note=(entry.goalCheckins||{})[i];
+      return`<div style="background:var(--bg3);border-radius:var(--r2);padding:10px 12px;border:1px solid var(--border);display:flex;align-items:flex-start;gap:10px"><span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span><div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">${g.title}</div>${val?`<div style="font-size:11px;color:${col};font-family:var(--mono);font-weight:700">${val} ${g.unit||''}</div>`:''}${note?`<div style="font-size:11px;color:var(--muted);margin-top:2px">${note}</div>`:''}</div></div>`;
+    }).join('');
+    parts.push(`<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Goal Check-ins</div><div style="display:flex;flex-direction:column;gap:8px">${cards}</div></div>`);
+  }
+  return parts.join('');
+}
+
 function renderDailyTab(dir) {
   const j=getJournal(), entry=j.dailyEntries[dailyViewDate]||{};
   const d=new Date(dailyViewDate+'T12:00:00');
+  const today=new Date().toISOString().slice(0,10);
+  const isToday=dailyViewDate===today;
+  const showEdit=isToday||_dailyEditMode;
 
-  // Large date header with accent day-of-week
+  // Date header
   const el=document.getElementById('daily-date-label');
   if(el){
     const dayName=d.toLocaleDateString('en-US',{weekday:'long'});
@@ -9264,7 +9342,15 @@ function renderDailyTab(dir) {
     el.innerHTML=`<span style="font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text)"><span style="color:var(--accent)">${dayName}</span>${rest}</span>`;
   }
 
-  // Auto trade summary
+  // Edit/back button in header
+  const ebw=document.getElementById('daily-edit-btn-wrap');
+  if(ebw){
+    if(!isToday&&!_dailyEditMode) ebw.innerHTML=`<button class="btn btn-sm" onclick="_dailySetEditMode(true)" style="color:var(--accent);border-color:rgba(155,127,255,.35)">✏ Edit</button>`;
+    else if(!isToday&&_dailyEditMode) ebw.innerHTML=`<button class="btn btn-sm" onclick="_dailySetEditMode(false)">← View</button>`;
+    else ebw.innerHTML='';
+  }
+
+  // Trade summary (always shown)
   const ts=document.getElementById('daily-trade-summary');
   if(ts){
     const dt=(state.trades||[]).filter(t=>(t.datetime||'').slice(0,10)===dailyViewDate);
@@ -9281,123 +9367,79 @@ function renderDailyTab(dir) {
         <span style="opacity:.4">·</span>
         <span>${wr}% WR</span>
       </div>`;
-    } else {
-      ts.innerHTML='';
+    } else ts.innerHTML='';
+  }
+
+  // Toggle form / read-only view
+  const form=document.getElementById('daily-edit-form');
+  const roView=document.getElementById('daily-ro-view');
+  if(form) form.style.display=showEdit?'':'none';
+  if(roView){
+    roView.style.display=showEdit?'none':'';
+    if(!showEdit) roView.innerHTML=_buildROView(entry,j);
+  }
+
+  // Populate edit form fields when visible
+  if(showEdit){
+    const sc=entry.scorecard||{};
+    ['execution','discipline','energy','focus','confidence'].forEach(k=>{
+      const sl=document.getElementById('sc-'+k);const vl=document.getElementById('sc-val-'+k);
+      if(sl){sl.value=sc[k]!=null?sc[k]:5;updateSliderFill(sl);}
+      if(vl)vl.textContent=sc[k]!=null?sc[k]:5;
+    });
+    const rsVal=sc.respectedSelf;
+    ['yes','no'].forEach(v=>{const b=document.getElementById('sc-rs-'+v);if(b)b.classList.toggle('yn-active',rsVal===v);});
+    const en=entry.energy||{};
+    const sleepEl=document.getElementById('en-sleep');if(sleepEl)sleepEl.value=en.sleep!=null?en.sleep:'';
+    ['gym','ate'].forEach(k=>{['yes','no'].forEach(v=>{const b=document.getElementById('en-'+k+'-'+v);if(b)b.classList.toggle('yn-active',en[k]===v);});});
+    ['none','some','alot'].forEach(v=>{const b=document.getElementById('en-caf-'+v);if(b)b.classList.toggle('active',en.caffeine===v);});
+    _renderDotSel('en-stress-dots',en.stress,5,'stress');
+    _renderDotSel('en-motivation-dots',en.motivation,5,'motivation');
+    const rl=entry.rules||{};
+    ['risk','confirmation','noRevenge','noImpulsive','journaled','maxLoss'].forEach(k=>{const cb=document.getElementById('rl-'+k);if(cb){cb.checked=!!rl[k];cb.onchange=updateRuleAdherencePct;}});
+    updateRuleAdherencePct();
+    document.querySelectorAll('.mood-btn-v2').forEach((b,i)=>b.classList.toggle('selected',i===entry.mood));
+    const ta=document.getElementById('daily-notes');if(ta)ta.value=entry.notes||'';
+    // Goal check-ins
+    const cc=document.getElementById('daily-goal-checkins');
+    if(cc){
+      const activeGoals=j.goals.filter(g=>g.status!=='done');
+      if(activeGoals.length){
+        cc.innerHTML=`<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Goal Check-ins</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            ${activeGoals.map(g=>{
+              const i=j.goals.indexOf(g);const col=CAT_COLORS[g.category]||'#9B7FFF';
+              if(g.type==='habit'){
+                const tv=(g.completions||{})[dailyViewDate];
+                return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border)">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span><div><div style="font-size:13px;font-weight:600;color:var(--text)">${g.title}</div><div style="font-size:10px;color:var(--dim)">🔁 Habit / Streak</div></div></div>
+                  <div style="display:flex;gap:8px" onclick="event.stopPropagation()">
+                    <button class="habit-ci-btn" style="flex:1;font-size:12px;padding:8px;background:${tv==='yes'?col+'22':'rgba(255,255,255,.04)'};border-color:${tv==='yes'?col:'rgba(255,255,255,.1)'};color:${tv==='yes'?col:'var(--muted)'}" onclick="checkInHabitForDate(${i},'yes','${dailyViewDate}',event)">✓ Yes</button>
+                    <button class="habit-ci-btn" style="flex:1;font-size:12px;padding:8px;background:${tv==='partial'?'rgba(245,166,35,.2)':'rgba(255,255,255,.04)'};border-color:${tv==='partial'?'#f5a623':'rgba(255,255,255,.1)'};color:${tv==='partial'?'#f5a623':'var(--muted)'}" onclick="checkInHabitForDate(${i},'partial','${dailyViewDate}',event)">~ Partial</button>
+                    <button class="habit-ci-btn" style="flex:1;font-size:12px;padding:8px;background:${tv==='no'?'rgba(255,77,77,.2)':'rgba(255,255,255,.04)'};border-color:${tv==='no'?'#ff4d4d':'rgba(255,255,255,.1)'};color:${tv==='no'?'#ff4d4d':'var(--muted)'}" onclick="checkInHabitForDate(${i},'no','${dailyViewDate}',event)">✗ No</button>
+                  </div>
+                </div>`;
+              }
+              if(g.type==='milestone'){
+                const list=g.milestoneList||[],checked=g.milestoneChecked||[];
+                const unchecked=list.map((m,mi)=>({m,mi})).filter(({mi})=>!checked[mi]);
+                if(!unchecked.length)return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border);display:flex;align-items:center;gap:8px"><span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span><div style="font-size:13px;font-weight:600;color:var(--text);flex:1">${g.title}</div><span style="font-size:10px;color:var(--green);background:rgba(0,208,132,.12);padding:2px 8px;border-radius:20px;border:1px solid rgba(0,208,132,.25)">✓ All done</span></div>`;
+                return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border)">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span><div><div style="font-size:13px;font-weight:600;color:var(--text)">${g.title}</div><div style="font-size:10px;color:var(--dim)">✅ ${checked.filter(Boolean).length}/${list.length} milestones</div></div></div>
+                  <div style="display:flex;flex-direction:column;gap:6px">${unchecked.slice(0,3).map(({m,mi})=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted);padding:4px 0" onclick="event.stopPropagation()"><input type="checkbox" onclick="toggleMilestone(${i},${mi},event)" style="width:15px;height:15px;accent-color:${col};cursor:pointer;flex-shrink:0">${m}</label>`).join('')}${unchecked.length>3?`<div style="font-size:11px;color:var(--dim);padding-left:23px">+${unchecked.length-3} more…</div>`:''}</div>
+                </div>`;
+              }
+              return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span><div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">${g.title}</div><div style="font-size:10px;color:var(--dim)">📊 ${g.current||g.startVal||0} → ${g.target||'?'} ${g.unit||''}</div></div></div>
+                <div style="display:flex;gap:8px"><input class="modal-input" style="flex:1;padding:6px 10px;font-size:12px" id="checkin-${i}" placeholder="Note or update..." value="${(entry.goalCheckins||{})[i]||''}"><input type="number" class="modal-input" style="width:80px;padding:6px 8px;font-size:12px;text-align:center;font-family:var(--mono)" id="checkin-val-${i}" placeholder="${g.current||0}" value="${(entry.goalValues||{})[i]||''}"></div>
+              </div>`;
+            }).join('')}
+          </div>`;
+      } else cc.innerHTML='';
     }
   }
 
-  // Scorecard sliders
-  const sc = entry.scorecard || {};
-  ['execution','discipline','energy','focus','confidence'].forEach(k=>{
-    const sl=document.getElementById('sc-'+k); const vl=document.getElementById('sc-val-'+k);
-    if(sl){sl.value=sc[k]!=null?sc[k]:5;updateSliderFill(sl);}
-    if(vl)vl.textContent=sc[k]!=null?sc[k]:5;
-  });
-  const rsVal=sc.respectedSelf;
-  ['yes','no'].forEach(v=>{const b=document.getElementById('sc-rs-'+v);if(b)b.classList.toggle('yn-active',rsVal===v);});
-
-  // Energy tracking
-  const en = entry.energy || {};
-  const sleepEl=document.getElementById('en-sleep'); if(sleepEl) sleepEl.value=en.sleep!=null?en.sleep:'';
-  ['gym','ate'].forEach(k=>{
-    ['yes','no'].forEach(v=>{const b=document.getElementById('en-'+k+'-'+v);if(b)b.classList.toggle('yn-active',en[k]===v);});
-  });
-  ['none','some','alot'].forEach(v=>{const b=document.getElementById('en-caf-'+v);if(b)b.classList.toggle('active',en.caffeine===v);});
-  _renderDotSel('en-stress-dots', en.stress, 5, 'stress');
-  _renderDotSel('en-motivation-dots', en.motivation, 5, 'motivation');
-
-  // Rule toggles
-  const rl = entry.rules || {};
-  ['risk','confirmation','noRevenge','noImpulsive','journaled','maxLoss'].forEach(k=>{
-    const cb=document.getElementById('rl-'+k); if(cb){cb.checked=!!rl[k];cb.onchange=updateRuleAdherencePct;}
-  });
-  updateRuleAdherencePct();
-
-  // Mood buttons
-  document.querySelectorAll('.mood-btn-v2').forEach((b,i)=>b.classList.toggle('selected',i===entry.mood));
-
-  // Notes
-  const ta=document.getElementById('daily-notes'); if(ta) ta.value=entry.notes||'';
-
-  // Captures for today
-  renderDailyCapturesList();
-
-  // Next button
-  const nb=document.getElementById('daily-next-btn'); if(nb) nb.disabled=dailyViewDate>=new Date().toISOString().slice(0,10);
-
-  // Type-aware goal check-ins
-  const cc=document.getElementById('daily-goal-checkins');
-  if(cc){
-    const activeGoals=j.goals.filter(g=>g.status!=='done');
-    if(activeGoals.length){
-      cc.innerHTML=`<div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Goal Check-ins</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          ${activeGoals.map(g=>{
-            const i=j.goals.indexOf(g);
-            const col=CAT_COLORS[g.category]||'#9B7FFF';
-            if(g.type==='habit'){
-              const tv=(g.completions||{})[dailyViewDate];
-              return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border)">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-                  <span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span>
-                  <div>
-                    <div style="font-size:13px;font-weight:600;color:var(--text)">${g.title}</div>
-                    <div style="font-size:10px;color:var(--dim)">🔁 Habit / Streak</div>
-                  </div>
-                </div>
-                <div style="display:flex;gap:8px" onclick="event.stopPropagation()">
-                  <button class="habit-ci-btn" style="flex:1;font-size:12px;padding:8px;background:${tv==='yes'?col+'22':'rgba(255,255,255,.04)'};border-color:${tv==='yes'?col:'rgba(255,255,255,.1)'};color:${tv==='yes'?col:'var(--muted)'}" onclick="checkInHabitForDate(${i},'yes','${dailyViewDate}',event)">✓ Yes</button>
-                  <button class="habit-ci-btn" style="flex:1;font-size:12px;padding:8px;background:${tv==='partial'?'rgba(245,166,35,.2)':'rgba(255,255,255,.04)'};border-color:${tv==='partial'?'#f5a623':'rgba(255,255,255,.1)'};color:${tv==='partial'?'#f5a623':'var(--muted)'}" onclick="checkInHabitForDate(${i},'partial','${dailyViewDate}',event)">~ Partial</button>
-                  <button class="habit-ci-btn" style="flex:1;font-size:12px;padding:8px;background:${tv==='no'?'rgba(255,77,77,.2)':'rgba(255,255,255,.04)'};border-color:${tv==='no'?'#ff4d4d':'rgba(255,255,255,.1)'};color:${tv==='no'?'#ff4d4d':'var(--muted)'}" onclick="checkInHabitForDate(${i},'no','${dailyViewDate}',event)">✗ No</button>
-                </div>
-              </div>`;
-            }
-            if(g.type==='milestone'){
-              const list=g.milestoneList||[], checked=g.milestoneChecked||[];
-              const unchecked=list.map((m,mi)=>({m,mi})).filter(({mi})=>!checked[mi]);
-              if(!unchecked.length) return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border);display:flex;align-items:center;gap:8px">
-                <span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span>
-                <div style="font-size:13px;font-weight:600;color:var(--text);flex:1">${g.title}</div>
-                <span style="font-size:10px;color:var(--green);background:rgba(0,208,132,.12);padding:2px 8px;border-radius:20px;border:1px solid rgba(0,208,132,.25)">✓ All done</span>
-              </div>`;
-              return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border)">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-                  <span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span>
-                  <div>
-                    <div style="font-size:13px;font-weight:600;color:var(--text)">${g.title}</div>
-                    <div style="font-size:10px;color:var(--dim)">✅ ${checked.filter(Boolean).length}/${list.length} milestones</div>
-                  </div>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:6px">
-                  ${unchecked.slice(0,3).map(({m,mi})=>`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted);padding:4px 0" onclick="event.stopPropagation()">
-                    <input type="checkbox" onclick="toggleMilestone(${i},${mi},event)" style="width:15px;height:15px;accent-color:${col};cursor:pointer;flex-shrink:0">${m}
-                  </label>`).join('')}
-                  ${unchecked.length>3?`<div style="font-size:11px;color:var(--dim);padding-left:23px">+${unchecked.length-3} more…</div>`:''}
-                </div>
-              </div>`;
-            }
-            // Numeric
-            return`<div style="background:var(--bg3);border-radius:var(--r2);padding:12px 14px;border:1px solid var(--border)">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-                <span style="font-size:16px">${CAT_ICONS[g.category]||'⭐'}</span>
-                <div style="flex:1">
-                  <div style="font-size:13px;font-weight:600;color:var(--text)">${g.title}</div>
-                  <div style="font-size:10px;color:var(--dim)">📊 ${g.current||g.startVal||0} → ${g.target||'?'} ${g.unit||''}</div>
-                </div>
-              </div>
-              <div style="display:flex;gap:8px">
-                <input class="modal-input" style="flex:1;padding:6px 10px;font-size:12px" id="checkin-${i}" placeholder="Note or update..." value="${(entry.goalCheckins||{})[i]||''}">
-                <input type="number" class="modal-input" style="width:80px;padding:6px 8px;font-size:12px;text-align:center;font-family:var(--mono)" id="checkin-val-${i}" placeholder="${g.current||0}" value="${(entry.goalValues||{})[i]||''}">
-              </div>
-            </div>`;
-          }).join('')}
-        </div>`;
-    } else {
-      cc.innerHTML='';
-    }
-  }
-
-  // Emil-style slide animation on day change
+  // Slide animation
   const mc=document.getElementById('daily-main-content');
   if(mc&&dir!==undefined){
     mc.classList.remove('dl-slide-left','dl-slide-right');
@@ -9405,6 +9447,10 @@ function renderDailyTab(dir) {
     mc.classList.add(dir>0?'dl-slide-right':'dl-slide-left');
   }
 
+  // Next button
+  const nb=document.getElementById('daily-next-btn');if(nb)nb.disabled=dailyViewDate>=today;
+
+  renderDailyCapturesList();
   renderDailyHistoryList();
 }
 
@@ -9458,6 +9504,7 @@ function saveDailyEntry() {
 }
 
 function dailyNavDay(dir){
+  _dailyEditMode=false;
   const d=new Date(dailyViewDate+'T12:00:00');
   d.setDate(d.getDate()+dir);
   dailyViewDate=d.toISOString().slice(0,10);
