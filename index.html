@@ -882,6 +882,57 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 /* Auto trade summary pill in daily log */
 .daily-trade-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:600;font-family:'Geist Mono',monospace;border:1px solid}
 
+/* Scorecard sliders */
+.sc-slider-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.sc-slider-label{font-size:12px;font-weight:600;color:var(--muted);width:88px;flex-shrink:0}
+.sc-slider{flex:1;height:4px;border-radius:2px;outline:none;border:none;cursor:pointer;background:rgba(255,255,255,.08);appearance:none;-webkit-appearance:none}
+.sc-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid rgba(155,127,255,.4);box-shadow:0 0 8px rgba(155,127,255,.5);cursor:pointer;transition:transform .1s}
+.sc-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.sc-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:2px solid rgba(155,127,255,.4);box-shadow:0 0 8px rgba(155,127,255,.5);cursor:pointer}
+.sc-val{font-size:14px;font-weight:800;font-family:var(--mono);color:var(--accent);width:20px;text-align:right;flex-shrink:0}
+/* pill yes/no toggles */
+.yn-pill{padding:7px 18px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s cubic-bezier(0.23,1,0.32,1)}
+.yn-pill:active{transform:scale(0.96)}
+.yn-pill.yn-yes.yn-active{background:rgba(0,208,132,.15);border-color:var(--green);color:var(--green)}
+.yn-pill.yn-no.yn-active{background:rgba(255,77,77,.12);border-color:var(--red);color:var(--red)}
+/* dot selectors (stress/motivation) */
+.dot-sel{display:flex;gap:8px;align-items:center}
+.dot-sel-dot{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);cursor:pointer;transition:all .15s;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--dim)}
+.dot-sel-dot.active{border-color:var(--accent);background:var(--accent);color:#fff;box-shadow:0 0 10px rgba(155,127,255,.4)}
+/* rule toggles */
+.rule-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.rule-toggle-row:last-child{border-bottom:none}
+.rule-toggle-lbl{font-size:13px;color:var(--text)}
+.rule-toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.rule-toggle input{opacity:0;width:0;height:0;position:absolute}
+.rule-toggle-track{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:background .2s,border-color .2s}
+.rule-toggle input:checked+.rule-toggle-track{background:rgba(0,208,132,.25);border-color:var(--green)}
+.rule-toggle-track::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#aaa;transition:transform .2s cubic-bezier(0.23,1,0.32,1),background .2s}
+.rule-toggle input:checked+.rule-toggle-track::after{transform:translateX(18px);background:var(--green)}
+/* quick capture */
+.qc-fab{position:fixed;bottom:28px;right:28px;z-index:900;width:48px;height:48px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(155,127,255,.45),0 2px 8px rgba(0,0,0,.4);transition:transform .15s cubic-bezier(0.23,1,0.32,1),box-shadow .15s}
+.qc-fab:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(155,127,255,.6)}
+.qc-fab:active{transform:scale(0.94)}
+.qc-cat-pill{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .14s}
+.qc-cat-pill.active{background:rgba(155,127,255,.15);border-color:var(--accent);color:var(--accent)}
+/* capture card */
+.cap-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;margin-bottom:8px}
+/* weekly reset */
+.wr-ta{width:100%;min-height:90px;background:var(--bg3);border:1px solid var(--border2);border-radius:0 var(--r) var(--r) 0;padding:11px 13px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.7;box-sizing:border-box;outline:none}
+.wr-ta:focus{border-color:rgba(155,127,255,.4);box-shadow:0 0 0 2px rgba(155,127,255,.08)}
+.wr-block{border-left:3px solid;border-radius:0 var(--r2) var(--r2) 0;padding:14px;background:rgba(255,255,255,.03);margin-bottom:0}
+.wr-block-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+/* energy caffeine pills */
+.caf-pill{padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--bg3);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .14s}
+.caf-pill.active{background:rgba(245,166,35,.15);border-color:#f5a623;color:#f5a623}
+/* lock-in card */
+.lockin-card{background:var(--bg3);border:1px solid rgba(155,127,255,.2);border-left:3px solid var(--accent);border-radius:0 var(--r2) var(--r2) 0;padding:16px 18px;margin-bottom:16px}
+.lockin-card input,.lockin-card textarea{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;color:var(--text);font-size:13px;font-family:var(--display);box-sizing:border-box;outline:none;transition:border-color .18s}
+.lockin-card input:focus,.lockin-card textarea:focus{border-color:rgba(155,127,255,.4)}
+.lockin-card label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:5px}
+.lockin-field{margin-bottom:12px}
+.lockin-field:last-child{margin-bottom:0}
+
 /* Goal type toggle section in modal */
 .gm-type-btn{padding:8px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:var(--bg3);color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;transition:all .18s cubic-bezier(0.23,1,0.32,1)}
 .gm-type-btn:hover{border-color:rgba(155,127,255,.3)}
@@ -2169,6 +2220,7 @@ body.light-mode .metric-val{color:#0a0a14}
       <div style="display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:2px;gap:2px">
         <button id="jtab-goals-btn" onclick="switchJournalTab('goals')" class="jtab jtab-active">Goals</button>
         <button id="jtab-daily-btn" onclick="switchJournalTab('daily')" class="jtab">Daily Log</button>
+        <button id="jtab-weekly-btn" onclick="switchJournalTab('weekly')" class="jtab">Weekly Reset</button>
       </div>
       <button class="btn btn-green" id="journal-add-btn" onclick="journalAddAction()">+ Add Goal</button>
     </div>
@@ -2179,7 +2231,7 @@ body.light-mode .metric-val{color:#0a0a14}
     <!-- Hero command center banner -->
     <div class="journal-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:140px;background:linear-gradient(135deg,#0a0a14 0%,#111128 100%);border:1px solid rgba(155,127,255,0.2)">
       <canvas id="journal-hero-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-      <div style="position:relative;z-index:1;padding:24px 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:0">
+      <div style="position:relative;z-index:1;padding:24px 28px;display:grid;grid-template-columns:repeat(5,1fr);gap:0">
         <div id="jstat-0" style="text-align:center;padding:8px;border-right:1px solid rgba(255,255,255,0.07)">
           <div style="font-size:36px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:#9B7FFF" id="jstat-val-0">0</div>
           <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Total Goals</div>
@@ -2192,9 +2244,13 @@ body.light-mode .metric-val{color:#0a0a14}
           <div style="font-size:36px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:#00d084" id="jstat-val-2">0%</div>
           <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Avg Progress</div>
         </div>
-        <div id="jstat-3" style="text-align:center;padding:8px">
+        <div id="jstat-3" style="text-align:center;padding:8px;border-right:1px solid rgba(255,255,255,0.07)">
           <div style="font-size:36px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:#f5a623" id="jstat-val-3">0</div>
           <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Days Journaled</div>
+        </div>
+        <div id="jstat-4" style="text-align:center;padding:8px">
+          <div style="font-size:36px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;color:#00d084" id="jstat-val-4">—</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">30-Day Rules %</div>
         </div>
       </div>
     </div>
@@ -2206,6 +2262,44 @@ body.light-mode .metric-val{color:#0a0a14}
         <div style="font-size:16px;font-weight:700;margin-bottom:8px">No goals yet</div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Set your first goal and track your journey visually</div>
         <button class="btn btn-green" onclick="openGoalModal()">+ Add your first goal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY RESET TAB -->
+  <div id="jtab-weekly" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn btn-sm" onclick="weeklyNavWeek(-1)">← Prev</button>
+        <span id="wr-week-label" style="font-size:15px;font-weight:700;color:var(--text)"></span>
+        <button class="btn btn-sm" id="wr-next-btn" onclick="weeklyNavWeek(1)">Next →</button>
+      </div>
+      <button class="btn btn-green" onclick="saveWeeklyReset()">Save weekly reset</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="wr-block" style="border-color:#00d084">
+        <div class="wr-block-label" style="color:#00d084"><span>🏆</span> Wins this week</div>
+        <textarea class="wr-ta" id="wr-wins" placeholder="What went well this week?"></textarea>
+      </div>
+      <div class="wr-block" style="border-color:#ff4d4d">
+        <div class="wr-block-label" style="color:#ff4d4d"><span>❌</span> Losses / setbacks</div>
+        <textarea class="wr-ta" id="wr-losses" placeholder="What didn't go your way?"></textarea>
+      </div>
+      <div class="wr-block" style="border-color:#f5a623">
+        <div class="wr-block-label" style="color:#f5a623"><span>💡</span> Key lessons</div>
+        <textarea class="wr-ta" id="wr-lessons" placeholder="What did you learn this week?"></textarea>
+      </div>
+      <div class="wr-block" style="border-color:#00d084">
+        <div class="wr-block-label" style="color:#00d084"><span>✅</span> What to continue</div>
+        <textarea class="wr-ta" id="wr-continue" placeholder="Behaviours and habits to keep..."></textarea>
+      </div>
+      <div class="wr-block" style="border-color:#ff4d4d">
+        <div class="wr-block-label" style="color:#ff4d4d"><span>🛑</span> What to stop</div>
+        <textarea class="wr-ta" id="wr-stop" placeholder="What are you cutting next week?"></textarea>
+      </div>
+      <div class="wr-block" style="border-color:var(--accent)">
+        <div class="wr-block-label" style="color:var(--accent)"><span>🎯</span> Main focus next week</div>
+        <textarea class="wr-ta" id="wr-focus" placeholder="Your #1 priority next week..."></textarea>
       </div>
     </div>
   </div>
@@ -2224,6 +2318,78 @@ body.light-mode .metric-val{color:#0a0a14}
         </div>
         <div id="daily-main-content">
           <div id="daily-trade-summary" style="margin-bottom:14px"></div>
+          <!-- SCORECARD -->
+          <div style="margin-bottom:18px">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Daily Scorecard</div>
+            <div id="sc-sliders">
+              <div class="sc-slider-row"><span class="sc-slider-label">Execution</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-execution" oninput="document.getElementById('sc-val-execution').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-execution">5</span></div>
+              <div class="sc-slider-row"><span class="sc-slider-label">Discipline</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-discipline" oninput="document.getElementById('sc-val-discipline').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-discipline">5</span></div>
+              <div class="sc-slider-row"><span class="sc-slider-label">Energy</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-energy" oninput="document.getElementById('sc-val-energy').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-energy">5</span></div>
+              <div class="sc-slider-row"><span class="sc-slider-label">Focus</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-focus" oninput="document.getElementById('sc-val-focus').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-focus">5</span></div>
+              <div class="sc-slider-row"><span class="sc-slider-label">Confidence</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-confidence" oninput="document.getElementById('sc-val-confidence').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-confidence">5</span></div>
+            </div>
+            <div style="margin-top:14px">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Did I respect the version of myself I'm trying to become today?</div>
+              <div style="display:flex;gap:10px">
+                <button class="yn-pill yn-yes" id="sc-rs-yes" onclick="setSCRespect('yes')">YES</button>
+                <button class="yn-pill yn-no" id="sc-rs-no" onclick="setSCRespect('no')">NO</button>
+              </div>
+            </div>
+          </div>
+          <!-- ENERGY TRACKING -->
+          <div style="margin-bottom:18px">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Energy Tracking</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div>
+                <div style="font-size:11px;color:var(--dim);margin-bottom:5px;font-weight:600">Sleep hours</div>
+                <input type="number" id="en-sleep" min="0" max="12" step="0.5" placeholder="e.g. 7.5" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;color:var(--text);font-size:13px;font-family:var(--mono);box-sizing:border-box;outline:none">
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--dim);margin-bottom:5px;font-weight:600">Gym</div>
+                <div style="display:flex;gap:8px">
+                  <button class="yn-pill yn-yes" id="en-gym-yes" onclick="setEnergyPill('gym','yes')">Yes</button>
+                  <button class="yn-pill yn-no" id="en-gym-no" onclick="setEnergyPill('gym','no')">No</button>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--dim);margin-bottom:5px;font-weight:600">Ate well</div>
+                <div style="display:flex;gap:8px">
+                  <button class="yn-pill yn-yes" id="en-ate-yes" onclick="setEnergyPill('ate','yes')">Yes</button>
+                  <button class="yn-pill yn-no" id="en-ate-no" onclick="setEnergyPill('ate','no')">No</button>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--dim);margin-bottom:5px;font-weight:600">Caffeine</div>
+                <div style="display:flex;gap:6px">
+                  <button class="caf-pill" id="en-caf-none" onclick="setEnergyPill('caffeine','none')">None</button>
+                  <button class="caf-pill" id="en-caf-some" onclick="setEnergyPill('caffeine','some')">Some</button>
+                  <button class="caf-pill" id="en-caf-alot" onclick="setEnergyPill('caffeine','alot')">A lot</button>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--dim);margin-bottom:6px;font-weight:600">Stress level</div>
+                <div class="dot-sel" id="en-stress-dots"></div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--dim);margin-bottom:6px;font-weight:600">Motivation</div>
+                <div class="dot-sel" id="en-motivation-dots"></div>
+              </div>
+            </div>
+          </div>
+          <!-- RULE ADHERENCE -->
+          <div style="margin-bottom:18px">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Rule Adherence</div>
+            <div id="rule-toggles-wrap">
+              <div class="rule-toggle-row"><span class="rule-toggle-lbl">Respected risk limits</span><label class="rule-toggle"><input type="checkbox" id="rl-risk"><span class="rule-toggle-track"></span></label></div>
+              <div class="rule-toggle-row"><span class="rule-toggle-lbl">Waited for confirmation</span><label class="rule-toggle"><input type="checkbox" id="rl-confirmation"><span class="rule-toggle-track"></span></label></div>
+              <div class="rule-toggle-row"><span class="rule-toggle-lbl">No revenge trades</span><label class="rule-toggle"><input type="checkbox" id="rl-noRevenge"><span class="rule-toggle-track"></span></label></div>
+              <div class="rule-toggle-row"><span class="rule-toggle-lbl">No impulsive entries</span><label class="rule-toggle"><input type="checkbox" id="rl-noImpulsive"><span class="rule-toggle-track"></span></label></div>
+              <div class="rule-toggle-row"><span class="rule-toggle-lbl">Journaled today</span><label class="rule-toggle"><input type="checkbox" id="rl-journaled"><span class="rule-toggle-track"></span></label></div>
+              <div class="rule-toggle-row"><span class="rule-toggle-lbl">Stopped at max loss</span><label class="rule-toggle"><input type="checkbox" id="rl-maxLoss"><span class="rule-toggle-track"></span></label></div>
+            </div>
+            <div id="rule-adherence-pct" style="margin-top:10px;font-size:12px;font-weight:700;color:var(--amber)"></div>
+          </div>
+          <!-- MOOD -->
           <div style="margin-bottom:18px">
             <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Mood</div>
             <div style="display:flex;gap:10px" id="daily-mood-row">
@@ -2240,6 +2406,12 @@ body.light-mode .metric-val{color:#0a0a14}
           </div>
           <div id="daily-goal-checkins" style="margin-bottom:16px"></div>
           <button class="btn btn-green" style="width:100%;justify-content:center" onclick="saveDailyEntry()">Save entry</button>
+          <!-- TODAY'S CAPTURES -->
+          <div id="daily-captures-section" style="margin-top:22px">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Today's Captures</div>
+            <div id="daily-captures-list"></div>
+            <div style="font-size:11px;color:var(--dim);margin-top:6px">Use the <span style="color:var(--accent)">+</span> button (bottom right) to add a capture.</div>
+          </div>
         </div>
       </div>
       <!-- RIGHT PANEL -->
@@ -2416,6 +2588,13 @@ body.light-mode .metric-val{color:#0a0a14}
         <div class="routine-check-row"><input type="checkbox" id="rc-risk"><label for="rc-risk">Set max risk for the day</label></div>
         <div class="routine-check-row"><input type="checkbox" id="rc-mindset"><label for="rc-mindset">Feeling focused and disciplined</label></div>
       </div>
+      <!-- PRE-MARKET LOCK-IN -->
+      <div class="lockin-card">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:14px">⚡ Pre-Market Lock-In</div>
+        <div class="lockin-field"><label>What setup am I ONLY taking today?</label><input id="li-setup" placeholder="e.g. Mech Model only — FVG fills on 5m after HTF sweep"></div>
+        <div class="lockin-field"><label>What would invalidate my bias?</label><input id="li-invalidate" placeholder="e.g. Price reclaims yesterday's high with structure shift..."></div>
+        <div class="lockin-field"><label>What makes today a win even if I'm red?</label><textarea id="li-win-definition" style="min-height:56px;resize:vertical" placeholder="e.g. Followed all rules, no revenge trades, stopped at max loss..."></textarea></div>
+      </div>
       <div class="routine-q"><label>Market bias today?</label><select id="r-bias"><option value="">Select bias...</option><option>Bullish</option><option>Bearish</option><option>Neutral / range</option><option>Uncertain — sitting out</option></select></div>
       <div class="routine-q"><label>Which setups am I hunting?</label><input id="r-setups" placeholder="e.g. Mech Model on 1h FVGs, continuation after open sweep..."></div>
       <div class="routine-q"><label>Max risk today ($)</label><input id="r-maxrisk" type="number" placeholder="e.g. 200"></div>
@@ -2478,6 +2657,27 @@ body.light-mode .metric-val{color:#0a0a14}
 </div>
 
 </div><!-- /main -->
+
+<!-- QUICK CAPTURE FAB -->
+<button class="qc-fab" onclick="openQCModal()" title="Quick Capture">+</button>
+
+<!-- QUICK CAPTURE MODAL -->
+<div class="modal-overlay" id="qc-modal" onclick="if(event.target===this)closeQCModal()" style="display:none">
+  <div class="modal" style="max-width:460px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="modal-title">Quick Capture</div>
+      <button class="btn btn-sm" onclick="closeQCModal()" style="font-size:18px;padding:4px 10px">✕</button>
+    </div>
+    <textarea id="qc-text" placeholder="Capture a thought, idea, or lesson..." style="width:100%;min-height:100px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:12px 14px;color:var(--text);font-size:14px;font-family:var(--display);resize:none;line-height:1.65;box-sizing:border-box;outline:none;transition:border-color .18s" onfocus="this.style.borderColor='rgba(155,127,255,.4)'" onblur="this.style.borderColor=''"></textarea>
+    <div style="display:flex;gap:8px;margin:12px 0">
+      <button class="qc-cat-pill" id="qcat-thought" onclick="setQCCat('thought')">💭 Thought</button>
+      <button class="qc-cat-pill" id="qcat-idea" onclick="setQCCat('idea')">💡 Idea</button>
+      <button class="qc-cat-pill" id="qcat-tradeobs" onclick="setQCCat('tradeobs')">📈 Trade Obs</button>
+      <button class="qc-cat-pill" id="qcat-content" onclick="setQCCat('content')">🎬 Content</button>
+    </div>
+    <button class="btn btn-green" style="width:100%;justify-content:center" onclick="saveQCCapture()">Save capture</button>
+  </div>
+</div>
 
 <!-- AI CHAT PANEL -->
 <div class="chat-panel" id="chat-panel">
@@ -4757,6 +4957,9 @@ function renderRoutinePage() {
     document.getElementById('r-avoid').value = existing.pre?.avoid||'';
     document.getElementById('r-intention').value = existing.pre?.intention||'';
     ['bias','levels','news','risk','mindset'].forEach(k=>{ const el=document.getElementById('rc-'+k); if(el) el.checked=existing.pre?.checks?.[k]||false; });
+    const liSetup = document.getElementById('li-setup'); if(liSetup) liSetup.value = existing.lockin?.setup||'';
+    const liInv = document.getElementById('li-invalidate'); if(liInv) liInv.value = existing.lockin?.invalidate||'';
+    const liWin = document.getElementById('li-win-definition'); if(liWin) liWin.value = existing.lockin?.winDefinition||'';
     document.getElementById('r-discipline').value = existing.post?.discipline||7;
     document.getElementById('r-disc-val').textContent = existing.post?.discipline||7;
     document.getElementById('r-mistake').value = existing.post?.mistake||'';
@@ -4773,9 +4976,13 @@ function saveRoutine() {
   ['bias','levels','news','risk','mindset'].forEach(k=>{ const el=document.getElementById('rc-'+k); if(el) preChecks[k]=el.checked; });
   const postChecks = {};
   ['plan','rules','size','stop','journal'].forEach(k=>{ const el=document.getElementById('rp-'+k); if(el) postChecks[k]=el.checked; });
+  const liSetupEl = document.getElementById('li-setup');
+  const liInvEl = document.getElementById('li-invalidate');
+  const liWinEl = document.getElementById('li-win-definition');
   const routine = {
     date: today,
     pre: { bias:document.getElementById('r-bias').value, setups:document.getElementById('r-setups').value, maxrisk:document.getElementById('r-maxrisk').value, maxtrades:document.getElementById('r-maxtrades').value, avoid:document.getElementById('r-avoid').value, intention:document.getElementById('r-intention').value, checks:preChecks },
+    lockin: { setup:liSetupEl?liSetupEl.value:'', invalidate:liInvEl?liInvEl.value:'', winDefinition:liWinEl?liWinEl.value:'' },
     post: { discipline:document.getElementById('r-discipline').value, mistake:document.getElementById('r-mistake').value, best:document.getElementById('r-best').value, improve:document.getElementById('r-improve').value, notes:document.getElementById('r-notes').value, checks:postChecks }
   };
   const idx = state.routines.findIndex(r=>r.date===today);
@@ -7947,15 +8154,18 @@ function updateThemeBtn(isLight) {
 
 // ─── JOURNAL ──────────────────────────────────────────────────────────────────
 function getJournal() {
-  if (!state.journal) state.journal = { goals:[], dailyEntries:{} };
+  if (!state.journal) state.journal = { goals:[], dailyEntries:{}, weeklyResets:{}, captures:[] };
   if (!state.journal.goals) state.journal.goals = [];
   if (!state.journal.dailyEntries) state.journal.dailyEntries = {};
+  if (!state.journal.weeklyResets) state.journal.weeklyResets = {};
+  if (!state.journal.captures) state.journal.captures = [];
   return state.journal;
 }
 
 let journalTab = 'goals';
 let dailyViewDate = new Date().toISOString().slice(0,10);
 let editingGoalIdx = null;
+let weeklyViewKey = _getWeekKey(new Date());
 
 const CAT_COLORS = { trading:'#9B7FFF', money:'#f5a623', audience:'#4a9eff', fitness:'#00d084', skills:'#9B7FFF', network:'#00d4ff', discipline:'#ff7eb3', other:'#aaa',
   // Legacy keys for backward compat
@@ -7973,17 +8183,20 @@ function renderJournalPage() {
 function updateJournalAddBtn() {
   const btn = document.getElementById('journal-add-btn');
   if (!btn) return;
-  btn.textContent = journalTab === 'goals' ? '+ Add Goal' : '+ Log Today';
-  btn.onclick = journalTab === 'goals' ? () => openGoalModal() : () => switchJournalTab('daily');
+  btn.textContent = journalTab === 'goals' ? '+ Add Goal' : journalTab === 'weekly' ? '+ Weekly Reset' : '+ Log Today';
+  btn.onclick = journalTab === 'goals' ? () => openGoalModal() : journalTab === 'weekly' ? () => saveWeeklyReset() : () => switchJournalTab('daily');
 }
 function switchJournalTab(tab) {
   journalTab = tab;
-  document.getElementById('jtab-goals').style.display  = tab==='goals' ? '' : 'none';
-  document.getElementById('jtab-daily').style.display  = tab==='daily' ? '' : 'none';
+  document.getElementById('jtab-goals').style.display   = tab==='goals'  ? '' : 'none';
+  document.getElementById('jtab-daily').style.display   = tab==='daily'  ? '' : 'none';
+  document.getElementById('jtab-weekly').style.display  = tab==='weekly' ? '' : 'none';
   document.getElementById('jtab-goals-btn').classList.toggle('jtab-active', tab==='goals');
   document.getElementById('jtab-daily-btn').classList.toggle('jtab-active', tab==='daily');
+  document.getElementById('jtab-weekly-btn').classList.toggle('jtab-active', tab==='weekly');
   updateJournalAddBtn();
   if (tab==='goals') { renderGoalsTab(); startJournalHeroCanvas(); }
+  else if (tab==='weekly') renderWeeklyTab();
   else renderDailyTab();
 }
 
@@ -8214,9 +8427,19 @@ function renderGoalsTab() {
   const daysJ = Object.keys(j.dailyEntries).filter(d=>j.dailyEntries[d].notes).length;
   const avgProg = goals.length ? Math.round(goals.reduce((a,g)=>a+goalProgress(g),0)/goals.length) : 0;
 
-  // Update hero stats with count-up
-  const vals = [goals.length, goals.filter(g=>g.status!=='done').length, avgProg+'%', daysJ];
-  const ids  = ['jstat-val-0','jstat-val-1','jstat-val-2','jstat-val-3'];
+  // 30-day rule adherence %
+  const today = new Date(), ruleVals = [];
+  for (let i=0;i<30;i++) {
+    const d=new Date(today.getTime()-i*86400000).toISOString().slice(0,10);
+    const e=j.dailyEntries[d]; if(!e?.rules) continue;
+    const r=e.rules; const keys=['risk','confirmation','noRevenge','noImpulsive','journaled','maxLoss'];
+    const on=keys.filter(k=>r[k]).length; ruleVals.push(on/keys.length*100);
+  }
+  const ruleAvg = ruleVals.length ? Math.round(ruleVals.reduce((a,b)=>a+b,0)/ruleVals.length) : null;
+
+  // Update hero stats
+  const vals = [goals.length, goals.filter(g=>g.status!=='done').length, avgProg+'%', daysJ, ruleAvg!=null?ruleAvg+'%':'—'];
+  const ids  = ['jstat-val-0','jstat-val-1','jstat-val-2','jstat-val-3','jstat-val-4'];
   ids.forEach((id,i) => { const el=document.getElementById(id); if(el) el.textContent=vals[i]; });
 
   if(!goals.length) { empty.style.display=''; grid.innerHTML=''; return; }
@@ -8948,6 +9171,105 @@ function saveWeeklyUpdate() {
   openGoalDetail(_wuEditingIdx);
 }
 
+// ── JOURNAL HELPERS ───────────────────────────────────────────────────────────
+function _getWeekKey(d) {
+  const dt=new Date(d);dt.setHours(12,0,0,0);
+  const day=dt.getDay()||7;dt.setDate(dt.getDate()-day+1);
+  const y=dt.getFullYear();const wk=Math.ceil(((dt-new Date(y,0,1))/86400000+1)/7);
+  return `${y}-W${String(wk).padStart(2,'0')}`;
+}
+function _getWeekRange(key) {
+  const [y,w]=key.split('-W');const year=parseInt(y),wn=parseInt(w);
+  const jan1=new Date(year,0,1);const mon=new Date(jan1.getTime()+(wn-1)*7*86400000-(jan1.getDay()||7)*86400000+86400000);
+  const sun=new Date(mon.getTime()+6*86400000);
+  const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  return`${fmt(mon)} – ${fmt(sun)}, ${year}`;
+}
+
+function updateSliderFill(sl) {
+  const pct=(sl.value-sl.min)/(sl.max-sl.min)*100;
+  sl.style.background=`linear-gradient(to right,var(--accent) ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
+}
+
+let _scRespect=null,_enGym=null,_enAte=null,_enCaffeine=null;
+function setSCRespect(v){_scRespect=v;['yes','no'].forEach(x=>{const b=document.getElementById('sc-rs-'+x);if(b)b.classList.toggle('yn-active',x===v);});}
+function setEnergyPill(field,v){
+  if(field==='gym'){_enGym=v;['yes','no'].forEach(x=>{const b=document.getElementById('en-gym-'+x);if(b)b.classList.toggle('yn-active',x===v);});}
+  else if(field==='ate'){_enAte=v;['yes','no'].forEach(x=>{const b=document.getElementById('en-ate-'+x);if(b)b.classList.toggle('yn-active',x===v);});}
+  else if(field==='caffeine'){_enCaffeine=v;['none','some','alot'].forEach(x=>{const b=document.getElementById('en-caf-'+x);if(b)b.classList.toggle('active',x===v);});}
+}
+function _renderDotSel(containerId,selected,count,key){
+  const el=document.getElementById(containerId);if(!el)return;
+  el.innerHTML=Array.from({length:count},(_,i)=>{
+    const n=i+1;const active=selected===n;
+    return`<button class="dot-sel-dot${active?' active':''}" id="dot-${key}-${n}" onclick="_setDot('${key}',${n})">${n}</button>`;
+  }).join('');
+}
+function _setDot(key,n){
+  for(let i=1;i<=5;i++){const d=document.getElementById('dot-'+key+'-'+i);if(d)d.classList.toggle('active',i===n);}
+}
+function updateRuleAdherencePct(){
+  const keys=['risk','confirmation','noRevenge','noImpulsive','journaled','maxLoss'];
+  const on=keys.filter(k=>document.getElementById('rl-'+k)?.checked).length;
+  const el=document.getElementById('rule-adherence-pct');
+  if(!el)return;
+  const col=on>=5?'var(--green)':on>=3?'var(--amber)':'var(--red)';
+  el.style.color=col;
+  el.textContent=`${on}/${keys.length} rules followed today`;
+}
+
+// ── QUICK CAPTURE ──────────────────────────────────────────────────────────────
+let _qcCat='thought';
+function setQCCat(c){_qcCat=c;['thought','idea','tradeobs','content'].forEach(x=>{const b=document.getElementById('qcat-'+x);if(b)b.classList.toggle('active',x===c);});}
+function openQCModal(){
+  const m=document.getElementById('qc-modal');if(!m)return;
+  m.style.display='flex';
+  const ta=document.getElementById('qc-text');if(ta){ta.value='';ta.focus();}
+  setQCCat('thought');
+}
+function closeQCModal(){const m=document.getElementById('qc-modal');if(m)m.style.display='none';}
+function saveQCCapture(){
+  const text=(document.getElementById('qc-text')?.value||'').trim();if(!text)return;
+  const j=getJournal();
+  j.captures.unshift({text,category:_qcCat,createdAt:new Date().toISOString()});
+  state.journal=j;save(true);closeQCModal();
+  if(journalTab==='daily')renderDailyCapturesList();
+}
+function renderDailyCapturesList(){
+  const el=document.getElementById('daily-captures-list');if(!el)return;
+  const j=getJournal();
+  const today=new Date().toISOString().slice(0,10);
+  const todayCaps=j.captures.filter(c=>c.createdAt.slice(0,10)===today||c.createdAt.slice(0,10)===dailyViewDate);
+  if(!todayCaps.length){el.innerHTML='';return;}
+  const catIcons={'thought':'💭','idea':'💡','tradeobs':'📈','content':'🎬'};
+  el.innerHTML=todayCaps.map((c,i)=>`<div class="cap-card"><div style="display:flex;align-items:flex-start;gap:10px"><span style="font-size:15px">${catIcons[c.category]||'💭'}</span><div style="flex:1"><div style="font-size:13px;color:var(--text);line-height:1.55">${c.text}</div><div style="font-size:10px;color:var(--dim);margin-top:4px">${new Date(c.createdAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div></div></div></div>`).join('');
+}
+
+// ── WEEKLY RESET ───────────────────────────────────────────────────────────────
+function renderWeeklyTab(){
+  const j=getJournal();
+  const lbl=document.getElementById('wr-week-label');if(lbl)lbl.textContent=_getWeekRange(weeklyViewKey)+' ('+weeklyViewKey+')';
+  const nb=document.getElementById('wr-next-btn');if(nb)nb.disabled=weeklyViewKey>=_getWeekKey(new Date());
+  const wr=j.weeklyResets[weeklyViewKey]||{};
+  ['wins','losses','lessons','continue','stop','focus'].forEach(k=>{const el=document.getElementById('wr-'+k);if(el)el.value=wr[k]||'';});
+}
+function weeklyNavWeek(dir){
+  const d=new Date(weeklyViewKey.replace(/-W(\d+)/,(_,w)=>'-01-01'));
+  d.setDate(d.getDate()+parseInt(weeklyViewKey.split('-W')[1])*7*dir);
+  weeklyViewKey=_getWeekKey(d);
+  renderWeeklyTab();
+}
+function saveWeeklyReset(){
+  const j=getJournal();
+  const data={};
+  ['wins','losses','lessons','continue','stop','focus'].forEach(k=>{const el=document.getElementById('wr-'+k);if(el)data[k]=el.value;});
+  data.savedAt=new Date().toISOString();
+  j.weeklyResets[weeklyViewKey]=data;
+  state.journal=j;save(true);
+  const btn=document.querySelector('#jtab-weekly .btn-green');
+  if(btn){btn.textContent='Saved ✓';btn.style.background='var(--green)';setTimeout(()=>{btn.textContent='Save weekly reset';btn.style.background='';},1800);}
+}
+
 // ── DAILY LOG TAB ─────────────────────────────────────────────────────────────
 function renderDailyTab(dir) {
   const j=getJournal(), entry=j.dailyEntries[dailyViewDate]||{};
@@ -8983,11 +9305,41 @@ function renderDailyTab(dir) {
     }
   }
 
+  // Scorecard sliders
+  const sc = entry.scorecard || {};
+  ['execution','discipline','energy','focus','confidence'].forEach(k=>{
+    const sl=document.getElementById('sc-'+k); const vl=document.getElementById('sc-val-'+k);
+    if(sl){sl.value=sc[k]!=null?sc[k]:5;updateSliderFill(sl);}
+    if(vl)vl.textContent=sc[k]!=null?sc[k]:5;
+  });
+  const rsVal=sc.respectedSelf;
+  ['yes','no'].forEach(v=>{const b=document.getElementById('sc-rs-'+v);if(b)b.classList.toggle('yn-active',rsVal===v);});
+
+  // Energy tracking
+  const en = entry.energy || {};
+  const sleepEl=document.getElementById('en-sleep'); if(sleepEl) sleepEl.value=en.sleep!=null?en.sleep:'';
+  ['gym','ate'].forEach(k=>{
+    ['yes','no'].forEach(v=>{const b=document.getElementById('en-'+k+'-'+v);if(b)b.classList.toggle('yn-active',en[k]===v);});
+  });
+  ['none','some','alot'].forEach(v=>{const b=document.getElementById('en-caf-'+v);if(b)b.classList.toggle('active',en.caffeine===v);});
+  _renderDotSel('en-stress-dots', en.stress, 5, 'stress');
+  _renderDotSel('en-motivation-dots', en.motivation, 5, 'motivation');
+
+  // Rule toggles
+  const rl = entry.rules || {};
+  ['risk','confirmation','noRevenge','noImpulsive','journaled','maxLoss'].forEach(k=>{
+    const cb=document.getElementById('rl-'+k); if(cb){cb.checked=!!rl[k];cb.onchange=updateRuleAdherencePct;}
+  });
+  updateRuleAdherencePct();
+
   // Mood buttons
   document.querySelectorAll('.mood-btn-v2').forEach((b,i)=>b.classList.toggle('selected',i===entry.mood));
 
   // Notes
   const ta=document.getElementById('daily-notes'); if(ta) ta.value=entry.notes||'';
+
+  // Captures for today
+  renderDailyCapturesList();
 
   // Next button
   const nb=document.getElementById('daily-next-btn'); if(nb) nb.disabled=dailyViewDate>=new Date().toISOString().slice(0,10);
@@ -9094,8 +9446,27 @@ function saveDailyEntry() {
       }
     }
   });
+  // Scorecard
+  const sc={};
+  ['execution','discipline','energy','focus','confidence'].forEach(k=>{const sl=document.getElementById('sc-'+k);if(sl)sc[k]=parseInt(sl.value);});
+  const rsY=document.getElementById('sc-rs-yes'),rsN=document.getElementById('sc-rs-no');
+  if(rsY?.classList.contains('yn-active'))sc.respectedSelf='yes';
+  else if(rsN?.classList.contains('yn-active'))sc.respectedSelf='no';
+  // Energy
+  const en={};
+  const sleepEl=document.getElementById('en-sleep');if(sleepEl&&sleepEl.value!=='')en.sleep=parseFloat(sleepEl.value);
+  ['gym','ate'].forEach(k=>{
+    if(document.getElementById('en-'+k+'-yes')?.classList.contains('yn-active'))en[k]='yes';
+    else if(document.getElementById('en-'+k+'-no')?.classList.contains('yn-active'))en[k]='no';
+  });
+  ['none','some','alot'].forEach(v=>{if(document.getElementById('en-caf-'+v)?.classList.contains('active'))en.caffeine=v;});
+  [1,2,3,4,5].forEach(i=>{if(document.getElementById('dot-stress-'+i)?.classList.contains('active'))en.stress=i;});
+  [1,2,3,4,5].forEach(i=>{if(document.getElementById('dot-motivation-'+i)?.classList.contains('active'))en.motivation=i;});
+  // Rules
+  const rl={};
+  ['risk','confirmation','noRevenge','noImpulsive','journaled','maxLoss'].forEach(k=>{const cb=document.getElementById('rl-'+k);if(cb)rl[k]=cb.checked;});
   const existing=j.dailyEntries[dailyViewDate]||{};
-  j.dailyEntries[dailyViewDate]={...existing,notes,mood,
+  j.dailyEntries[dailyViewDate]={...existing,notes,mood,scorecard:sc,energy:en,rules:rl,
     goalCheckins:{...(existing.goalCheckins||{}),...goalCheckins},
     goalValues:{...(existing.goalValues||{}),...goalValues},
     savedAt:new Date().toISOString()};
@@ -9162,6 +9533,8 @@ function renderDailyHistoryList(){
         const pnl2=dt2.reduce((s,t)=>s+calcPnL(t),0);
         pnlBadge=`<span style="font-size:10px;font-weight:700;color:${pnl2>=0?'var(--green)':'var(--red)'};font-family:var(--mono)">${pnl2>=0?'+':'-'}\$${Math.abs(pnl2).toFixed(0)}</span>`;
       }
+      const scAvg=e.scorecard?Math.round(['execution','discipline','energy','focus','confidence'].reduce((s,k)=>s+(e.scorecard[k]||0),0)/5*10)/10:null;
+      const ruleCount=e.rules?['risk','confirmation','noRevenge','noImpulsive','journaled','maxLoss'].filter(k=>e.rules[k]).length:null;
       return`<div class="daily-entry-card ${isActive?'entry-active':''}" onclick="dailyViewDate='${date}';renderDailyTab()">
         <div style="display:flex;gap:10px;align-items:flex-start">
           <div style="text-align:center;flex-shrink:0;min-width:30px">
@@ -9172,6 +9545,8 @@ function renderDailyHistoryList(){
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
               ${mood?`<span style="font-size:16px">${mood}</span>`:''}
               ${pnlBadge}
+              ${scAvg!=null?`<span style="font-size:10px;color:var(--dim);font-family:var(--mono)">⚡ ${scAvg}</span>`:''}
+              ${ruleCount!=null?`<span style="font-size:10px;color:${ruleCount>=5?'var(--green)':ruleCount>=3?'var(--amber)':'var(--red)'};font-family:var(--mono)">${ruleCount}/6</span>`:''}
             </div>
             ${preview?`<div style="font-size:11px;color:var(--muted);line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${preview}</div>`:'<div style="font-size:11px;color:var(--dim)">No notes</div>'}
             ${goalDots?`<div style="display:flex;gap:4px;margin-top:6px;align-items:center">${goalDots}${ciKeys.length>4?`<span style="font-size:9px;color:var(--dim)">+${ciKeys.length-4}</span>`:''}</div>`:''}
