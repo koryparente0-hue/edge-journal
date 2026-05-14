@@ -140,6 +140,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .tag-pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;background:var(--bg4);color:var(--muted);border:1px solid var(--border);margin:1px 1px;font-family:var(--display);font-weight:600}
 .mistake-pill{background:var(--red-dim);color:var(--red);border-color:var(--red-border)}
 .setup-pill{background:var(--blue-dim);color:var(--blue);border-color:#4a9eff30}
+.strength-pill{background:rgba(155,127,255,0.12);color:var(--accent);border-color:rgba(155,127,255,0.3)}
 .amber-pill{background:var(--amber-dim);color:var(--amber);border:1px solid #f5a62340}
 
 .filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
@@ -174,6 +175,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .tag-opt:hover{border-color:var(--border3);color:var(--text)}
 .tag-opt.sel-setup{background:var(--blue-dim);border-color:#4a9eff40;color:var(--blue)}
 .tag-opt.sel-mistake{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
+.tag-opt.sel-strength{background:rgba(155,127,255,0.15);border-color:rgba(155,127,255,0.4);color:var(--accent)}
 
 .ai-review-box{background:var(--bg3);border:1px solid var(--green-border);border-radius:var(--r);padding:14px;font-size:13px;line-height:1.75;color:var(--text);margin-top:12px;white-space:pre-wrap;position:relative}
 .ai-review-box::before{content:'AI Review';position:absolute;top:-1px;right:12px;font-size:9px;letter-spacing:.08em;color:var(--accent);background:var(--bg3);padding:0 6px;font-weight:700}
@@ -1295,9 +1297,6 @@ body.light-mode .metric-val{color:#0a0a14}
     <div class="nav-item" id="nav-streaks" onclick="go('streaks')">
       <svg viewBox="0 0 16 16" fill="none"><path d="M9 2c0 3-3 4-3 7a4 4 0 008 0c0-4-5-7-5-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Streaks
     </div>
-    <div class="nav-item" id="nav-risk" onclick="go('risk')">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14V6l4-4h6l2 2v10" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 14v-4h4v4" stroke="currentColor" stroke-width="1.3"/></svg>Risk &amp; Mistakes
-    </div>
     <div class="nav-item" id="nav-setuplibrary" onclick="go('setuplibrary')">
       <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Setup Library
     </div>
@@ -1543,6 +1542,7 @@ body.light-mode .metric-val{color:#0a0a14}
         <div class="modal-field" style="margin-bottom:0"><label>Setup tags</label><div class="tag-select" id="setup-tags" style="margin-top:6px"></div></div>
         <div class="modal-field" style="margin-bottom:0"><label>Mistake tags</label><div class="tag-select" id="mistake-tags" style="margin-top:6px"></div></div>
       </div>
+      <div class="modal-field" style="margin-bottom:12px"><label>What I did well <span style="color:var(--dim);font-weight:400;font-size:11px">— optional</span></label><div class="tag-select" id="strength-tags" style="margin-top:6px"></div></div>
       <div class="modal-field" style="margin-bottom:0">
         <label>Chart screenshots <span style="color:var(--dim);font-weight:400;font-size:11px">— optional, up to 4</span></label>
         <div class="photo-upload-area" style="margin-top:6px" onclick="document.getElementById('photo-input').click()">
@@ -1659,7 +1659,7 @@ body.light-mode .metric-val{color:#0a0a14}
       <div style="overflow-x:auto">
         <table class="trades-table">
           <thead><tr>
-            <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>TTC</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
+            <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>TTC</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th>Did Well</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
           </tr></thead>
           <tbody id="history-body"></tbody>
         </table>
@@ -2446,48 +2446,6 @@ body.light-mode .metric-val{color:#0a0a14}
 </div>
 
 <!-- RISK CONSISTENCY -->
-<div class="page" id="page-risk">
-  <div class="page-header">
-    <div><div class="page-title">Risk &amp; Mistakes</div><div class="page-sub">Sizing consistency and what's costing you money</div></div>
-  </div>
-  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
-    <canvas id="ri-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ri-s0">—</div><div class="phero-lbl">CONSISTENCY</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ri-s1">—</div><div class="phero-lbl">MAX DRAWDOWN</div></div>
-      <div class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"><div class="phero-val" id="ri-s2">—</div><div class="phero-lbl">MISTAKES LOGGED</div></div>
-      <div class="phero-stat"><div class="phero-val" id="ri-s3">—</div><div class="phero-lbl">TRADES WITH ERRORS</div></div>
-    </div>
-  </div>
-
-  <div class="metrics" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-    <div class="metric"><div class="metric-label">Avg Risk / Trade</div><div class="metric-val" id="risk-avg">—</div><div class="metric-sub">pts × contracts</div></div>
-    <div class="metric"><div class="metric-label">Risk Std Dev</div><div class="metric-val amber" id="risk-stddev">—</div><div class="metric-sub">consistency score</div></div>
-    <div class="metric"><div class="metric-label">Largest Risk Taken</div><div class="metric-val neg" id="risk-max">—</div><div class="metric-sub">single trade</div></div>
-    <div class="metric"><div class="metric-label">Risk After Loss</div><div class="metric-val" id="risk-after-loss">—</div><div class="metric-sub">vs avg risk</div></div>
-  </div>
-  <div class="grid2" style="margin-bottom:16px">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Risk per trade over time</span></div>
-      <div id="risk-chart-wrap" style="position:relative;height:180px"><canvas id="riskChart"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Risk consistency breakdown</span></div>
-      <div id="risk-breakdown"><div class="empty">Log trades with stop losses to see risk analysis.</div></div>
-    </div>
-  </div>
-  <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">Mistake Tracker</div>
-  <div class="grid2">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Cost per mistake (total $)</span></div>
-      <div id="mistake-cost-list"><div class="empty"><strong>No data yet</strong>Tag trades with mistakes to track their cost.</div></div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Mistake frequency</span></div>
-      <div id="mistake-freq-list"><div class="empty"><strong>No data yet</strong>Start tagging bad trades.</div></div>
-    </div>
-  </div>
-</div>
 
 <!-- STREAKS -->
 <div class="page" id="page-streaks">
@@ -2711,6 +2669,10 @@ body.light-mode .metric-val{color:#0a0a14}
       <label class="modal-label">Mistake tags</label>
       <div id="et-mistake-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
     </div>
+    <div class="modal-field" style="margin-bottom:16px">
+      <label class="modal-label">What I did well</label>
+      <div id="et-strength-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px"></div>
+    </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-green" style="flex:1;justify-content:center" onclick="saveEditTrade()">Save Changes</button>
       <button class="btn" onclick="closeEditTradeModal()">Cancel</button>
@@ -2877,12 +2839,14 @@ let state = {
   trades: [],
   setups: ['Mech Model','Continuation','Breakout','VWAP Bounce','Reversal','Gap Fill'],
   mistakes: ['FOMO','Overtraded','Ignored SL','Early Exit','Revenge Trade','No Setup','Sized Too Big','Chased Entry'],
+  strengths: ['Clear Draws','Resweep','PO3','Waited Confirmation','Clean Entry','Proper SL','Held to Target','HTF Aligned','Session Timing','Managed Risk'],
   playbook: [],
   rules: [],
   routines: [],
   selectedSide: 'long',
   selectedSetups: [],
   selectedMistakes: [],
+  selectedStrengths: [],
   propAccounts: [],   // user's prop firm accounts
   propPayouts: [],    // logged payouts
   setupLibrary: []    // user-defined setup definitions with confluences
@@ -3245,15 +3209,20 @@ function renderLogPage() {
 function renderTagSelectors() {
   document.getElementById('setup-tags').innerHTML=state.setups.map(s=>`<div class="tag-opt ${state.selectedSetups.includes(s)?'sel-setup':''}" onclick="toggleSetup('${s.replace(/'/g,"\\\'")}')">${s}</div>`).join('');
   document.getElementById('mistake-tags').innerHTML=state.mistakes.map(m=>`<div class="tag-opt ${state.selectedMistakes.includes(m)?'sel-mistake':''}" onclick="toggleMistake('${m.replace(/'/g,"\\\'")}')">${m}</div>`).join('');
+  const se=document.getElementById('strength-tags');
+  if(se)se.innerHTML=(state.strengths||[]).map(s=>`<div class="tag-opt ${(state.selectedStrengths||[]).includes(s)?'sel-strength':''}" onclick="toggleStrength('${s.replace(/'/g,"\\\'")}')">${s}</div>`).join('');
 }
 
 function toggleSetup(s){const i=state.selectedSetups.indexOf(s);if(i>=0)state.selectedSetups.splice(i,1);else state.selectedSetups.push(s);renderTagSelectors();}
 function toggleMistake(m){const i=state.selectedMistakes.indexOf(m);if(i>=0)state.selectedMistakes.splice(i,1);else state.selectedMistakes.push(m);renderTagSelectors();}
+function toggleStrength(s){if(!state.selectedStrengths)state.selectedStrengths=[];const i=state.selectedStrengths.indexOf(s);if(i>=0)state.selectedStrengths.splice(i,1);else state.selectedStrengths.push(s);renderTagSelectors();}
 function setSide(s){state.selectedSide=s;document.getElementById('btn-long').className='side-btn '+(s==='long'?'long-active':'');document.getElementById('btn-short').className='side-btn '+(s==='short'?'short-active':'');}
 function addSetup(){const n=prompt('Setup name:');if(!n)return;state.setups.push(n.trim());save();renderLogPage();}
 function removeSetup(i){state.setups.splice(i,1);save();renderLogPage();}
 function addMistake(){const n=prompt('Mistake tag:');if(!n)return;state.mistakes.push(n.trim());save();renderLogPage();}
 function removeMistake(i){state.mistakes.splice(i,1);save();renderLogPage();}
+function addStrength(){const n=prompt('Strength tag:');if(!n)return;if(!state.strengths)state.strengths=[];state.strengths.push(n.trim());save();renderLogPage();}
+function removeStrength(i){state.strengths.splice(i,1);save();renderLogPage();}
 
 function buildTrade(withNotes) {
   const ticker=(document.getElementById('q-ticker').value||'NQ').trim().toUpperCase();
@@ -3280,6 +3249,7 @@ function buildTrade(withNotes) {
     if (rr) { sl = -1; tp = rr; } // store RR in tp field for display
     const setups = withNotes ? [...state.selectedSetups] : (setup?[setup]:[]);
     const mistakes = withNotes ? [...state.selectedMistakes] : [];
+    const strengths = withNotes ? [...(state.selectedStrengths||[])] : [];
     const notes = withNotes ? (document.getElementById('full-notes').value||'') : '';
     const propFirm = document.getElementById('q-prop-firm')?.value||'';
     const propAccounts = propFirm ? Array.from(document.querySelectorAll('#q-prop-account-checkboxes input:checked')).map(cb=>cb.value) : [];
@@ -3288,7 +3258,7 @@ function buildTrade(withNotes) {
     const holdMins = parseFloat(document.getElementById('q-hold-mins')?.value)||null;
     const ttc = parseFloat(document.getElementById('q-ttc')?.value)||null;
     const bePoint = (outcome === 'be_win' || outcome === 'be_loss') ? (document.getElementById('q-be-point')?.value.trim()||'') : '';
-    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF, holdMins, ttc, bePoint};
+    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, strengths, notes, grade:null, review:null, quickMode:true, quickPnL:pnl, quickRR:rr, plannedRR, entryTF, holdMins, ttc, bePoint};
   } else {
     // Detailed mode
     entry = parseFloat(document.getElementById('q-entry').value);
@@ -3303,13 +3273,14 @@ function buildTrade(withNotes) {
     if (!entry||!exit) { alert('Entry and exit price required'); return null; }
     const setups = withNotes ? [...state.selectedSetups] : (setup?[setup]:[]);
     const mistakes = withNotes ? [...state.selectedMistakes] : [];
+    const strengths = withNotes ? [...(state.selectedStrengths||[])] : [];
     const notes = withNotes ? (document.getElementById('full-notes').value||'') : '';
     const propFirm = document.getElementById('q-prop-firm')?.value||'';
     const propAccounts = propFirm ? Array.from(document.querySelectorAll('#q-prop-account-checkboxes input:checked')).map(cb=>cb.value) : [];
     const propAccount = propAccounts.join(', ');
     const ttc = parseFloat(document.getElementById('det-ttc')?.value)||null;
     const bePoint = (outcome === 'be_win' || outcome === 'be_loss') ? (document.getElementById('q-be-point')?.value.trim()||'') : '';
-    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, notes, grade:null, review:null, ttc, bePoint};
+    return {ticker, side:state.selectedSide, entry, exit, qty, sl, tp, fees, datetime, outcome, propFirm, propAccount, propAccounts, setups, mistakes, strengths, notes, grade:null, review:null, ttc, bePoint};
   }
 }
 
@@ -3333,6 +3304,7 @@ function fullLog(){
   document.getElementById('full-notes').value='';
   state.selectedSetups=[];
   state.selectedMistakes=[];
+  state.selectedStrengths=[];
   pendingPhotos=[];
   renderPhotoPreviews();
   document.getElementById('q-entry').value='';
@@ -3659,7 +3631,7 @@ function switchReviewTab(tab, idx, loading) {
           ${propChecks.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">${c.pass?'✅':'❌'}</span><span style="font-size:11px;color:${c.pass?'var(--text)':'var(--red)'}">${c.label}</span></div>`).join('')}
         </div>
       </div>
-      ${t.setups?.length||t.mistakes?.length||t.outcome?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')}${t.outcome?`<span class="tag-pill ${t.outcome==='win'?'setup-pill':t.outcome==='loss'?'mistake-pill':'amber-pill'}">${{win:'Win',loss:'Loss',be_win:'BE→Win',be_loss:'BE→Loss'}[t.outcome]||t.outcome}</span>`:''}${(t.mistakes||[]).map(m=>`<span class="tag-pill mistake-pill">${m}</span>`).join('')}</div>`:''}
+      ${t.setups?.length||t.mistakes?.length||t.strengths?.length||t.outcome?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')}${t.outcome?`<span class="tag-pill ${t.outcome==='win'?'setup-pill':t.outcome==='loss'?'mistake-pill':'amber-pill'}">${{win:'Win',loss:'Loss',be_win:'BE→Win',be_loss:'BE→Loss'}[t.outcome]||t.outcome}</span>`:''}${(t.mistakes||[]).map(m=>`<span class="tag-pill mistake-pill">${m}</span>`).join('')}${(t.strengths||[]).map(s=>`<span class="tag-pill strength-pill">✓ ${s}</span>`).join('')}</div>`:''}
       ${t.notes?`<div style="font-size:13px;color:var(--muted);background:var(--bg3);border-radius:var(--r);padding:12px;margin-bottom:12px;line-height:1.7;border-left:3px solid var(--border2)"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:6px">Your notes</div>${t.notes}</div>`:''}
       <div id="modal-review-${idx}">${loading?'<div class="review-card" style="padding:18px;text-align:center;color:var(--muted)">AI is reviewing your trade...</div>':t.reviewData?buildReviewCard(t.reviewData,idx):t.review?`<div class="ai-review-box">${t.review}</div>`:`<button class="btn btn-green" onclick="reviewTrade(${idx})">Get AI review ↗</button>`}</div>
       <div style="display:flex;gap:8px;margin-top:14px">
@@ -3809,6 +3781,7 @@ function renderHistory() {
       <td style="color:var(--muted);font-size:11px">${t.propFirm?`<span style="color:var(--text);font-size:11px">${t.propFirm}</span>${t.propAccount?`<br><span style="color:var(--dim)">${t.propAccount}</span>`:''}` : '<span style="color:var(--dim)">—</span>'}</td>
       <td>${(t.setups||[]).map(s=>`<span class="tag-pill setup-pill">${s}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
       <td>${(t.mistakes||[]).map(m=>`<span class="tag-pill mistake-pill">${m}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
+      <td>${(t.strengths||[]).map(s=>`<span class="tag-pill strength-pill">✓ ${s}</span>`).join('')||'<span style="color:var(--dim)">—</span>'}</td>
       <td style="text-align:center;white-space:nowrap">
         ${t.grade?`<span class="grade-badge grade-${t.grade?.replace(/[^A-F]/g,'')[0]||''}" style="font-size:18px">${t.grade}</span>`:'<span style="color:var(--dim);font-size:16px;font-weight:700">—</span>'}
         ${(t.setupGrade||t.executionGrade)?`<div style="display:flex;gap:3px;justify-content:center;margin-top:3px">
@@ -6872,6 +6845,7 @@ function closeTimeWheel() {
 let editingTradeIdx = -1;
 let editingTradeSetups = [];
 let editingTradeMistakes = [];
+let editingTradeStrengths = [];
 
 function openEditTradeModal(idx) {
   editingTradeIdx = idx;
@@ -6880,6 +6854,7 @@ function openEditTradeModal(idx) {
 
   editingTradeSetups = [...(t.setups||[])];
   editingTradeMistakes = [...(t.mistakes||[])];
+  editingTradeStrengths = [...(t.strengths||[])];
 
   // Fill fields
   document.getElementById('et-ticker').value = t.ticker||'NQ';
@@ -6916,6 +6891,7 @@ function openEditTradeModal(idx) {
   // Render tag selectors
   renderEditTags('et-setup-tags', state.setups, editingTradeSetups, 'setup');
   renderEditTags('et-mistake-tags', state.mistakes, editingTradeMistakes, 'mistake');
+  renderEditTags('et-strength-tags', state.strengths||[], editingTradeStrengths, 'strength');
 
   document.getElementById('edit-trade-modal').classList.add('open');
 }
@@ -6923,19 +6899,26 @@ function openEditTradeModal(idx) {
 function renderEditTags(containerId, allTags, selected, type) {
   const el = document.getElementById(containerId);
   if (!el) return;
+  const colors = {
+    setup:    {on:'rgba(0,208,132,0.15)',  border:'var(--green)',  text:'var(--green)'},
+    mistake:  {on:'rgba(255,77,77,0.12)',  border:'var(--red)',    text:'var(--red)'},
+    strength: {on:'rgba(155,127,255,0.15)',border:'var(--accent)', text:'var(--accent)'}
+  };
+  const c = colors[type] || colors.setup;
   el.innerHTML = allTags.map(tag => {
     const active = selected.includes(tag);
-    return `<span onclick="toggleEditTag('${type}','${tag}')" id="et-tag-${type}-${tag.replace(/\s/g,'-')}"
-      style="cursor:pointer;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid ${active?(type==='setup'?'var(--green)':'var(--red)'):'var(--border2)'};background:${active?(type==='setup'?'rgba(0,208,132,0.15)':'rgba(255,77,77,0.12)'):'var(--bg3)'};color:${active?(type==='setup'?'var(--green)':'var(--red)'):'var(--muted)'};transition:all .15s">${tag}</span>`;
+    return `<span onclick="toggleEditTag('${type}','${tag.replace(/'/g,"\\\'")}')"
+      style="cursor:pointer;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid ${active?c.border:'var(--border2)'};background:${active?c.on:'var(--bg3)'};color:${active?c.text:'var(--muted)'};transition:all .15s">${tag}</span>`;
   }).join('');
 }
 
 function toggleEditTag(type, tag) {
-  const arr = type === 'setup' ? editingTradeSetups : editingTradeMistakes;
+  const arr = type === 'setup' ? editingTradeSetups : type === 'strength' ? editingTradeStrengths : editingTradeMistakes;
   const i = arr.indexOf(tag);
   if (i >= 0) arr.splice(i, 1); else arr.push(tag);
-  renderEditTags(type==='setup'?'et-setup-tags':'et-mistake-tags',
-    type==='setup'?state.setups:state.mistakes, arr, type);
+  const containerId = type === 'setup' ? 'et-setup-tags' : type === 'strength' ? 'et-strength-tags' : 'et-mistake-tags';
+  const tagList = type === 'setup' ? state.setups : type === 'strength' ? (state.strengths||[]) : state.mistakes;
+  renderEditTags(containerId, tagList, arr, type);
 }
 
 function closeEditTradeModal() {
@@ -6972,6 +6955,7 @@ function saveEditTrade(reReview = false) {
   t.notes = document.getElementById('et-notes').value.trim();
   t.setups = [...editingTradeSetups];
   t.mistakes = [...editingTradeMistakes];
+  t.strengths = [...editingTradeStrengths];
 
   // Update quickPnL if provided
   if (pnlVal !== '') {
