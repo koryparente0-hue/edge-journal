@@ -6397,7 +6397,7 @@ function openPropDetail(idx, period) {
       <div style="font-size:10px;color:${dllPct>80?'var(--red)':dllPct>50?'var(--amber)':'var(--muted)'}">$${(dllRemaining||dll).toLocaleString()} remaining today</div>
     </div>`:''}
 
-    <div class="pd-section" style="border-bottom:none">
+    <div class="pd-section">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <span class="pd-sec-title" style="margin-bottom:0">Payout History</span>
         ${totalPaidOut?`<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--green)">+$${totalPaidOut.toLocaleString()} total</span>`:''}
@@ -6408,6 +6408,23 @@ function openPropDetail(idx, period) {
         <div style="font-size:14px;font-weight:700;color:var(--green);font-family:'Geist Mono',monospace">+$${Number(p.amount).toLocaleString()}</div>
         <div style="font-size:11px;color:var(--dim);white-space:nowrap">${p.date||''}</div>
       </div>`).join('')}</div>`:`<div style="padding:28px 0;text-align:center;color:var(--dim);font-size:12px">No payouts logged yet</div>`}
+    </div>
+
+    <div class="pd-section" style="border-bottom:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span class="pd-sec-title" style="margin-bottom:0">Trade History</span>
+        <span style="font-size:11px;color:var(--dim)">${acTrades.length} trade${acTrades.length!==1?'s':''}</span>
+      </div>
+      ${acTrades.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="color:var(--dim);font-size:9px;text-transform:uppercase;letter-spacing:.04em">
+          <th style="text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)">Date</th>
+          <th style="text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)">Setup</th>
+          <th style="text-align:center;padding:6px 4px;border-bottom:1px solid var(--border)">Side</th>
+          <th style="text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)">P&amp;L</th>
+          <th style="text-align:center;padding:6px 4px;border-bottom:1px solid var(--border)">Grade</th>
+        </tr></thead>
+        <tbody>${[...acTrades].reverse().map(t=>{const tp=calcPnL(t);const tc=tp>0?'var(--green)':tp<0?'var(--red)':'var(--muted)';const gc={A:'var(--green)',B:'#5ecfff',C:'var(--amber)',D:'#ff8a4d',F:'var(--red)'}[t.grade]||'var(--dim)';return`<tr style="border-bottom:1px solid rgba(255,255,255,0.04)"><td style="padding:7px 4px;color:var(--muted);white-space:nowrap">${t.datetime?.slice(0,10)||'—'}</td><td style="padding:7px 4px;color:var(--text);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(t.setups&&t.setups[0])||t.setup||'—'}</td><td style="padding:7px 4px;text-align:center"><span style="font-size:9px;font-weight:700;color:${t.side==='long'?'var(--green)':'var(--red)'};background:${t.side==='long'?'rgba(0,208,132,0.1)':'rgba(255,77,77,0.1)'};padding:2px 6px;border-radius:3px;text-transform:uppercase">${t.side||'—'}</span></td><td style="padding:7px 4px;text-align:right;color:${tc};font-family:var(--mono);font-weight:700">${tp>=0?'+':'-'}$${Math.abs(Math.round(tp)).toLocaleString()}</td><td style="padding:7px 4px;text-align:center;font-size:11px;font-weight:800;color:${gc}">${t.grade||'—'}</td></tr>`;}).join('')}</tbody>
+      </table></div>`:`<div style="padding:20px 0;text-align:center;color:var(--dim);font-size:12px">No trades logged for this account yet</div>`}
     </div>
   `;
   document.getElementById('prop-detail-overlay').classList.add('open');
@@ -6573,21 +6590,23 @@ function _renderPerfBalanceChart(trades) {
   const lineColor = isPos ? '#00d084' : '#ff4d4d';
   const ctx = canvas.getContext('2d');
 
-  // Drawdown shading plugin — fills red area between equity and running peak
+  // Drawdown shading plugin — red fill behind the equity line, label on top
   const ddPlugin = {
     id: 'ddShade',
-    afterDatasetsDraw(chart) {
-      const {ctx: c} = chart;
+    beforeDatasetsDraw(chart) {
+      const {ctx: c, chartArea} = chart;
       const meta = chart.getDatasetMeta(0);
       const pts = chart.data.datasets[0].data;
       if (!pts.length || !meta.data.length) return;
       const yScale = chart.scales.y;
       let peak = pts[0];
       const peaks = pts.map(v => { if (v > peak) peak = v; return peak; });
-      let maxDD = 0, maxDDIdx = 0;
-      pts.forEach((v, i) => { const dd = peaks[i] - v; if (dd > maxDD) { maxDD = dd; maxDDIdx = i; } });
+      if (!pts.some((v, i) => peaks[i] > v)) return;
       c.save();
-      c.fillStyle = 'rgba(255,77,77,0.15)';
+      c.beginPath();
+      c.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+      c.clip();
+      c.fillStyle = 'rgba(255,77,77,0.18)';
       for (let i = 1; i < pts.length; i++) {
         if (peaks[i] > pts[i] || peaks[i-1] > pts[i-1]) {
           const x1=meta.data[i-1].x, x2=meta.data[i].x;
@@ -6598,15 +6617,31 @@ function _renderPerfBalanceChart(trades) {
           c.closePath(); c.fill();
         }
       }
+      c.restore();
+    },
+    afterDatasetsDraw(chart) {
+      const {ctx: c, chartArea} = chart;
+      const meta = chart.getDatasetMeta(0);
+      const pts = chart.data.datasets[0].data;
+      if (!pts.length || !meta.data.length) return;
+      const yScale = chart.scales.y;
+      let peak = pts[0];
+      const peaks = pts.map(v => { if (v > peak) peak = v; return peak; });
+      let maxDD = 0, maxDDIdx = 0;
+      pts.forEach((v, i) => { const dd = peaks[i] - v; if (dd > maxDD) { maxDD = dd; maxDDIdx = i; } });
       if (maxDD > 0 && meta.data[maxDDIdx]) {
+        c.save();
+        c.beginPath();
+        c.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+        c.clip();
         const mx = meta.data[maxDDIdx].x;
         const my = yScale.getPixelForValue(pts[maxDDIdx]);
-        c.fillStyle = 'rgba(255,77,77,0.8)';
+        c.fillStyle = 'rgba(255,77,77,0.85)';
         c.font = '700 9px "Geist Mono",monospace';
         c.textAlign = 'center';
-        c.fillText('max DD −$' + Math.round(maxDD).toLocaleString(), mx, my + 14);
+        c.fillText('max DD −$' + Math.round(maxDD).toLocaleString(), mx, Math.min(my + 14, chartArea.bottom - 4));
+        c.restore();
       }
-      c.restore();
     }
   };
 
