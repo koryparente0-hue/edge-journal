@@ -6235,27 +6235,17 @@ function openPropDetail(idx, period) {
   // ── Period-filtered trades (for performance stat cards and chart)
   const trades = _perfFilterByPeriod(allTrades, period);
 
-  // ── All-time calcs (for drawdown / settings sections)
-  const pnl = acTrades.reduce((s,t)=>s+calcPnL(t),0);
-  const dd=parseFloat(a.dd)||0, dll=parseFloat(a.dll)||0, target=parseFloat(a.target)||0;
-  const {ddUsed,ddRemaining,ddPct,hwm,manualMode,currentBal}=_calcPropDD(a,acTrades);
-  const ddType=a.ddType||'EOD';
-  const wr=acTrades.length?Math.round(acTrades.filter(t=>t.outcome==='win').length/acTrades.length*100):null;
+  // ── DLL / winning days / payouts (all-time)
+  const dll=parseFloat(a.dll)||0;
   const today=new Date().toISOString().slice(0,10);
   const todayPnL=acTrades.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
   const dllPct=dll&&todayPnL<0?Math.min(100,Math.abs(todayPnL)/dll*100):0;
   const dllRemaining=dll?Math.max(0,dll+Math.min(0,todayPnL)):null;
-  const acPayouts=(state.propPayouts||[]).filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
-  const dates=acTrades.map(t=>t.datetime?.slice(0,10)).filter(Boolean).sort();
-  const daysActive=dates[0]?Math.max(1,Math.floor((Date.now()-new Date(dates[0]))/86400000))+1:null;
-  const pnlCol=pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
+  const acctPayouts=[...(state.propPayouts||[])].filter(p=>p.accountName===a.name).reverse();
+  const totalPaidOut=acctPayouts.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
   const statusColor={eval:'var(--amber)',funded:'var(--green)',passed:'var(--blue)',blown:'var(--red)',inactive:'var(--dim)'};
   const statusLabel={eval:'Eval',funded:'Funded / PA',passed:'Passed',blown:'Blown',inactive:'Inactive'};
   const statusCol=statusColor[a.status]||'var(--dim)';
-  const ddTypeDesc={EOD:'End-of-Day trailing: your drawdown limit follows your balance up at close of each trading day. Once it trails up, it never comes back down.',Intraday:'Intraday trailing: your drawdown limit updates in real time after every winning trade throughout the day.',Static:'Static drawdown: your max drawdown is fixed from your starting balance — it never moves regardless of profits.'};
-  const sizeK2=(a.size||'').match(/^(\d+)K$/i);
-  const startBal2=parseFloat(a.startBalance)||(sizeK2?parseInt(sizeK2[1])*1000:0);
-  const floorPnL=dd?(a.ddFloor&&startBal2?parseFloat(a.ddFloor)-startBal2:hwm-dd):null;
   const winDayMin=parseFloat(a.winDayMin)||200;
   const winDaysReq=parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
   const consistencyMax=parseFloat(a.consistencyMax)||40;
@@ -6268,8 +6258,6 @@ function openPropDetail(idx, period) {
   const conPct=totalWinProfit>0?Math.round(bestDayProfit/totalWinProfit*100):0;
   const conOk=conPct<=consistencyMax;
   const daysToGo=Math.max(0,winDaysReq-winDayCount);
-  const equitySVG=_propEquitySVG(acTrades,580,90,floorPnL);
-  const recentTrades=[...acTrades].sort((a,b)=>(b.datetime||'').localeCompare(a.datetime||'')).slice(0,15);
 
   // ── Period-filtered perf calcs
   const totalPnLf=trades.reduce((s,t)=>s+calcPnL(t),0);
@@ -6291,15 +6279,6 @@ function openPropDetail(idx, period) {
   const greenDays=dayValsF.filter(v=>v>0).length;
   const totalDays=dayValsF.length;
   const dayWinPct=totalDays?Math.round(greenDays/totalDays*100):0;
-  const bestDayEntry=dayEntriesF.length?[...dayEntriesF].sort((a,b)=>b[1]-a[1])[0]:null;
-  const bestDayPnL=bestDayEntry?bestDayEntry[1]:0;
-  const bestDayPct=totalPnLf>0&&bestDayPnL>0?Math.round(bestDayPnL/totalPnLf*100):null;
-  const holdMinsArr=trades.filter(t=>t.holdMins!=null).map(t=>t.holdMins);
-  const avgHold=holdMinsArr.length?Math.round(holdMinsArr.reduce((s,v)=>s+v,0)/holdMinsArr.length):null;
-  const pnlVals=trades.map(t=>calcPnL(t));
-  const bestTrade=pnlVals.length?Math.max(...pnlVals):null;
-  const worstTrade=pnlVals.length?Math.min(...pnlVals):null;
-  const totalFees=trades.reduce((s,t)=>s+(t.fees||0),0);
   const pnlColF=totalPnLf>=0?'var(--green)':'var(--red)';
   const fmt=v=>(v>=0?'+':'-')+'$'+Math.abs(Math.round(v)).toLocaleString();
   const winGaugeSVG=_perfWinGaugeSVG(winCountF,tradeCount);
@@ -6343,8 +6322,8 @@ function openPropDetail(idx, period) {
       </div>
     </div>
 
-    <!-- ROW 2: Day Win % · Profit Factor · Best Day -->
-    <div class="pm-stat-grid" style="padding-top:10px">
+    <!-- BENTO ROW 2: Day Win % · Profit Factor -->
+    <div class="pm-stat-grid" style="padding-top:10px;grid-template-columns:1fr 1fr">
       <div class="pm-card">
         <div class="pm-card-lbl">Day Win %</div>
         <div style="font-size:26px;font-weight:800;font-family:var(--mono);color:${dayWinPct>=50?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1">${dayWinPct}%</div>
@@ -6361,86 +6340,22 @@ function openPropDetail(idx, period) {
           <div style="flex:1;display:flex;justify-content:center;align-items:center">${donutSVG}</div>
         </div>
       </div>
-      <div class="pm-card">
-        <div class="pm-card-lbl">Best Day</div>
-        ${bestDayEntry?`<div style="font-size:26px;font-weight:800;font-family:var(--mono);color:${bestDayPnL>=0?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1;text-shadow:${bestDayPnL>=0?'0 0 20px rgba(0,208,132,.35)':'0 0 20px rgba(255,77,77,.35)'}">${fmt(bestDayPnL)}</div><div style="font-size:11px;color:var(--muted);margin-top:5px">${bestDayEntry[0]}${bestDayPct!==null?' · '+bestDayPct+'% of total':''}</div>`:`<div style="font-size:20px;font-weight:700;color:var(--dim);margin-top:4px">—</div>`}
-      </div>
     </div>
 
-    <!-- DAILY BALANCE CHART -->
+    <!-- EQUITY & DRAWDOWN CHART -->
     <div style="padding:14px 20px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Daily Balance</span>
+        <span style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Equity &amp; Drawdown</span>
         <span style="font-size:11px;font-family:var(--mono);font-weight:700;color:${pnlColF}">${fmt(totalPnLf)}</span>
       </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;height:170px;position:relative">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;height:200px;position:relative">
         <canvas id="perf-balance-chart"></canvas>
       </div>
     </div>
 
-    <!-- STAT PILLS -->
-    <div class="pm-pill-row">
-      <div class="pm-pill">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Avg Hold</div>
-        <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--text)">${avgHold!=null?avgHold+'m':'—'}</div>
-      </div>
-      <div class="pm-pill">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Best Trade</div>
-        <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--green)">${bestTrade!=null?fmt(bestTrade):'—'}</div>
-      </div>
-      <div class="pm-pill">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Worst Trade</div>
-        <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--red)">${worstTrade!=null?fmt(worstTrade):'—'}</div>
-      </div>
-      <div class="pm-pill">
-        <div style="font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">Total Fees</div>
-        <div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--amber)">$${Math.round(totalFees).toLocaleString()}</div>
-      </div>
-    </div>
-
-    <!-- DIVIDER -->
-    <div style="height:1px;background:rgba(155,127,255,0.1);margin:0 20px 4px"></div>
-
-    <!-- EQUITY CURVE (all-time) -->
-    ${equitySVG?`<div style="border-bottom:1px solid var(--border)">
-      <div style="padding:14px 20px 0">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Equity Curve <span style="color:var(--dim);font-weight:400">(all time)</span></span>
-          ${floorPnL!=null?`<span style="display:flex;align-items:center;gap:5px;font-size:9px;color:rgba(255,77,77,0.7)"><svg width="16" height="6" viewBox="0 0 16 6"><line x1="0" y1="3" x2="16" y2="3" stroke="#ff4d4d" stroke-width="1.5" stroke-dasharray="4,2"/></svg>DD floor</span>`:''}
-        </div>
-        <div style="border-radius:var(--r);overflow:hidden;background:var(--bg2);height:90px">${equitySVG}</div>
-        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--dim);margin-top:4px;padding-bottom:12px">
-          <span>${dates[0]||'—'}</span>
-          <span style="font-family:var(--mono);font-weight:700;color:${pnlCol}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</span>
-          <span>${dates[dates.length-1]||'—'}</span>
-        </div>
-      </div>
-    </div>`:''}
-
-    <!-- ACCOUNT STATS (all-time) -->
-    <div class="pd-section">
-      <div class="pd-sec-title">Account Stats</div>
-      <div class="pd-stat-row">
-        <div class="pd-stat"><div class="pd-stat-val" style="color:${pnlCol}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</div><div class="pd-stat-lbl">Net P&amp;L</div></div>
-        <div class="pd-stat"><div class="pd-stat-val" style="color:${ddPct>80?'var(--red)':ddPct>50?'var(--amber)':'var(--green)'}">${Math.round(ddPct)}%</div><div class="pd-stat-lbl">DD Used</div></div>
-        <div class="pd-stat"><div class="pd-stat-val" style="color:${wr!==null?wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--red)':'var(--dim)'}">${wr!==null?wr+'%':'—'}</div><div class="pd-stat-lbl">Win Rate</div></div>
-        <div class="pd-stat"><div class="pd-stat-val" style="color:var(--text)">${acTrades.length}</div><div class="pd-stat-lbl">Trades</div></div>
-      </div>
-      <div class="pd-stat-row" style="margin-top:8px">
-        <div class="pd-stat"><div class="pd-stat-val" style="color:${ddRemaining!==null?ddRemaining/Math.max(dd,1)<.2?'var(--red)':'var(--green)':'var(--dim)'}">${ddRemaining!==null?'$'+ddRemaining.toLocaleString():'—'}</div><div class="pd-stat-lbl">DD Left</div></div>
-        <div class="pd-stat"><div class="pd-stat-val" style="color:${dllRemaining!==null?dllPct>80?'var(--red)':dllPct>50?'var(--amber)':'var(--green)':'var(--dim)'}">${dllRemaining!==null?'$'+dllRemaining.toLocaleString():'—'}</div><div class="pd-stat-lbl">Daily Left</div></div>
-        <div class="pd-stat"><div class="pd-stat-val" style="color:var(--green)">${acPayouts?'$'+acPayouts.toLocaleString():'—'}</div><div class="pd-stat-lbl">Paid Out</div></div>
-        <div class="pd-stat"><div class="pd-stat-val" style="color:var(--muted)">${daysActive||'—'}</div><div class="pd-stat-lbl">Days Active</div></div>
-      </div>
-      ${target?`<div style="margin-top:12px">
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px"><span style="text-transform:uppercase;letter-spacing:.04em">Profit Target</span><span style="font-weight:700;color:var(--amber)">$${Math.max(0,pnl).toLocaleString()} / $${target.toLocaleString()}</span></div>
-        <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.min(100,pnl>0?(pnl/target)*100:0)}%;background:linear-gradient(90deg,var(--accent),#00d084);border-radius:3px;transition:width .5s"></div></div>
-      </div>`:''}
-    </div>
-
     ${winDaysReq>0?`<div class="pd-section">
-      <div class="pd-sec-title">Payout Progress</div>
-      <div style="margin-bottom:16px">
+      <div class="pd-sec-title">Winning Days</div>
+      <div>
         <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
           <div style="display:flex;align-items:baseline;gap:10px">
             <span style="font-size:30px;font-weight:800;font-family:var(--mono);letter-spacing:-1px;color:${winDayCount>=winDaysReq?'var(--green)':'var(--text)'}">${winDayCount}<span style="font-size:16px;color:var(--muted)">/${winDaysReq}</span></span>
@@ -6456,7 +6371,7 @@ function openPropDetail(idx, period) {
         </div>
         <div style="font-size:9px;color:var(--dim);margin-top:8px">Winning day = $${winDayMin.toLocaleString()}+ net profit</div>
       </div>
-      <div style="background:var(--bg3);border-radius:var(--r);padding:12px">
+      <div style="background:var(--bg3);border-radius:var(--r);padding:12px;margin-top:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <span style="font-size:11px;font-weight:600;color:var(--text)">Consistency Rule</span>
           <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:${conOk?'rgba(0,208,132,0.12)':'rgba(255,77,77,0.12)'};color:${conOk?'var(--green)':'var(--red)'}">${conOk?'✓ Pass':'✗ Fail'}</span>
@@ -6470,52 +6385,30 @@ function openPropDetail(idx, period) {
       </div>
     </div>`:''}
 
-    <div class="pd-section">
-      <div class="pd-sec-title">Drawdown · ${ddType}</div>
-      <div class="pd-dd-explain">${ddTypeDesc[ddType]||'Drawdown type: '+ddType}</div>
-      ${dd?`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-        <div style="flex:1;min-width:70px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Max DD</div><div style="font-size:18px;font-weight:800;font-family:var(--mono);color:var(--red)">$${dd.toLocaleString()}</div></div>
-        <div style="flex:1;min-width:70px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">${ddType==='EOD'?'EOD High':'Peak P&L'}</div><div style="font-size:18px;font-weight:800;font-family:var(--mono);color:var(--accent)">$${Math.round(hwm).toLocaleString()}</div></div>
-        <div style="flex:1;min-width:70px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Used</div><div style="font-size:18px;font-weight:800;font-family:var(--mono);color:${ddPct>80?'var(--red)':ddPct>50?'var(--amber)':'var(--green)'}">$${Math.round(ddUsed).toLocaleString()}</div></div>
-        <div style="flex:1;min-width:70px"><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Remaining</div><div style="font-size:18px;font-weight:800;font-family:var(--mono);color:${ddRemaining<dd*.2?'var(--red)':ddRemaining<dd*.5?'var(--amber)':'var(--green)'}">$${Math.round(ddRemaining).toLocaleString()}</div></div>
+    ${dll?`<div class="pd-section">
+      <div class="pd-sec-title">Daily Loss Limit</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--muted)">Today's usage</span>
+        <span style="font-size:13px;font-weight:700;font-family:var(--mono);color:${dllPct>80?'var(--red)':dllPct>50?'var(--amber)':'var(--muted)'}">${dllPct===0?'—':'-$'+Math.round(Math.abs(Math.min(0,todayPnL))).toLocaleString()} / $${dll.toLocaleString()}</span>
       </div>
-      <div style="font-size:10px;color:var(--dim);margin-bottom:8px;font-family:var(--mono);background:var(--bg3);border-radius:6px;padding:6px 10px;line-height:1.8">
-        ${manualMode?`<span style="color:var(--accent);font-weight:700">▶ Manual floor mode</span><br>balance = $${Math.round(currentBal||0).toLocaleString()} · floor = $${parseFloat(a.ddFloor).toLocaleString()}<br>remaining = $${Math.round(currentBal||0).toLocaleString()} − $${parseFloat(a.ddFloor).toLocaleString()} = $${Math.round(ddRemaining).toLocaleString()}`:`floor = $${Math.round(hwm).toLocaleString()} (high) − $${dd.toLocaleString()} (max DD) = ${(hwm-dd)>=0?'+':''}$${Math.round(hwm-dd).toLocaleString()}<br>used = $${Math.round(hwm).toLocaleString()} (high) − $${Math.round(pnl).toLocaleString()} (P&amp;L) = $${Math.round(ddUsed).toLocaleString()}`}
+      <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;margin-bottom:6px">
+        <div style="height:100%;width:${dllPct}%;background:${dllPct>80?'#ff4d4d':dllPct>50?'#f5a623':'#00d084'};border-radius:4px;transition:width .5s"></div>
       </div>
-      <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden"><div style="height:100%;width:${ddPct}%;background:${ddPct>80?'#ff4d4d':ddPct>50?'#f5a623':'#00d084'};border-radius:4px;transition:width .5s"></div></div>`:''}
-    </div>
-
-    <div class="pd-section">
-      <div class="pd-sec-title">Account Settings</div>
-      <div class="pd-rule-grid">
-        <div class="pd-rule-field"><label>Account Name</label><input type="text" value="${(a.name||'').replace(/"/g,'&quot;')}" onchange="savePropDetailField(${idx},'name',this.value)"></div>
-        <div class="pd-rule-field"><label>Status</label><select onchange="savePropDetailField(${idx},'status',this.value)">${['eval','funded','passed','blown','inactive'].map(s=>`<option value="${s}"${a.status===s?' selected':''}>${statusLabel[s]||s}</option>`).join('')}</select></div>
-        <div class="pd-rule-field"><label>DD Type</label><select onchange="savePropDetailField(${idx},'ddType',this.value)">${['EOD','Intraday','Static'].map(s=>`<option value="${s}"${ddType===s?' selected':''}>${s}</option>`).join('')}</select></div>
-        <div class="pd-rule-field"><label>Max Drawdown ($)</label><input type="number" value="${dd||''}" onchange="savePropDetailField(${idx},'dd',this.value)"></div>
-        <div class="pd-rule-field"><label>Daily Loss Limit ($)</label><input type="number" value="${dll||''}" onchange="savePropDetailField(${idx},'dll',this.value)"></div>
-        <div class="pd-rule-field"><label>Profit Target ($)</label><input type="number" value="${target||''}" onchange="savePropDetailField(${idx},'target',this.value)"></div>
-        <div class="pd-rule-field"><label>Start Balance ($) <span style="color:var(--dim);font-weight:400;font-size:9px">auto from size</span></label><input type="number" value="${parseFloat(a.startBalance)||(((a.size||'').match(/^(\d+)K$/i)||[])[1]||0)*1000||''}" placeholder="e.g. 50000" onchange="savePropDetailField(${idx},'startBalance',this.value)"></div>
-        <div class="pd-rule-field"><label>DD Floor ($) <span style="color:var(--accent);font-weight:400;font-size:9px">from dashboard</span></label><input type="number" value="${parseFloat(a.ddFloor)||''}" placeholder="e.g. 48494.80" onchange="savePropDetailField(${idx},'ddFloor',this.value)" style="border-color:${a.ddFloor?'var(--accent)':''}"></div>
-        <div class="pd-rule-field"><label>Win Day Min ($) <span style="color:var(--dim);font-weight:400;font-size:9px">for payout</span></label><input type="number" value="${parseFloat(a.winDayMin)||200}" placeholder="200" onchange="savePropDetailField(${idx},'winDayMin',this.value)"></div>
-        <div class="pd-rule-field"><label>Win Days Required</label><input type="number" value="${parseInt(a.winDaysReq)||(parseInt(a.minDays)||0)||''}" placeholder="e.g. 5" onchange="savePropDetailField(${idx},'winDaysReq',this.value)"></div>
-        <div class="pd-rule-field"><label>Consistency Max % <span style="color:var(--dim);font-weight:400;font-size:9px">best/total</span></label><input type="number" value="${parseFloat(a.consistencyMax)||40}" placeholder="40" onchange="savePropDetailField(${idx},'consistencyMax',this.value)"></div>
-      </div>
-      <div style="margin-top:6px;font-size:10px;color:var(--dim);background:var(--bg3);border-radius:6px;padding:6px 10px">Set <strong style="color:var(--accent)">DD Floor</strong> to the exact floor shown on your prop firm dashboard for a precise remaining calculation. Leave blank to use the auto-calculated EOD trail.</div>
-      <div style="margin-top:8px"><div class="pd-rule-field"><label>Notes</label><textarea rows="3" onchange="savePropDetailField(${idx},'notes',this.value)">${(a.notes||'').replace(/</g,'&lt;')}</textarea></div></div>
-    </div>
-
-    ${recentTrades.length?`<div class="pd-section" style="border-bottom:none">
-      <div class="pd-sec-title">Recent Trades (${acTrades.length} total)</div>
-      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead><tr style="color:var(--dim);font-size:9px;text-transform:uppercase;letter-spacing:.04em">
-          <th style="text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)">Date</th>
-          <th style="text-align:left;padding:6px 4px;border-bottom:1px solid var(--border)">Setup</th>
-          <th style="text-align:right;padding:6px 4px;border-bottom:1px solid var(--border)">P&amp;L</th>
-          <th style="text-align:center;padding:6px 4px;border-bottom:1px solid var(--border)">Result</th>
-        </tr></thead>
-        <tbody>${recentTrades.map(t=>{const tp=calcPnL(t);const tc=tp>0?'var(--green)':tp<0?'var(--red)':'var(--muted)';return`<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 4px;color:var(--muted)">${t.datetime?.slice(0,10)||'—'}</td><td style="padding:7px 4px;color:var(--text)">${t.setup||'—'}</td><td style="padding:7px 4px;text-align:right;color:${tc};font-family:var(--mono);font-weight:700">${tp>=0?'+':'-'}$${Math.abs(tp).toLocaleString()}</td><td style="padding:7px 4px;text-align:center"><span style="font-size:9px;font-weight:700;color:${tc};background:${tc}18;padding:2px 7px;border-radius:4px">${t.outcome||'—'}</span></td></tr>`;}).join('')}</tbody>
-      </table></div>
+      <div style="font-size:10px;color:${dllPct>80?'var(--red)':dllPct>50?'var(--amber)':'var(--muted)'}">$${(dllRemaining||dll).toLocaleString()} remaining today</div>
     </div>`:''}
+
+    <div class="pd-section" style="border-bottom:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span class="pd-sec-title" style="margin-bottom:0">Payout History</span>
+        ${totalPaidOut?`<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--green)">+$${totalPaidOut.toLocaleString()} total</span>`:''}
+      </div>
+      ${acctPayouts.length?`<div>${acctPayouts.map(p=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <div style="width:26px;height:26px;background:rgba(0,208,132,0.12);border:1px solid rgba(0,208,132,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:var(--green)">✓</div>
+        <div style="flex:1;min-width:0">${p.note?`<div style="font-size:11px;color:var(--muted)">${p.note}</div>`:''}</div>
+        <div style="font-size:14px;font-weight:700;color:var(--green);font-family:'Geist Mono',monospace">+$${Number(p.amount).toLocaleString()}</div>
+        <div style="font-size:11px;color:var(--dim);white-space:nowrap">${p.date||''}</div>
+      </div>`).join('')}</div>`:`<div style="padding:28px 0;text-align:center;color:var(--dim);font-size:12px">No payouts logged yet</div>`}
+    </div>
   `;
   document.getElementById('prop-detail-overlay').classList.add('open');
   document.getElementById('prop-detail-panel').classList.add('open');
@@ -6679,6 +6572,44 @@ function _renderPerfBalanceChart(trades) {
   const isPos = data[data.length-1] >= 0;
   const lineColor = isPos ? '#00d084' : '#ff4d4d';
   const ctx = canvas.getContext('2d');
+
+  // Drawdown shading plugin — fills red area between equity and running peak
+  const ddPlugin = {
+    id: 'ddShade',
+    afterDatasetsDraw(chart) {
+      const {ctx: c} = chart;
+      const meta = chart.getDatasetMeta(0);
+      const pts = chart.data.datasets[0].data;
+      if (!pts.length || !meta.data.length) return;
+      const yScale = chart.scales.y;
+      let peak = pts[0];
+      const peaks = pts.map(v => { if (v > peak) peak = v; return peak; });
+      let maxDD = 0, maxDDIdx = 0;
+      pts.forEach((v, i) => { const dd = peaks[i] - v; if (dd > maxDD) { maxDD = dd; maxDDIdx = i; } });
+      c.save();
+      c.fillStyle = 'rgba(255,77,77,0.15)';
+      for (let i = 1; i < pts.length; i++) {
+        if (peaks[i] > pts[i] || peaks[i-1] > pts[i-1]) {
+          const x1=meta.data[i-1].x, x2=meta.data[i].x;
+          const yEq1=yScale.getPixelForValue(pts[i-1]), yEq2=yScale.getPixelForValue(pts[i]);
+          const yPk1=yScale.getPixelForValue(peaks[i-1]), yPk2=yScale.getPixelForValue(peaks[i]);
+          c.beginPath();
+          c.moveTo(x1,yPk1); c.lineTo(x2,yPk2); c.lineTo(x2,yEq2); c.lineTo(x1,yEq1);
+          c.closePath(); c.fill();
+        }
+      }
+      if (maxDD > 0 && meta.data[maxDDIdx]) {
+        const mx = meta.data[maxDDIdx].x;
+        const my = yScale.getPixelForValue(pts[maxDDIdx]);
+        c.fillStyle = 'rgba(255,77,77,0.8)';
+        c.font = '700 9px "Geist Mono",monospace';
+        c.textAlign = 'center';
+        c.fillText('max DD −$' + Math.round(maxDD).toLocaleString(), mx, my + 14);
+      }
+      c.restore();
+    }
+  };
+
   window._perfChart = new Chart(ctx, {
     type:'line',
     data:{ labels:days, datasets:[{
@@ -6689,7 +6620,7 @@ function _renderPerfBalanceChart(trades) {
       pointHoverBorderColor:'#fff', pointHoverBorderWidth:2,
       fill:true,
       backgroundColor:(c)=>{
-        const g=c.chart.ctx.createLinearGradient(0,0,0,190);
+        const g=c.chart.ctx.createLinearGradient(0,0,0,220);
         g.addColorStop(0,isPos?'rgba(0,208,132,0.18)':'rgba(255,77,77,0.18)');
         g.addColorStop(1,'transparent');
         return g;
@@ -6713,7 +6644,8 @@ function _renderPerfBalanceChart(trades) {
         x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:10},maxTicksLimit:8} },
         y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#555',font:{size:10,family:'Geist Mono'},callback:v=>'$'+v.toLocaleString()} }
       }
-    }
+    },
+    plugins: [ddPlugin]
   });
 }
 
