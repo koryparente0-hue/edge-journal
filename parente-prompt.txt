@@ -1,0 +1,131 @@
+Build a complete single-page website for Parente Mobile Mechanics. Save as index.html.
+
+Read and follow ALL of these skills before writing any code:
+- ~/.claude/skills/banana/SKILL.md
+- ~/.claude/skills/gpt-taste/SKILL.md
+- ~/.claude/skills/high-end-visual-design/SKILL.md
+- ~/.claude/skills/emil-design-eng/SKILL.md
+- ~/.claude/skills/full-output-enforcement/SKILL.md
+- ~/.claude/skills/impeccable/SKILL.md
+
+---
+
+REFERENCE SITE: Dynamic Detailing Chicago (dynamicdetailingchicago.com)
+Match this site's structure and feel exactly. Screenshots provided show:
+- Full-width car photo hero with bold white text overlay and single CTA button
+- White background welcome section with centered text and gold/amber Book Now button
+- Parallax photo section for About Us — photo stays fixed as white content layer scrolls over it, revealing more of the photo as you scroll
+- White background "What We Do" grid with photo cards, black accent text for service titles, description text below each image
+
+---
+
+BUSINESS INFO:
+- Name: Parente Mobile Mechanics
+- Tagline: We Come To You
+- Location: Wheaton, IL — serving Wheaton, Naperville, Glen Ellyn, Lombard, Downers Grove, and DuPage County
+- What we do: Father and son mobile mechanic team. We come to your driveway. Brakes, oil changes, battery swaps, alternators, diagnostics, sensors, filters, tune-ups.
+- Accent color: black (#111111) and amber/gold (#d4a017) — matching Dynamic Detailing's palette
+- Background: white for content sections, dark overlay on photo sections
+
+---
+
+IMAGE GENERATION (banana skill — generate all, embed as base64):
+1. Hero — wide cinematic full-width shot of a clean white work van parked in a suburban Illinois driveway, mechanic unloading tools, overcast midwest sky, real and well-composed
+2. About Us parallax background — a father and son in navy work shirts working on a car engine together in a driveway, natural light, genuine not posed, wide enough for full-width parallax
+3. Services grid — 6 separate realistic repair photos:
+   - Hands replacing brake pads on a rotor
+   - Oil being drained from a car on a driveway
+   - New battery being installed in engine bay
+   - Mechanic reading a diagnostic scanner screen
+   - Air filter being swapped out
+   - Mechanic torquing a wheel back on after repair
+
+---
+
+SECTIONS — match Dynamic Detailing structure exactly:
+
+1. NAV (dark background, sticky)
+- Left: "Parente Mobile Mechanics" wordmark with a small wrench or car line icon
+- Right: Home | Services | Recent Jobs | About | Contact
+- Same dark bar style as Dynamic Detailing — slim, clean, white text
+
+2. HERO (full-width photo, dark overlay, centered white text)
+- Generated van/driveway photo as full-width background with dark overlay
+- Small text above headline: "Welcome to"
+- Large bold headline: "PARENTE MOBILE MECHANICS" — all caps, two lines like Dynamic Detailing
+- Single amber CTA button: "Book Now"
+- Exact same layout and feel as the Dynamic Detailing hero
+
+3. WELCOME SECTION (white background, centered, like Dynamic Detailing's "Thank You" section)
+- Small label above: "Welcome"
+- Headline: "Thank You For Your Interest In Parente Mobile Mechanics!"
+- Body paragraph: "We are pleased to provide mobile mechanic services including brake replacement, oil changes, battery swaps, diagnostics, alternator replacement, and more — all done at your home or office in Wheaton and across DuPage County. Our father and son team will work with you to find the best solution for your vehicle. Don't hesitate to reach out."
+- Amber rounded "Book Now" button centered below — matching Dynamic Detailing exactly
+
+4. ABOUT US (parallax photo section — most important effect)
+- Full-width section with generated father-son photo as background
+- CSS parallax: background-attachment: fixed so photo stays still as page scrolls
+- Dark semi-transparent overlay on the photo
+- White content floats on top:
+  - Small label: "About Us"
+  - Large bold headline: "Our goal is to bring honest, reliable mechanical work directly to your driveway."
+  - Body: "We are a father and son team based in Wheaton, IL. After years of watching neighbors overpay at dealerships and chain shops, we decided to do something about it. We come to you — your home, your office, your driveway — with the tools and experience to get your car back on the road fast and at a fair price."
+  - The content box should be left-aligned like Dynamic Detailing, not full width — so you can see the photo on the right
+
+5. WHAT WE DO (white background, photo card grid — match Dynamic Detailing exactly)
+- Small label above: "Our Services"
+- Centered headline: "What We Do"
+- 3x2 grid of service cards — each card is a tall photo with text below, exactly like Dynamic Detailing
+- Each card: full photo top half, white bottom half with amber service title bold, black description text below
+- Services and captions:
+  "Brake Replacement" — "Brake pads and rotors replaced in your driveway, same day."
+  "Oil Change" — "Full oil and filter change at your home or office. No appointment needed."
+  "Battery Swap" — "Dead battery? We come to you and get you back on the road fast."
+  "Engine Diagnostics" — "We plug in, read the codes, and tell you exactly what's wrong — no upselling."
+  "Filter Replacement" — "Air and cabin filters swapped quickly during any service visit."
+  "Alternator Repair" — "Charging system issues diagnosed and repaired on-site."
+- Hover: subtle lift on card, amber title stays gold
+
+6. HOW IT WORKS (light gray background, 3 steps horizontal)
+- Step 1: Call or Text Us
+- Step 2: We Come To Your Driveway
+- Step 3: Drive Away Fixed
+- Numbered, clean, simple — not flashy
+
+7. REVIEWS (white background)
+- 3 five-star reviews, realistic DuPage County customers
+- "Called at 9am, in my driveway by noon. Fixed my brakes for half what the dealer quoted. These guys are legit." — Mike T., Naperville
+- "Battery died in my garage. They showed up within 2 hours and had me running again. Super easy." — Sarah K., Wheaton
+- "Oil change and filter in my driveway while I worked from home. Couldn't be more convenient. Will use every time." — James R., Glen Ellyn
+- Card layout with name, city, stars
+
+8. AREAS SERVED (simple, clean)
+- Wheaton · Naperville · Glen Ellyn · Lombard · Downers Grove · Lisle · Winfield · Carol Stream · DuPage County
+- "Don't see your city? Call us — we probably still come to you."
+
+9. CONTACT (dark background or white, simple)
+- Large phone number: (555) 000-0000
+- Email: hello@parentemobile.com
+- "Call or text to schedule. We respond within the hour."
+- Amber "Call Now" button
+
+10. FOOTER (dark background like Dynamic Detailing)
+- Left: Parente Mobile Mechanics + tagline
+- Center: nav links
+- Right: service area + copyright 2025
+
+---
+
+DESIGN RULES — match Dynamic Detailing:
+- White background for content sections
+- Dark background for nav and footer
+- Amber/gold (#d4a017) for CTA buttons and service title accents — rounded pill shape buttons exactly like Dynamic Detailing
+- Black (#111111) for body text and headings on white sections
+- Fonts: bold condensed sans-serif for headings (use Oswald 700), clean sans for body (Inter 400) — load from Google Fonts
+- The parallax About section is the signature effect — make sure background-attachment: fixed works correctly so the photo reveals as you scroll
+- Cards in "What We Do" must have photo top half and white text bottom half exactly like Dynamic Detailing
+- No gradients, no glassmorphism, no dark navy — this is a white and black site with amber accents and photo sections
+
+---
+
+DO NOT truncate, skip sections, use placeholder comments, or summarize code. Output the complete finished index.html from DOCTYPE to closing html tag with zero omissions.
