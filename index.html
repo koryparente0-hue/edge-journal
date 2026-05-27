@@ -1091,93 +1091,67 @@ body.light-mode .metric-val{color:#0a0a14}
 .pd-rule-field input,.pd-rule-field select,.pd-rule-field textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:7px 9px;font-size:12px;font-family:var(--mono);color:var(--text);width:100%}
 .pd-rule-field input:focus,.pd-rule-field select:focus,.pd-rule-field textarea:focus{outline:none;border-color:var(--accent)}
 .pd-dd-explain{font-size:11px;color:var(--muted);background:var(--bg3);border-radius:var(--r);padding:9px 12px;line-height:1.6;margin-bottom:12px}
-/* ─── PROP ACCOUNT CARDS — neumorphism edition ─── */
-/* Base neumorphic surface: raised extrusion on dark bg */
-.prop-acct-card{
-  background:var(--nm-bg,#111116);
-  border:none;
-  border-radius:20px;
-  overflow:hidden;
-  transition:transform .25s cubic-bezier(0.23,1,0.32,1),box-shadow .25s;
-  box-shadow:6px 6px 16px rgba(0,0,0,0.55),-4px -4px 12px rgba(255,255,255,0.035);
-}
-.prop-acct-card:hover{
-  transform:translateY(-3px);
-  box-shadow:10px 10px 24px rgba(0,0,0,0.65),-6px -6px 18px rgba(255,255,255,0.045),0 0 0 1px rgba(155,127,255,0.3);
-}
-.prop-acct-card.dll-warn{
-  box-shadow:6px 6px 16px rgba(0,0,0,0.55),-4px -4px 12px rgba(255,255,255,0.03),0 0 0 1px rgba(255,77,77,0.25),inset 0 0 0 1px rgba(255,77,77,0.08);
-}
-.prop-acct-card.dll-warn:hover{
-  box-shadow:10px 10px 24px rgba(0,0,0,0.65),-6px -6px 18px rgba(255,255,255,0.04),0 0 0 1px rgba(255,77,77,0.5),0 0 32px rgba(255,77,77,0.12);
-}
-/* Inset neumorphic elements (pressed-in look for bars/stats) */
-.nm-inset{
-  border-radius:10px;
-  box-shadow:inset 3px 3px 8px rgba(0,0,0,0.5),inset -2px -2px 6px rgba(255,255,255,0.03);
-  background:rgba(0,0,0,0.2);
-}
-/* Neumorphic mini stat chips */
-.nm-chip{
-  border-radius:10px;
-  padding:8px 6px;
-  text-align:center;
-  box-shadow:3px 3px 8px rgba(0,0,0,0.45),-2px -2px 6px rgba(255,255,255,0.03);
-  background:#111116;
-}
-/* Winning day dots — neumorphic toggle */
-.prop-wd-dot{
-  width:26px;height:26px;border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;font-weight:700;
-  transition:box-shadow .2s,background .2s;
-}
-.prop-wd-dot.wd-done{
-  background:rgba(0,208,132,0.12);
-  color:var(--green);
-  box-shadow:inset 2px 2px 6px rgba(0,0,0,0.5),inset -1px -1px 3px rgba(0,208,132,0.08),0 0 8px rgba(0,208,132,0.15);
-}
-.prop-wd-dot.wd-empty{
-  background:#111116;
-  color:var(--dim);
-  box-shadow:3px 3px 7px rgba(0,0,0,0.5),-2px -2px 5px rgba(255,255,255,0.03);
-}
-.prop-card-topbar{height:3px;transition:height .2s,opacity .2s}
+/* ─── PROP ACCOUNT CARDS ─── */
+:root{--nm-bg:#0f0f12;--nm-raise:5px 5px 14px rgba(0,0,0,0.65),-4px -4px 10px rgba(255,255,255,0.032);--nm-raise-hover:9px 9px 22px rgba(0,0,0,0.75),-6px -6px 15px rgba(255,255,255,0.042);--nm-raise-sm:3px 3px 8px rgba(0,0,0,0.55),-2px -2px 6px rgba(255,255,255,0.028);--nm-press:inset 4px 4px 10px rgba(0,0,0,0.62),inset -3px -3px 8px rgba(255,255,255,0.028);--nm-press-sm:inset 2px 2px 6px rgba(0,0,0,0.5),inset -1px -1px 4px rgba(255,255,255,0.022);}
+body.light-mode{--nm-bg:#e8e8f0;--nm-raise:5px 5px 14px rgba(155,155,185,0.55),-4px -4px 10px rgba(255,255,255,0.88);--nm-raise-hover:9px 9px 22px rgba(145,145,180,0.65),-6px -6px 15px rgba(255,255,255,0.94);--nm-raise-sm:3px 3px 8px rgba(155,155,185,0.5),-2px -2px 6px rgba(255,255,255,0.82);--nm-press:inset 4px 4px 10px rgba(145,145,180,0.45),inset -3px -3px 8px rgba(255,255,255,0.82);--nm-press-sm:inset 2px 2px 6px rgba(145,145,180,0.38),inset -1px -1px 4px rgba(255,255,255,0.78);}
+#prop-today-banner{display:none;background:var(--nm-bg);border-radius:18px;padding:14px 18px;margin-bottom:20px;box-shadow:var(--nm-raise);gap:10px;align-items:center;flex-wrap:wrap;}
+.nm-pill{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;min-width:70px;padding:10px 8px;border-radius:12px;box-shadow:var(--nm-press);background:var(--nm-bg);}
+.nm-pill-val{font-size:18px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;line-height:1}
+.nm-pill-lbl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:1px}
+.nm-divider{width:1px;height:36px;background:rgba(255,255,255,0.06);flex-shrink:0}
+body.light-mode .nm-divider{background:rgba(0,0,0,0.1)}
+.prop-acct-card{background:var(--nm-bg);border:none;border-radius:20px;overflow:visible;transition:box-shadow .3s cubic-bezier(0.23,1,0.32,1),transform .3s cubic-bezier(0.23,1,0.32,1);box-shadow:var(--nm-raise);position:relative;}
+.prop-acct-card:hover{transform:translateY(-3px);box-shadow:var(--nm-raise-hover);}
+.prop-acct-card.dll-warn{box-shadow:var(--nm-raise),0 0 0 1.5px rgba(255,77,77,0.3),0 0 28px rgba(255,77,77,0.08);}
+.prop-acct-card.dll-warn:hover{box-shadow:var(--nm-raise-hover),0 0 0 2px rgba(255,77,77,0.5),0 0 40px rgba(255,77,77,0.14);}
+.prop-card-topbar{height:3px;border-radius:20px 20px 0 0;transition:height .2s;}
 .prop-acct-card.dll-warn .prop-card-topbar{animation:warnBorderPulse 1.8s ease-in-out infinite}
-@keyframes warnBorderPulse{0%,100%{opacity:.8}50%{opacity:1;height:5px}}
-.prop-dll-badge{font-size:9px;font-weight:700;letter-spacing:.04em;color:#ff4d4d;background:rgba(255,77,77,0.12);border:1px solid rgba(255,77,77,0.3);border-radius:4px;padding:2px 7px;white-space:nowrap;animation:badgePulse 2s ease-in-out infinite}
-@keyframes badgePulse{0%,100%{opacity:.9}50%{opacity:1;box-shadow:0 0 8px rgba(255,77,77,0.4)}}
-.prop-pnl-big{font-size:34px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;line-height:1}
-.prop-status-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;white-space:nowrap}
-/* Neumorphic progress bar track */
-.dll-bar-track{height:8px;border-radius:4px;overflow:hidden;box-shadow:inset 2px 2px 5px rgba(0,0,0,0.55),inset -1px -1px 3px rgba(255,255,255,0.025)}
-.dll-bar-fill{height:100%;border-radius:4px;transition:width .5s cubic-bezier(0.23,1,0.32,1)}
+@keyframes warnBorderPulse{0%,100%{opacity:.7}50%{opacity:1;height:5px}}
+.nm-inset{border-radius:12px;box-shadow:var(--nm-press);background:var(--nm-bg);}
+.nm-inset-sm{border-radius:8px;box-shadow:var(--nm-press-sm);background:var(--nm-bg);}
+.nm-chip{border-radius:12px;padding:9px 6px;text-align:center;box-shadow:var(--nm-raise-sm);background:var(--nm-bg);transition:box-shadow .2s;}
+.nm-chip:hover{box-shadow:var(--nm-raise);}
+.prop-wd-dot{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'Geist Mono',monospace;transition:box-shadow .2s,color .2s;}
+.prop-wd-dot.wd-done{box-shadow:var(--nm-press-sm);background:var(--nm-bg);color:var(--green);text-shadow:0 0 8px rgba(0,208,132,0.5);}
+.prop-wd-dot.wd-empty{box-shadow:var(--nm-raise-sm);background:var(--nm-bg);color:var(--dim);}
+.prop-wd-dot.wd-near{box-shadow:var(--nm-raise-sm),0 0 0 1px rgba(245,166,35,0.4);color:var(--amber);}
+.nm-bar-track{height:8px;border-radius:4px;overflow:hidden;box-shadow:var(--nm-press-sm);background:var(--nm-bg);}
+.nm-bar-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(0.23,1,0.32,1);}
+.dll-bar-track{height:8px;border-radius:4px;overflow:hidden;box-shadow:var(--nm-press-sm);background:var(--nm-bg);}
+.dll-bar-fill{height:100%;border-radius:4px;transition:width .5s cubic-bezier(0.23,1,0.32,1);}
 .dll-bar-fill.dll-pulse{animation:dllBarPulse 1.4s ease-in-out infinite}
-@keyframes dllBarPulse{0%,100%{opacity:1}50%{opacity:.6;box-shadow:none}}
-/* Today at a Glance banner (neumorphic pill row) */
-.prop-today-banner{
-  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;
-  background:#111116;border-radius:16px;padding:14px 18px;
-  box-shadow:6px 6px 16px rgba(0,0,0,0.55),-4px -4px 12px rgba(255,255,255,0.03);
-}
-.prop-today-pill{
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  flex:1;min-width:80px;padding:10px 8px;border-radius:12px;
-  box-shadow:inset 3px 3px 8px rgba(0,0,0,0.5),inset -2px -2px 6px rgba(255,255,255,0.025);
-  background:rgba(0,0,0,0.18);
-}
-.prop-today-val{font-size:18px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-.5px;line-height:1}
-.prop-today-lbl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em}
-/* Light mode overrides */
-body.light-mode .prop-acct-card{background:#EEEEF4;box-shadow:6px 6px 14px rgba(170,170,200,0.5),-4px -4px 10px rgba(255,255,255,0.85)}
-body.light-mode .prop-acct-card:hover{box-shadow:10px 10px 22px rgba(170,170,200,0.6),-6px -6px 14px rgba(255,255,255,0.9),0 0 0 1.5px rgba(155,127,255,0.35)}
-body.light-mode .nm-inset{box-shadow:inset 3px 3px 7px rgba(170,170,200,0.45),inset -2px -2px 5px rgba(255,255,255,0.8);background:rgba(0,0,0,0.04)}
-body.light-mode .nm-chip{background:#EEEEF4;box-shadow:3px 3px 8px rgba(170,170,200,0.5),-2px -2px 6px rgba(255,255,255,0.85)}
-body.light-mode .prop-wd-dot.wd-empty{background:#EEEEF4;box-shadow:3px 3px 7px rgba(170,170,200,0.5),-2px -2px 5px rgba(255,255,255,0.85);color:var(--dim)}
-body.light-mode .prop-wd-dot.wd-done{background:rgba(0,168,107,0.1);box-shadow:inset 2px 2px 6px rgba(0,0,0,0.1),inset -1px -1px 3px rgba(0,168,107,0.08),0 0 8px rgba(0,168,107,0.12)}
-body.light-mode .prop-today-banner{background:#EEEEF4;box-shadow:6px 6px 14px rgba(170,170,200,0.5),-4px -4px 10px rgba(255,255,255,0.85)}
-body.light-mode .prop-today-pill{background:rgba(0,0,0,0.04);box-shadow:inset 3px 3px 7px rgba(170,170,200,0.4),inset -2px -2px 5px rgba(255,255,255,0.8)}
-body.light-mode .dll-bar-track{box-shadow:inset 2px 2px 5px rgba(170,170,200,0.45),inset -1px -1px 3px rgba(255,255,255,0.7)}
+@keyframes dllBarPulse{0%,100%{opacity:1}50%{opacity:.55}}
+.nm-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 13px;border-radius:10px;font-size:11px;font-weight:600;font-family:'Geist',sans-serif;cursor:pointer;border:none;color:var(--muted);background:var(--nm-bg);box-shadow:var(--nm-raise-sm);transition:box-shadow .15s,color .15s,transform .1s;letter-spacing:.01em;}
+.nm-btn:hover{color:var(--text);box-shadow:var(--nm-raise);}
+.nm-btn:active{box-shadow:var(--nm-press-sm);transform:scale(.97);}
+.nm-btn-danger{color:var(--red)!important}
+.nm-btn-primary{color:var(--accent)!important}
+.nm-btn-green{color:var(--green)!important}
+.prop-dll-badge{font-size:9px;font-weight:700;letter-spacing:.04em;color:#ff4d4d;padding:2px 8px;border-radius:4px;background:var(--nm-bg);box-shadow:var(--nm-press-sm),0 0 0 1px rgba(255,77,77,0.25);animation:badgePulse 2s ease-in-out infinite;}
+@keyframes badgePulse{0%,100%{opacity:.85}50%{opacity:1;}}
+.prop-pnl-big{font-size:36px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2px;line-height:1}
+.prop-status-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.02em}
+.pm-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px 20px 0}
+.pm-card{background:var(--nm-bg);border:none;border-radius:16px;padding:16px 18px;box-shadow:var(--nm-press);}
+.pm-card-lbl{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.pm-pill-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 20px 16px}
+.pm-pill{background:var(--nm-bg);border:none;border-radius:12px;padding:10px 12px;text-align:center;box-shadow:var(--nm-press-sm);}
+.pm-period-sel{background:var(--nm-bg);border:none;border-radius:8px;color:var(--text);font-size:12px;font-family:inherit;padding:5px 9px;cursor:pointer;outline:none;box-shadow:var(--nm-press-sm);transition:box-shadow .15s;}
+.pm-period-sel:hover{box-shadow:var(--nm-press);}
+.pd-hdr{position:sticky;top:0;background:var(--nm-bg);padding:14px 20px;display:flex;align-items:center;gap:12px;z-index:2;box-shadow:0 4px 20px rgba(0,0,0,0.4);}
+.pd-section{padding:20px;border-bottom:1px solid rgba(255,255,255,0.04);}
+body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
+.pd-sec-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.pd-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pd-stat{background:var(--nm-bg);border:none;border-radius:12px;padding:10px 8px;text-align:center;box-shadow:var(--nm-press-sm);}
+.pd-stat-val{font-size:18px;font-weight:700;font-family:var(--mono);letter-spacing:-.5px;line-height:1}
+.pd-stat-lbl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+.pd-rule-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pd-rule-field{display:flex;flex-direction:column;gap:4px}
+.pd-rule-field label{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.03em}
+.pd-rule-field input,.pd-rule-field select,.pd-rule-field textarea{background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:var(--r);padding:7px 9px;font-size:12px;font-family:var(--mono);color:var(--text);width:100%;}
+.pd-rule-field input:focus,.pd-rule-field select:focus,.pd-rule-field textarea:focus{outline:none;box-shadow:var(--nm-press),0 0 0 1.5px rgba(155,127,255,0.4);}
+.pd-dd-explain{font-size:11px;color:var(--muted);background:var(--nm-bg);border-radius:var(--r);padding:9px 12px;line-height:1.6;margin-bottom:12px;box-shadow:var(--nm-press-sm);}
 </style>
 </head>
 <body>
@@ -2073,32 +2047,32 @@ body.light-mode .dll-bar-track{box-shadow:inset 2px 2px 5px rgba(170,170,200,0.4
 <!-- PROP FIRMS -->
 <div class="page" id="page-propfirms">
   <div class="page-header">
-    <div><div class="page-title">Prop Firms</div><div class="page-sub">Track all your accounts, payouts, and performance across every firm</div></div>
-    <button class="btn btn-green" style="padding:10px 22px;font-size:13px;font-weight:700" onclick="openPropAccountModal()">+ Add Account</button>
+    <div><div class="page-title">Prop Firms</div><div class="page-sub">All accounts, winning days, and P&L in one place</div></div>
+    <button class="nm-btn nm-btn-green" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:12px" onclick="openPropAccountModal()">+ Add Account</button>
   </div>
 
-  <!-- TODAY AT A GLANCE (neumorphic pill row) -->
-  <div id="prop-today-banner" class="prop-today-banner" style="display:none"></div>
+  <!-- TODAY AT A GLANCE -->
+  <div id="prop-today-banner"></div>
 
-  <!-- HERO BANNER -->
-  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
-    <canvas id="ph-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div class="phero-grid" style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
-      <div id="ph-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
-      <div id="ph-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
-      <div id="ph-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
+  <!-- HERO BANNER (neumorphic raised panel) -->
+  <div style="background:var(--nm-bg);border-radius:20px;margin-bottom:20px;box-shadow:var(--nm-raise);overflow:hidden;position:relative;">
+    <canvas id="ph-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.5"></canvas>
+    <div style="position:relative;z-index:1;padding:22px 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:0">
+      <div id="ph-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.05)"></div>
+      <div id="ph-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.05)"></div>
+      <div id="ph-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.05)"></div>
       <div id="ph-s3" class="phero-stat"></div>
     </div>
   </div>
 
-  <!-- ACCOUNTS BY FIRM -->
+  <!-- ACCOUNTS -->
   <div id="prop-accounts-section"></div>
 
-  <!-- ADD PAYOUT -->
-  <div class="card" style="margin-top:8px">
-    <div class="card-header">
-      <span class="card-title">Payouts</span>
-      <button class="btn btn-sm" onclick="openPayoutModal()">+ Log Payout</button>
+  <!-- PAYOUTS -->
+  <div style="background:var(--nm-bg);border-radius:20px;box-shadow:var(--nm-raise);padding:20px;margin-top:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <span style="font-size:13px;font-weight:700;color:var(--text)">Payouts</span>
+      <button class="nm-btn nm-btn-green" onclick="openPayoutModal()">+ Log Payout</button>
     </div>
     <div id="prop-payouts-list"><div class="empty">No payouts logged yet</div></div>
   </div>
@@ -6060,57 +6034,31 @@ function renderPropTodayBanner() {
   const accounts = (state.propAccounts||[]).filter(a => a.status !== 'blown' && a.status !== 'inactive');
   if (!accounts.length) { el.style.display = 'none'; return; }
   const today = new Date().toISOString().slice(0,10);
-  let todayPnL = 0, todayTrades = 0, todayWins = 0;
-  let totalWinDays = 0, totalWinDaysReq = 0;
+  let todayPnL=0,todayTrades=0,todayWins=0,totalWD=0,totalWDReq=0;
   accounts.forEach(a => {
-    const acTrades = (state.trades||[]).filter(t => (t.propAccounts||[]).includes(a.name) || (!t.propAccounts?.length && t.propFirm===a.firm));
-    const todT = acTrades.filter(t => t.datetime?.slice(0,10) === today);
-    todT.forEach(t => { const p = calcPnL(t); todayPnL += p; todayTrades++; if(t.outcome==='win') todayWins++; });
-    // winning days across all accts
-    if ((parseInt(a.winDaysReq)||parseInt(a.minDays)||0) > 0) {
-      const winDayMin = parseFloat(a.winDayMin)||200;
-      const req = parseInt(a.winDaysReq)||parseInt(a.minDays)||0;
-      const byDay = {};
-      acTrades.forEach(t => { const d=t.datetime?.slice(0,10); if(d) byDay[d]=(byDay[d]||0)+calcPnL(t); });
-      totalWinDays += Object.values(byDay).filter(p=>p>=winDayMin).length;
-      totalWinDaysReq += req;
-    }
+    const ac = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
+    ac.filter(t=>t.datetime?.slice(0,10)===today).forEach(t=>{const p=calcPnL(t);todayPnL+=p;todayTrades++;if(t.outcome==='win')todayWins++;});
+    const wd=parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
+    if(wd>0){const wdMin=parseFloat(a.winDayMin)||200;const bd={};ac.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)bd[d]=(bd[d]||0)+calcPnL(t);});totalWD+=Object.values(bd).filter(p=>p>=wdMin).length;totalWDReq+=wd;}
   });
-  const todayCol = todayPnL > 0 ? 'var(--green)' : todayPnL < 0 ? 'var(--red)' : 'var(--muted)';
-  const todayWR = todayTrades ? Math.round(todayWins/todayTrades*100) : null;
-  // Detect NY session
-  const est = new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
-  const h=est.getHours(), m=est.getMinutes();
-  const inSession = (h===9&&m>=30)||(h>=10&&h<11); // NY prime 9:30-11
-  el.style.display = 'flex';
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;gap:8px;flex:0 0 auto">
-      <div style="width:8px;height:8px;border-radius:50%;background:${inSession?'var(--green)':'var(--dim)'};${inSession?'box-shadow:0 0 8px rgba(0,208,132,0.6);animation:pulse 1.5s infinite':''}"></div>
-      <span style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${inSession?'var(--green)':'var(--dim)'}">${inSession?'Session Live':'Market'}</span>
+  const est=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  const h=est.getHours(),m=est.getMinutes();
+  const inSession=(h===9&&m>=30)||(h>=10&&h<11);
+  const todayWR=todayTrades?Math.round(todayWins/todayTrades*100):null;
+  const pnlCol=todayPnL>0?'var(--green)':todayPnL<0?'var(--red)':'var(--muted)';
+  const wrCol=todayWR!==null?(todayWR>=60?'var(--green)':todayWR>=40?'var(--amber)':'var(--red)'):'var(--muted)';
+  el.style.display='flex';
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;padding:0 4px;flex-shrink:0">
+      <div style="width:8px;height:8px;border-radius:50%;background:${inSession?'var(--green)':'var(--dim)'};${inSession?'box-shadow:0 0 8px var(--green);animation:pulse 1.5s infinite':''}"></div>
+      <span style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${inSession?'var(--green)':'var(--dim)'};white-space:nowrap">${inSession?'NY Session':'Closed'}</span>
     </div>
-    <div style="width:1px;height:36px;background:var(--border2);flex-shrink:0"></div>
-    <div class="prop-today-pill">
-      <div class="prop-today-val" style="color:${todayCol}">${todayPnL>=0?'+':'-'}$${Math.abs(Math.round(todayPnL)).toLocaleString()}</div>
-      <div class="prop-today-lbl">Today P&L</div>
-    </div>
-    <div class="prop-today-pill">
-      <div class="prop-today-val" style="color:var(--muted)">${todayTrades}</div>
-      <div class="prop-today-lbl">Trades Today</div>
-    </div>
-    ${todayWR!==null?`<div class="prop-today-pill">
-      <div class="prop-today-val" style="color:${todayWR>=60?'var(--green)':todayWR>=40?'var(--amber)':'var(--red)'}">${todayWR}%</div>
-      <div class="prop-today-lbl">Today WR</div>
-    </div>`:''}
-    ${totalWinDaysReq>0?`<div class="prop-today-pill" style="flex:1.5">
-      <div style="display:flex;align-items:baseline;gap:4px">
-        <div class="prop-today-val" style="color:${totalWinDays>=totalWinDaysReq?'var(--green)':'var(--text)'}">${totalWinDays}</div>
-        <div style="font-size:13px;color:var(--muted);font-family:var(--mono)">/ ${totalWinDaysReq}</div>
-      </div>
-      <div class="prop-today-lbl">Win Days</div>
-    </div>`:''}
-    <div style="margin-left:auto;display:flex;align-items:center">
-      <button class="btn btn-sm" onclick="openPayoutModal()" style="font-size:11px;color:var(--green);border-color:var(--green-border);background:var(--green-dim)">+ Payout</button>
-    </div>
+    <div class="nm-divider"></div>
+    <div class="nm-pill"><div class="nm-pill-val" style="color:${pnlCol}">${todayPnL>=0?'+':'-'}$${Math.abs(Math.round(todayPnL)).toLocaleString()}</div><div class="nm-pill-lbl">Today P&L</div></div>
+    <div class="nm-pill"><div class="nm-pill-val" style="color:var(--muted)">${todayTrades}</div><div class="nm-pill-lbl">Trades</div></div>
+    ${todayWR!==null?`<div class="nm-pill"><div class="nm-pill-val" style="color:${wrCol}">${todayWR}%</div><div class="nm-pill-lbl">Win Rate</div></div>`:''}
+    ${totalWDReq>0?`<div class="nm-pill" style="flex:1.4"><div style="display:flex;align-items:baseline;gap:5px"><span class="nm-pill-val" style="color:${totalWD>=totalWDReq?'var(--green)':totalWDReq-totalWD===1?'var(--amber)':'var(--text)'}">${totalWD}</span><span style="font-size:13px;color:var(--dim);font-family:'Geist Mono',monospace">/ ${totalWDReq}</span></div><div class="nm-pill-lbl">Win Days</div></div>`:''}
+    <div style="margin-left:auto;flex-shrink:0"><button class="nm-btn nm-btn-green" onclick="openPayoutModal()">+ Payout</button></div>
   `;
 }
 
@@ -6217,7 +6165,12 @@ function renderPropAccountsSection() {
   const section = document.getElementById('prop-accounts-section');
   const accounts = state.propAccounts || [];
   if (!accounts.length) {
-    section.innerHTML = '<div class="card"><div class="empty"><strong>No accounts yet</strong>Add your first prop firm account to start tracking.</div></div>';
+    section.innerHTML = `<div style="background:var(--nm-bg);border-radius:20px;box-shadow:var(--nm-raise);padding:44px 24px;text-align:center;margin-bottom:16px">
+      <div style="font-size:32px;margin-bottom:12px;opacity:.3">📊</div>
+      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px">No accounts yet</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:22px">Add your first prop account to start tracking</div>
+      <button class="nm-btn nm-btn-primary" style="padding:10px 22px;font-size:13px;font-weight:700;border-radius:12px" onclick="openPropAccountModal()">+ Add Account</button>
+    </div>`;
     return;
   }
 
@@ -6232,141 +6185,153 @@ function renderPropAccountsSection() {
   const isPA = a => a.status === 'funded' || a.status === 'passed';
 
   section.innerHTML = Object.entries(byFirm).map(([firm, accs]) => {
-    const firmPnL     = accs.reduce((s,a)=>s+_propAcctPnL(a), 0);
-    const firmPayouts = (state.propPayouts||[]).filter(p=>accs.some(a=>a.name===p.accountName)).reduce((s,p)=>s+(parseFloat(p.amount)||0), 0);
-    const firmFees    = accs.reduce((s,a)=>s+(parseFloat(a.fee)||0)+(parseFloat(a.activation)||0), 0);
+    const firmPnL     = accs.reduce((s,a)=>s+_propAcctPnL(a),0);
+    const firmPayouts = (state.propPayouts||[]).filter(p=>accs.some(a=>a.name===p.accountName)).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+    const firmFees    = accs.reduce((s,a)=>s+(parseFloat(a.fee)||0)+(parseFloat(a.activation)||0),0);
+    const pnlCol      = firmPnL>=0?'var(--green)':'var(--red)';
 
     return `<div style="margin-bottom:28px">
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(155,127,255,0.12)">
-        <span style="font-size:20px;font-weight:800;color:var(--text)">${firm}</span>
-        <span style="font-size:13px;font-weight:700;color:${firmPnL>=0?'var(--green)':'var(--red)'}">${firmPnL>=0?'+':'-'}$${Math.abs(firmPnL).toLocaleString()} P&L</span>
-        ${firmPayouts?`<span style="font-size:12px;font-weight:600;color:var(--green)">+$${firmPayouts.toLocaleString()} paid out</span>`:''}
-        ${firmFees?`<span style="font-size:12px;font-weight:600;color:var(--red)">-$${firmFees.toLocaleString()} fees</span>`:''}
-        <span style="font-size:11px;color:var(--dim)">${accs.length} account${accs.length>1?'s':''}</span>
+      <!-- Firm header row — neumorphic raised pill -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;background:var(--nm-bg);border-radius:14px;padding:12px 18px;box-shadow:var(--nm-raise-sm)">
+        <span style="font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.3px">${firm}</span>
+        <span style="font-size:13px;font-weight:700;color:${pnlCol};font-family:'Geist Mono',monospace">${firmPnL>=0?'+':'-'}$${Math.abs(firmPnL).toLocaleString()}</span>
+        ${firmPayouts?`<span style="font-size:11px;font-weight:600;color:var(--green);background:var(--green-dim);padding:2px 8px;border-radius:20px">+$${firmPayouts.toLocaleString()} paid</span>`:''}
+        ${firmFees?`<span style="font-size:11px;font-weight:600;color:var(--red);background:var(--red-dim);padding:2px 8px;border-radius:20px">-$${firmFees.toLocaleString()} fees</span>`:''}
+        <span style="font-size:11px;color:var(--dim);margin-left:auto">${accs.length} acct${accs.length>1?'s':''}</span>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:16px">
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px">
         ${accs.map(a => {
           const pnl       = _propAcctPnL(a);
           const dd        = parseFloat(a.dd)||0;
           const target    = parseFloat(a.target)||0;
           const dll       = parseFloat(a.dll)||0;
-          const acPayouts = (state.propPayouts||[]).filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
           const pa        = isPA(a);
-
-          const acTrades  = state.trades.filter(t => (t.propAccounts||[]).includes(a.name) || (!t.propAccounts?.length && t.propFirm===a.firm));
-          const {ddUsed, ddRemaining, ddPct} = _calcPropDD(a, acTrades);
-          const progPct     = !pa && target && pnl > 0 ? Math.min(100,(pnl/target)*100) : 0;
+          const acTrades  = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
+          const {ddUsed,ddRemaining,ddPct} = _calcPropDD(a,acTrades);
+          const progPct   = !pa&&target&&pnl>0 ? Math.min(100,(pnl/target)*100) : 0;
           const acWins    = acTrades.filter(t=>t.outcome==='win').length;
           const acWR      = acTrades.length ? Math.round(acWins/acTrades.length*100) : null;
-
+          const acPayouts = (state.propPayouts||[]).filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
           const today     = new Date().toISOString().slice(0,10);
           const todayPnL  = acTrades.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
-          const dllPct    = dll && todayPnL < 0 ? Math.min(100, Math.abs(todayPnL)/dll*100) : 0;
-          const dllRemaining = dll ? Math.max(0, dll + Math.min(0, todayPnL)) : null;
-          const dllWarn   = dllPct > 80;
-          const dllCol    = dllPct < 50 ? '#00d084' : dllPct < 80 ? '#f5a623' : '#ff4d4d';
-
-          const dates     = acTrades.map(t=>t.datetime?.slice(0,10)).filter(Boolean).sort();
-          const daysActive = dates[0] ? Math.max(1, Math.floor((Date.now()-new Date(dates[0]))/(86400000)))+1 : null;
-
+          const dllPct    = dll&&todayPnL<0 ? Math.min(100,Math.abs(todayPnL)/dll*100) : 0;
+          const dllRemaining = dll ? Math.max(0,dll+Math.min(0,todayPnL)) : null;
+          const dllWarn   = dllPct>80;
+          const dllCol    = dllPct<50?'#00d084':dllPct<80?'#f5a623':'#ff4d4d';
           const statusCol = statusColor[a.status]||'var(--dim)';
           const pnlCol    = pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--muted)';
           const spark     = _propSparklineSVG(acTrades);
+          const dates     = acTrades.map(t=>t.datetime?.slice(0,10)).filter(Boolean).sort();
+          const daysActive = dates[0] ? Math.max(1,Math.floor((Date.now()-new Date(dates[0]))/86400000)+1) : null;
 
-          // Winning days (for card-level dots)
-          const winDayMin   = parseFloat(a.winDayMin)||200;
-          const winDaysReq  = parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
-          const byDayCardMap = {};
-          acTrades.forEach(t=>{ const d=t.datetime?.slice(0,10); if(d) byDayCardMap[d]=(byDayCardMap[d]||0)+calcPnL(t); });
-          const winDayCount = Object.values(byDayCardMap).filter(p=>p>=winDayMin).length;
-          const daysToGo    = Math.max(0, winDaysReq - winDayCount);
+          // Winning days
+          const winDayMin  = parseFloat(a.winDayMin)||200;
+          const winDaysReq = parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
+          const byDayMap   = {};
+          acTrades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDayMap[d]=(byDayMap[d]||0)+calcPnL(t);});
+          const winDayCount = Object.values(byDayMap).filter(p=>p>=winDayMin).length;
+          const daysToGo   = Math.max(0, winDaysReq - winDayCount);
 
-          return `<div class="prop-acct-card${dllWarn?' dll-warn':''}" onclick="openPropDetail(${a._idx})" style="cursor:pointer">
+          return `<div class="prop-acct-card${dllWarn?' dll-warn':''}" onclick="openPropDetail(${a._idx})" style="cursor:pointer;overflow:hidden">
+            <!-- colour stripe -->
             <div class="prop-card-topbar" style="background:${dllWarn?'#ff4d4d':statusCol}"></div>
-            <div style="padding:16px">
+            <div style="padding:16px 18px">
 
               <!-- HEADER -->
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
                 <div>
                   <div style="font-size:14px;font-weight:700;color:var(--text);letter-spacing:-.2px">${a.name||a.plan}</div>
                   <div style="font-size:10px;color:var(--muted);margin-top:2px">${a.plan||''}${a.size?' · '+a.size:''}</div>
                 </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-                  ${dllWarn?`<span class="prop-dll-badge">⚠ Near Daily Limit</span>`:''}
-                  <span class="prop-status-badge" style="color:${statusCol};background:${statusCol}18">${statusLabel[a.status]||a.status}</span>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+                  ${dllWarn?`<span class="prop-dll-badge">⚠ DLL</span>`:''}
+                  <span class="prop-status-badge" style="color:${statusCol};background:${statusCol}22">${statusLabel[a.status]||a.status}</span>
                 </div>
               </div>
 
-              <!-- P&L + SPARKLINE -->
-              <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:4px">
+              <!-- P&L big + sparkline -->
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:6px">
                 <div>
-                  <div class="prop-pnl-big" style="color:${pnlCol};text-shadow:${pnl>0?'0 0 24px rgba(0,208,132,0.35)':pnl<0?'0 0 24px rgba(255,77,77,0.35)':'none'}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</div>
-                  ${daysActive?`<div style="font-size:9px;color:var(--dim);margin-top:3px;letter-spacing:.02em">${daysActive} day${daysActive!==1?'s':''} active</div>`:''}
+                  <div class="prop-pnl-big" style="color:${pnlCol};text-shadow:${pnl>0?'0 0 28px rgba(0,208,132,0.4)':pnl<0?'0 0 28px rgba(255,77,77,0.4)':'none'}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</div>
+                  ${daysActive?`<div style="font-size:9px;color:var(--dim);margin-top:3px;letter-spacing:.02em">${daysActive}d active</div>`:''}
                 </div>
-                ${spark?`<div style="opacity:.75;flex-shrink:0">${spark}</div>`:''}
+                ${spark?`<div style="opacity:.7;flex-shrink:0">${spark}</div>`:''}
               </div>
-              ${todayPnL!==0?`<div style="margin-bottom:10px;font-size:11px;font-weight:600;color:${todayPnL>0?'var(--green)':'var(--red)'};background:${todayPnL>0?'var(--green-dim)':'var(--red-dim)'};border-radius:var(--r);padding:4px 10px;display:inline-block;margin-top:6px">Today ${todayPnL>=0?'+':'-'}$${Math.abs(Math.round(todayPnL)).toLocaleString()}</div>`:'<div style="height:10px"></div>'}
 
-              <!-- WINNING DAYS DOTS — always visible if configured -->
+              <!-- Today badge -->
+              ${todayPnL!==0?`<div style="margin-bottom:12px;display:inline-block;font-size:11px;font-weight:700;color:${todayPnL>0?'var(--green)':'var(--red)'};padding:4px 10px;border-radius:8px;box-shadow:var(--nm-press-sm);background:var(--nm-bg)">Today ${todayPnL>=0?'+':'-'}$${Math.abs(Math.round(todayPnL)).toLocaleString()}</div>`:'<div style="height:6px"></div>'}
+
+              <!-- WINNING DAYS DOTS -->
               ${winDaysReq>0?`<div style="margin-bottom:14px">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-                  <span style="font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Winning Days</span>
-                  <span style="font-size:11px;font-weight:700;font-family:var(--mono);color:${winDayCount>=winDaysReq?'var(--green)':daysToGo===1?'var(--amber)':'var(--text)'}">${winDayCount} <span style="color:var(--dim);font-weight:400">/ ${winDaysReq}</span>${winDayCount>=winDaysReq?' ✓':''}</span>
+                  <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Winning Days</span>
+                  <span style="font-size:11px;font-weight:700;font-family:'Geist Mono',monospace;color:${winDayCount>=winDaysReq?'var(--green)':daysToGo===1?'var(--amber)':'var(--text)'}">${winDayCount}<span style="color:var(--dim);font-weight:400"> / ${winDaysReq}</span>${winDayCount>=winDaysReq?' ✓':''}</span>
                 </div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap">
-                  ${Array.from({length:winDaysReq},(_,i)=>`<div class="prop-wd-dot ${i<winDayCount?'wd-done':'wd-empty'}" title="Day ${i+1}">${i<winDayCount?'✓':i+1}</div>`).join('')}
+                  ${Array.from({length:winDaysReq},(_,i)=>{
+                    const done = i<winDayCount;
+                    const near = !done && i===winDayCount && daysToGo===1;
+                    return `<div class="prop-wd-dot ${done?'wd-done':near?'wd-near':'wd-empty'}">${done?'✓':i+1}</div>`;
+                  }).join('')}
                 </div>
               </div>`:''}
 
-              <!-- EVAL TARGET BAR -->
-              ${!pa && target ? `
-              <div style="margin-bottom:12px">
-                <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:5px">
-                  <span style="text-transform:uppercase;letter-spacing:.04em">Profit target</span>
+              <!-- PROFIT TARGET BAR -->
+              ${!pa&&target?`<div style="margin-bottom:12px">
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:6px">
+                  <span style="text-transform:uppercase;letter-spacing:.04em">Target</span>
                   <span style="font-weight:700;color:var(--amber)">$${pnl>0?pnl.toLocaleString():'0'} / $${target.toLocaleString()} · ${Math.round(progPct)}%</span>
                 </div>
-                <div class="nm-inset" style="height:8px;overflow:hidden;border-radius:4px">
-                  <div style="height:100%;width:${progPct}%;background:linear-gradient(90deg,var(--accent),#00d084);border-radius:4px;transition:width .5s cubic-bezier(0.23,1,0.32,1);box-shadow:0 0 10px rgba(0,208,132,.45)"></div>
+                <div class="nm-bar-track">
+                  <div class="nm-bar-fill" style="width:${progPct}%;background:linear-gradient(90deg,var(--accent),#00d084);box-shadow:0 0 10px rgba(0,208,132,.45)"></div>
                 </div>
-              </div>` : ''}
+              </div>`:''}
 
               <!-- DRAWDOWN GAUGE -->
-              ${dd ? `
-              <div style="margin-bottom:12px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-                  <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Max Drawdown</span>
-                  <span style="font-size:10px;font-weight:700;color:${ddPct<50?'var(--green)':ddPct<80?'var(--amber)':'var(--red)'}">${Math.round(ddPct)}% used</span>
+              ${dd?`<div style="margin-bottom:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+                  <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Max DD</span>
+                  <span style="font-size:10px;font-weight:700;color:${ddPct<50?'var(--green)':ddPct<80?'var(--amber)':'var(--red)'}">$${ddRemaining!==null?ddRemaining.toLocaleString():'—'} left</span>
                 </div>
-                <div style="display:flex;justify-content:center">${_propDDGaugeSVG(ddPct, ddRemaining)}</div>
-              </div>` : ''}
+                <div style="display:flex;justify-content:center">${_propDDGaugeSVG(ddPct,ddRemaining)}</div>
+              </div>`:''}
 
-              <!-- DAILY LOSS LIMIT BAR -->
-              ${dll ? `
-              <div style="margin-bottom:12px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-                  <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Daily Loss Limit</span>
+              <!-- DAILY LOSS LIMIT -->
+              ${dll?`<div style="margin-bottom:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Daily Limit</span>
                   <span style="font-size:10px;font-weight:700;color:${dllCol}">${dllRemaining!==null?'$'+dllRemaining.toLocaleString()+' left':'$'+dll.toLocaleString()}</span>
                 </div>
                 <div class="dll-bar-track">
-                  <div class="dll-bar-fill${dllWarn?' dll-pulse':''}" style="width:${dllPct}%;background:${dllCol};box-shadow:0 0 8px ${dllCol}88"></div>
+                  <div class="dll-bar-fill${dllWarn?' dll-pulse':''}" style="width:${dllPct}%;background:${dllCol};box-shadow:0 0 8px ${dllCol}99"></div>
                 </div>
-              </div>` : ''}
+              </div>`:''}
 
-              <!-- MINI STATS (neumorphic chips) -->
-              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
-                ${acWR!==null?`<div class="nm-chip"><div style="font-size:13px;font-weight:700;color:${acWR>=60?'var(--green)':acWR>=45?'var(--amber)':'var(--red)'}">${acWR}%</div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:1px">Win Rate</div></div>`:'<div></div>'}
-                <div class="nm-chip"><div style="font-size:13px;font-weight:700;color:var(--muted)">${acTrades.length}</div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:1px">Trades</div></div>
-                ${acPayouts?`<div class="nm-chip"><div style="font-size:12px;font-weight:700;color:var(--green)">+$${acPayouts.toLocaleString()}</div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:1px">Paid Out</div></div>`:'<div></div>'}
+              <!-- NM STAT CHIPS -->
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px">
+                ${acWR!==null?`<div class="nm-chip">
+                  <div style="font-size:14px;font-weight:800;color:${acWR>=60?'var(--green)':acWR>=45?'var(--amber)':'var(--red)'}">${acWR}%</div>
+                  <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Win Rate</div>
+                </div>`:'<div></div>'}
+                <div class="nm-chip">
+                  <div style="font-size:14px;font-weight:800;color:var(--muted)">${acTrades.length}</div>
+                  <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Trades</div>
+                </div>
+                ${acPayouts?`<div class="nm-chip">
+                  <div style="font-size:12px;font-weight:800;color:var(--green)">+$${acPayouts.toLocaleString()}</div>
+                  <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:2px">Paid Out</div>
+                </div>`:'<div></div>'}
               </div>
 
               <!-- NOTES -->
-              ${a.notes?`<div style="font-size:10px;color:var(--muted);border-left:2px solid var(--border2);padding-left:8px;margin-bottom:12px;line-height:1.55">${a.notes}</div>`:''}
+              ${a.notes?`<div style="font-size:10px;color:var(--muted);box-shadow:var(--nm-press-sm);background:var(--nm-bg);border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.6">${a.notes}</div>`:''}
 
-              <!-- ACTIONS -->
-              <div style="display:flex;gap:6px">
-                <button class="btn btn-sm" onclick="event.stopPropagation();quickUpdatePnL(${a._idx})" style="flex:1;text-align:center;justify-content:center">Update P&L</button>
-                <button class="btn btn-sm" onclick="event.stopPropagation();openPropAccountModal(${a._idx})">Edit</button>
-                <button class="btn btn-sm" style="color:var(--red)" onclick="event.stopPropagation();deletePropAccount(${a._idx})">✕</button>
+              <!-- ACTION BUTTONS (neumorphic) -->
+              <div style="display:flex;gap:7px">
+                <button class="nm-btn nm-btn-primary" style="flex:1;justify-content:center" onclick="event.stopPropagation();quickUpdatePnL(${a._idx})">Update P&L</button>
+                <button class="nm-btn" onclick="event.stopPropagation();openPropAccountModal(${a._idx})">Edit</button>
+                <button class="nm-btn nm-btn-danger" onclick="event.stopPropagation();deletePropAccount(${a._idx})">✕</button>
               </div>
             </div>
           </div>`;
@@ -6375,7 +6340,6 @@ function renderPropAccountsSection() {
     </div>`;
   }).join('');
 }
-
 function openPropDetail(idx, period) {
   period = period || document.getElementById('prop-detail-panel').dataset.period || 'all';
   document.getElementById('prop-detail-panel').dataset.period = period;
@@ -6609,34 +6573,28 @@ function renderPropPayouts() {
   const payouts = state.propPayouts || [];
   if (!payouts.length) {
     const firm = (state.propAccounts||[])[0]?.firm || 'your firm';
-    list.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 24px;text-align:center">
-      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="opacity:.35;margin-bottom:14px">
-        <rect x="4" y="12" width="32" height="22" rx="4" stroke="currentColor" stroke-width="1.8"/>
-        <path d="M4 18h32" stroke="currentColor" stroke-width="1.8"/>
-        <path d="M10 26h8M22 26h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M14 6l-4 6M20 4v8M26 6l4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
-      </svg>
-      <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:7px">No payouts yet</div>
-      <div style="font-size:12px;color:var(--muted);max-width:280px;line-height:1.65;margin-bottom:22px">Once ${firm} approves your withdrawal, log it here to track your total earned across all accounts.</div>
-      <button class="btn" onclick="openPayoutModal()" style="border-color:var(--accent);color:var(--accent);background:var(--accent-dim);font-weight:700;font-size:13px;padding:9px 20px">+ Log Payout</button>
+    list.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;padding:36px 24px;text-align:center">
+      <div style="font-size:32px;opacity:.3;margin-bottom:12px">💸</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:7px">No payouts yet</div>
+      <div style="font-size:12px;color:var(--muted);max-width:260px;line-height:1.65;margin-bottom:20px">Once ${firm} approves your withdrawal, log it here.</div>
+      <button class="nm-btn nm-btn-green" style="padding:9px 20px;font-size:13px;font-weight:700;border-radius:12px" onclick="openPayoutModal()">+ Log Payout</button>
     </div>`;
     return;
   }
-  list.innerHTML = `<div style="padding:0 4px">${[...payouts].reverse().map((p,ri)=>{
-    const i=payouts.length-1-ri;
-    return `<div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-      <div style="width:30px;height:30px;background:rgba(0,208,132,0.12);border:1px solid rgba(0,208,132,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:var(--green)">✓</div>
+  list.innerHTML = [...payouts].reverse().map((p,ri) => {
+    const i = payouts.length-1-ri;
+    return `<div style="display:flex;align-items:center;gap:14px;padding:12px 4px;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <div style="width:32px;height:32px;border-radius:10px;box-shadow:var(--nm-press-sm);background:var(--nm-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;color:var(--green)">✓</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:600;color:var(--text)">${p.accountName||p.firm||''}</div>
         ${p.note?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${p.note}</div>`:''}
       </div>
-      <div style="font-size:15px;font-weight:700;color:var(--green);font-family:'Geist Mono',monospace">+$${Number(p.amount).toLocaleString()}</div>
-      <div style="font-size:11px;color:var(--dim);white-space:nowrap;min-width:70px;text-align:right">${p.date||''}</div>
-      <button class="btn btn-sm" style="color:var(--red);padding:3px 8px;flex-shrink:0" onclick="deletePropPayout(${i})">✕</button>
+      <div style="font-size:15px;font-weight:800;color:var(--green);font-family:'Geist Mono',monospace">+$${Number(p.amount).toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--dim);white-space:nowrap">${p.date||''}</div>
+      <button class="nm-btn nm-btn-danger" style="padding:5px 9px;flex-shrink:0" onclick="deletePropPayout(${i})">✕</button>
     </div>`;
-  }).join('')}</div>`;
+  }).join('');
 }
-
 function quickUpdatePnL(idx) {
   const a = state.propAccounts[idx];
   const val = prompt(`Update P&L for ${a.name||a.firm}:`, a.pnl||0);
