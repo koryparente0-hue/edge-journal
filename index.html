@@ -3125,16 +3125,16 @@ let state = {
   selectedStrengths: [],
   propAccounts: [],   // user's prop firm accounts
   propPayouts: [],    // logged payouts
-  scalingPlan: {      // scaling roadmap stages
+  scalingPlan: {
     currentStage: 0,
     stages: [
       { id:0, label:'Stage 1', firm:'Alpha Futures', plan:'Zero', size:'25K', qty:1, targetPayout:500, costPerAcct:0, notes:'Current — secure first payout', unlocked:true },
-      { id:1, label:'Stage 2', firm:'Nextgen Funded', plan:'25K Rapid', size:'25K', qty:3, targetPayout:1500, costPerAcct:80, notes:'Buy 3x 25K Rapid, max payouts across all 3', unlocked:false },
-      { id:2, label:'Stage 3', firm:'Apex Funding', plan:'50K', size:'50K', qty:10, targetPayout:8000, costPerAcct:167, notes:'Scale to 10x Apex 50K, compound payouts', unlocked:false },
-      { id:3, label:'Stage 4', firm:'Apex Funding', plan:'100K', size:'100K', qty:10, targetPayout:20000, costPerAcct:327, notes:'Upgrade to 10x 100K accounts', unlocked:false },
-      { id:4, label:'Stage 5', firm:'Multiple', plan:'Max Scale', size:'150K+', qty:20, targetPayout:60000, costPerAcct:500, notes:'Full multi-firm max scale', unlocked:false }
+      { id:1, label:'Stage 2', firm:'Nextgen Funded', plan:'25K Rapid', size:'25K', qty:3, targetPayout:4500, costPerAcct:80, notes:'3x 25K Rapid — max payouts across all 3', unlocked:false },
+      { id:2, label:'Stage 3', firm:'Apex Funding', plan:'50K', size:'50K', qty:10, targetPayout:30000, costPerAcct:167, notes:'10x Apex 50K — compound those payouts', unlocked:false },
+      { id:3, label:'Stage 4', firm:'Apex Funding', plan:'100K', size:'100K', qty:10, targetPayout:80000, costPerAcct:327, notes:'Upgrade to 10x 100K', unlocked:false },
+      { id:4, label:'Stage 5', firm:'Multiple', plan:'Max Scale', size:'150K+', qty:20, targetPayout:200000, costPerAcct:500, notes:'Full multi-firm max scale', unlocked:false }
     ]
-  }
+  },
   setupLibrary: []    // user-defined setup definitions with confluences
 };
 
@@ -3152,7 +3152,7 @@ function _buildSaveData() {
     gradingCriteria: state.gradingCriteria || {},
     propAccounts: state.propAccounts || [],
     propPayouts: state.propPayouts || [],
-    scalingPlan: state.scalingPlan || {}  ,
+    scalingPlan: state.scalingPlan || {},
     setupLibrary: state.setupLibrary || [],
     journal: state.journal || { goals: [], dailyEntries: {} }
   };
@@ -6587,138 +6587,120 @@ function renderPropScalingPlan() {
   if (!el) return;
   const plan = state.scalingPlan || {};
   const stages = plan.stages || [];
-  const currentStage = plan.currentStage || 0;
-  const totalPayouts = (state.propPayouts||[]).reduce((s,p)=>s+(parseFloat(p.amount)||0), 0);
+  const totalPayouts = (state.propPayouts||[]).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
 
-  // Auto-unlock stages based on payout milestones
-  stages.forEach((st, i) => {
-    if (i === 0) { st.unlocked = true; return; }
-    const prev = stages[i-1];
-    st.unlocked = totalPayouts >= (prev.targetPayout || 0);
+  // Auto-unlock based on cumulative payouts vs previous stage target
+  stages.forEach((st,i) => {
+    if (i===0) { st.unlocked=true; return; }
+    st.unlocked = totalPayouts >= (stages[i-1].targetPayout||0);
   });
 
-  // Figure out active stage (last unlocked)
   let activeStage = 0;
-  stages.forEach((st,i) => { if (st.unlocked) activeStage = i; });
-  plan.currentStage = activeStage;
+  stages.forEach((st,i) => { if(st.unlocked && totalPayouts < st.targetPayout) activeStage = i; });
+  // edge: if all done
+  if (stages.length && totalPayouts >= stages[stages.length-1].targetPayout) activeStage = stages.length-1;
 
-  const totalCost = stages.slice(0, activeStage+2).reduce((s,st)=>s+(st.costPerAcct||0)*(st.qty||1),0);
-  const progressPct = stages[activeStage] ? Math.min(100, (totalPayouts / (stages[activeStage].targetPayout||1)) * 100) : 100;
+  const curStage = stages[activeStage] || {};
+  const progressPct = curStage.targetPayout ? Math.min(100,(totalPayouts/curStage.targetPayout)*100) : 100;
+  const nextStage = stages[activeStage+1];
+  const toUnlock = nextStage ? Math.max(0,(stages[activeStage].targetPayout||0)-totalPayouts) : 0;
 
-  el.innerHTML = `
-  <div style="background:var(--nm-bg);border-radius:20px;box-shadow:var(--nm-raise);padding:22px 24px">
+  el.innerHTML = `<div style="background:var(--nm-bg);border-radius:20px;box-shadow:var(--nm-raise);padding:22px 24px;margin-bottom:0">
 
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
       <div>
-        <div style="font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.2px">Scaling Plan</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Stage ${activeStage+1} of ${stages.length} · $${totalPayouts.toLocaleString()} earned</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.2px">🚀 Scaling Plan</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Stage ${activeStage+1} of ${stages.length} active · $${totalPayouts.toLocaleString()} earned total</div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="nm-btn nm-btn-primary" onclick="openScalingEditor()" style="font-size:11px">Edit Plan</button>
-      </div>
+      <button class="nm-btn nm-btn-primary" onclick="openScalingEditor()" style="font-size:11px">Edit Plan</button>
     </div>
 
     <!-- Stage progress bar -->
-    <div style="margin-bottom:24px">
+    <div style="margin-bottom:22px">
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em">
-        <span>Stage ${activeStage+1} Progress</span>
-        <span style="color:var(--amber);font-weight:700">$${totalPayouts.toLocaleString()} / $${(stages[activeStage]?.targetPayout||0).toLocaleString()} target</span>
+        <span>${curStage.label||''} — ${curStage.firm||''} ${curStage.plan||''}</span>
+        <span style="color:var(--amber);font-weight:700">$${totalPayouts.toLocaleString()} / $${(curStage.targetPayout||0).toLocaleString()}</span>
       </div>
       <div class="nm-bar-track" style="height:10px">
         <div class="nm-bar-fill" style="width:${progressPct}%;background:linear-gradient(90deg,var(--accent),#00d084);box-shadow:0 0 12px rgba(0,208,132,.5)"></div>
       </div>
     </div>
 
-    <!-- Stage cards (horizontal scroll on mobile) -->
-    <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch">
-      ${stages.map((st, i) => {
-        const isActive = i === activeStage;
-        const isDone   = i < activeStage || (i === activeStage && totalPayouts >= st.targetPayout);
-        const isLocked = !st.unlocked && i > activeStage;
-        const totalInvest = (st.costPerAcct||0) * (st.qty||1);
-        const accentCol = isDone ? 'var(--green)' : isActive ? 'var(--accent)' : 'var(--dim)';
-        const cardShadow = isActive
-          ? 'var(--nm-raise),0 0 0 1.5px rgba(155,127,255,0.4),0 0 24px rgba(155,127,255,0.12)'
-          : isDone
-          ? 'var(--nm-raise),0 0 0 1.5px rgba(0,208,132,0.3)'
+    <!-- Stage cards horizontal scroll -->
+    <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none">
+      ${stages.map((st,i) => {
+        const isDone   = totalPayouts >= st.targetPayout;
+        const isActive = i === activeStage && !isDone;
+        const isLocked = !st.unlocked;
+        const totalInvest = (st.costPerAcct||0)*(st.qty||1);
+        const acCol = isDone?'var(--green)':isActive?'var(--accent)':'var(--dim)';
+        const shadow = isActive
+          ? 'var(--nm-raise),0 0 0 1.5px rgba(155,127,255,0.45),0 0 22px rgba(155,127,255,0.12)'
+          : isDone ? 'var(--nm-raise),0 0 0 1.5px rgba(0,208,132,0.3)'
           : 'var(--nm-press)';
-        return `<div style="flex-shrink:0;width:200px;background:var(--nm-bg);border-radius:16px;padding:16px;box-shadow:${cardShadow};position:relative;transition:box-shadow .3s;cursor:${isLocked?'default':'pointer'}" onclick="selectScalingStage(${i})">
-          ${isLocked?`<div style="position:absolute;inset:0;border-radius:16px;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:2;font-size:22px">🔒</div>`:''}
-          <!-- Stage label + status dot -->
+        return `<div style="flex-shrink:0;width:196px;background:var(--nm-bg);border-radius:16px;padding:16px;box-shadow:${shadow};position:relative;transition:box-shadow .3s,transform .3s;cursor:default" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform=''">
+          ${isLocked?`<div style="position:absolute;inset:0;border-radius:16px;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:2;font-size:26px;backdrop-filter:blur(2px)">🔒</div>`:''}
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:${accentCol}">${st.label}</span>
-            <div style="width:8px;height:8px;border-radius:50%;background:${isDone?'var(--green)':isActive?'var(--accent)':'var(--dim)'};${isActive?'box-shadow:0 0 8px rgba(155,127,255,0.7);animation:pulse 1.5s infinite':''}"></div>
+            <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${acCol}">${st.label}</span>
+            <div style="width:8px;height:8px;border-radius:50%;background:${isDone?'var(--green)':isActive?'var(--accent)':'rgba(255,255,255,0.12)'};${isActive?'box-shadow:0 0 8px rgba(155,127,255,0.8);animation:pulse 1.5s infinite':''}"></div>
           </div>
-          <!-- Firm + plan -->
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.3">${st.firm}</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:10px">${st.plan} · ${st.size}</div>
-          <!-- Qty badge (neumorphic inset) -->
+          <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px;letter-spacing:-.2px">${st.firm}</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:12px">${st.plan}${st.size?' · '+st.size:''}</div>
           <div style="display:flex;gap:6px;margin-bottom:12px">
-            <div class="nm-chip" style="flex:1;padding:7px 4px">
-              <div style="font-size:18px;font-weight:800;color:${accentCol};line-height:1">${st.qty}x</div>
-              <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">accounts</div>
+            <div class="nm-chip" style="flex:1;padding:8px 4px">
+              <div style="font-size:20px;font-weight:800;color:${acCol};line-height:1">${st.qty}<span style="font-size:11px;font-weight:600">x</span></div>
+              <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">accts</div>
             </div>
-            <div class="nm-chip" style="flex:1;padding:7px 4px">
-              <div style="font-size:12px;font-weight:700;color:var(--amber);line-height:1">${totalInvest>0?'$'+totalInvest.toLocaleString():'Free'}</div>
+            <div class="nm-chip" style="flex:1;padding:8px 4px">
+              <div style="font-size:12px;font-weight:700;color:${totalInvest?'var(--amber)':'var(--green)'};line-height:1">${totalInvest?'$'+totalInvest.toLocaleString():'Free'}</div>
               <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-top:2px">invest</div>
             </div>
           </div>
-          <!-- Target payout -->
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Payout target</div>
-          <div style="font-size:16px;font-weight:800;color:${isDone?'var(--green)':'var(--text)'};font-family:'Geist Mono',monospace">$${(st.targetPayout||0).toLocaleString()}</div>
-          ${isDone?`<div style="margin-top:8px;font-size:10px;font-weight:700;color:var(--green);box-shadow:var(--nm-press-sm);background:var(--nm-bg);border-radius:6px;padding:4px 8px;display:inline-block">✓ Complete</div>`:''}
-          ${isActive?`<div style="margin-top:8px;font-size:10px;font-weight:700;color:var(--accent);box-shadow:var(--nm-press-sm);background:var(--nm-bg);border-radius:6px;padding:4px 8px;display:inline-block">▶ Active</div>`:''}
+          <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Payout target</div>
+          <div style="font-size:17px;font-weight:800;color:${isDone?'var(--green)':'var(--text)'};font-family:'Geist Mono',monospace;letter-spacing:-.5px">$${(st.targetPayout||0).toLocaleString()}</div>
+          ${isDone?`<div style="margin-top:9px;font-size:10px;font-weight:700;color:var(--green);box-shadow:var(--nm-press-sm);background:var(--nm-bg);border-radius:6px;padding:4px 9px;display:inline-block">✓ Complete</div>`:''}
+          ${isActive?`<div style="margin-top:9px;font-size:10px;font-weight:700;color:var(--accent);box-shadow:var(--nm-press-sm);background:var(--nm-bg);border-radius:6px;padding:4px 9px;display:inline-block">▶ Active</div>`:''}
           ${st.notes?`<div style="margin-top:10px;font-size:10px;color:var(--muted);line-height:1.55;border-top:1px solid rgba(255,255,255,0.05);padding-top:9px">${st.notes}</div>`:''}
         </div>`;
       }).join('')}
-
-      <!-- Add stage button -->
-      <div style="flex-shrink:0;width:160px;border-radius:16px;box-shadow:var(--nm-press);background:var(--nm-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;padding:16px;min-height:180px" onclick="addScalingStage()">
-        <div style="width:36px;height:36px;border-radius:10px;box-shadow:var(--nm-raise-sm);background:var(--nm-bg);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--muted)">+</div>
+      <!-- Add stage -->
+      <div style="flex-shrink:0;width:150px;border-radius:16px;box-shadow:var(--nm-press);background:var(--nm-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;padding:16px;min-height:200px;transition:box-shadow .2s" onclick="addScalingStage()" onmouseenter="this.style.boxShadow='var(--nm-press),0 0 0 1px rgba(155,127,255,0.3)'" onmouseleave="this.style.boxShadow='var(--nm-press)'">
+        <div style="width:38px;height:38px;border-radius:10px;box-shadow:var(--nm-raise-sm);background:var(--nm-bg);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--muted)">+</div>
         <div style="font-size:11px;color:var(--dim);text-align:center;line-height:1.5">Add next<br>stage</div>
       </div>
     </div>
 
-    <!-- Next stage unlock hint -->
-    ${activeStage < stages.length-1 && !stages[activeStage+1]?.unlocked ? `
-    <div style="margin-top:18px;display:flex;align-items:center;gap:10px;box-shadow:var(--nm-press-sm);background:var(--nm-bg);border-radius:12px;padding:12px 16px">
-      <div style="font-size:18px">🎯</div>
+    <!-- Next unlock hint -->
+    ${nextStage && toUnlock > 0 ? `<div style="margin-top:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--nm-press-sm);background:var(--nm-bg);border-radius:12px;padding:13px 16px">
+      <div style="font-size:20px">🎯</div>
       <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text)">Next unlock: ${stages[activeStage+1]?.label}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Need $${((stages[activeStage]?.targetPayout||0)-totalPayouts).toLocaleString()} more in payouts to unlock ${stages[activeStage+1]?.firm} ${stages[activeStage+1]?.plan}</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Next: ${nextStage.label} — ${nextStage.firm} ${nextStage.plan}</div>
+        <div style="font-size:11px;color:var(--muted)">$${toUnlock.toLocaleString()} more in payouts unlocks ${nextStage.qty}x ${nextStage.size} accounts</div>
       </div>
-    </div>`:''}
+    </div>` : totalPayouts >= (stages[stages.length-1]?.targetPayout||0) && stages.length ? `<div style="margin-top:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--nm-press-sm);background:var(--nm-bg);border-radius:12px;padding:13px 16px">
+      <div style="font-size:20px">🏆</div>
+      <div style="font-size:13px;font-weight:700;color:var(--green)">All stages complete — add your next milestone</div>
+    </div>` : ''}
   </div>
 
-  <!-- Scaling Editor Modal -->
+  <!-- Editor Modal -->
   <div class="modal-overlay" id="scaling-editor-modal" onclick="if(event.target===this)closeScalingEditor()" style="display:none">
-    <div class="modal" style="width:540px;max-height:88vh;overflow-y:auto">
+    <div class="modal" style="width:560px;max-height:88vh;overflow-y:auto">
       <div class="modal-title">Edit Scaling Plan</div>
       <div id="scaling-editor-body"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
         <button class="nm-btn" onclick="closeScalingEditor()">Cancel</button>
-        <button class="nm-btn nm-btn-green" onclick="saveScalingPlan()">Save Plan</button>
+        <button class="nm-btn nm-btn-green" style="padding:9px 18px" onclick="saveScalingPlan()">Save Plan</button>
       </div>
     </div>
-  </div>
-  `;
-}
-
-function selectScalingStage(i) {
-  // future: could expand a detail view
+  </div>`;
 }
 
 function addScalingStage() {
-  const plan = state.scalingPlan;
-  const last = plan.stages[plan.stages.length-1] || {};
-  plan.stages.push({
-    id: plan.stages.length,
-    label: `Stage ${plan.stages.length+1}`,
-    firm: '', plan: '', size: '', qty: 1,
-    targetPayout: (last.targetPayout||0)*3,
-    costPerAcct: 0, notes: '', unlocked: false
-  });
+  const stages = state.scalingPlan.stages;
+  const last = stages[stages.length-1] || {};
+  stages.push({ id:stages.length, label:'Stage '+(stages.length+1), firm:'', plan:'', size:'', qty:1, targetPayout:(last.targetPayout||0)*2, costPerAcct:0, notes:'', unlocked:false });
   save(); renderPropScalingPlan();
 }
 
@@ -6726,41 +6708,32 @@ function openScalingEditor() {
   const stages = state.scalingPlan?.stages || [];
   document.getElementById('scaling-editor-body').innerHTML = stages.map((st,i) => `
     <div style="background:var(--nm-bg);border-radius:14px;box-shadow:var(--nm-press-sm);padding:14px 16px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <span style="font-size:12px;font-weight:700;color:var(--text)">${st.label}</span>
         <button class="nm-btn nm-btn-danger" style="padding:3px 9px;font-size:11px" onclick="removeScalingStage(${i})">Remove</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Stage Label</label>
-          <input style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.label}" onchange="updateScalingStage(${i},'label',this.value)"></div>
-        <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Firm</label>
-          <input style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.firm}" onchange="updateScalingStage(${i},'firm',this.value)"></div>
-        <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Plan Name</label>
-          <input style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.plan}" onchange="updateScalingStage(${i},'plan',this.value)"></div>
-        <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Account Size</label>
-          <input style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.size}" onchange="updateScalingStage(${i},'size',this.value)"></div>
+        ${[['Label','label','text',st.label],['Firm','firm','text',st.firm],['Plan Name','plan','text',st.plan],['Size','size','text',st.size]].map(([lbl,fld,type,val])=>`
+          <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">${lbl}</label>
+          <input type="${type}" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${val||''}" oninput="state.scalingPlan.stages[${i}]['${fld}']=this.value"></div>`).join('')}
         <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px"># Accounts</label>
-          <input type="number" min="1" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.qty}" onchange="updateScalingStage(${i},'qty',parseInt(this.value)||1)"></div>
-        <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Cost Per Acct ($)</label>
-          <input type="number" min="0" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.costPerAcct||0}" onchange="updateScalingStage(${i},'costPerAcct',parseFloat(this.value)||0)"></div>
-        <div style="grid-column:1/-1"><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Payout Target to Unlock Next ($)</label>
-          <input type="number" min="0" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.targetPayout||0}" onchange="updateScalingStage(${i},'targetPayout',parseFloat(this.value)||0)"></div>
+          <input type="number" min="1" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.qty||1}" oninput="state.scalingPlan.stages[${i}].qty=parseInt(this.value)||1"></div>
+        <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Cost / Acct ($)</label>
+          <input type="number" min="0" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.costPerAcct||0}" oninput="state.scalingPlan.stages[${i}].costPerAcct=parseFloat(this.value)||0"></div>
+        <div style="grid-column:1/-1"><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Payout target to unlock next stage ($)</label>
+          <input type="number" min="0" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.targetPayout||0}" oninput="state.scalingPlan.stages[${i}].targetPayout=parseFloat(this.value)||0"></div>
         <div style="grid-column:1/-1"><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Notes</label>
-          <input style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.notes||''}" onchange="updateScalingStage(${i},'notes',this.value)"></div>
+          <input style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.notes||''}" oninput="state.scalingPlan.stages[${i}].notes=this.value"></div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
   document.getElementById('scaling-editor-modal').style.display = 'flex';
 }
 
-function updateScalingStage(i, field, val) {
-  state.scalingPlan.stages[i][field] = val;
-}
-
 function removeScalingStage(i) {
-  state.scalingPlan.stages.splice(i, 1);
-  state.scalingPlan.stages.forEach((st,idx)=>{ st.id=idx; st.label=st.label||`Stage ${idx+1}`; });
+  state.scalingPlan.stages.splice(i,1);
+  state.scalingPlan.stages.forEach((st,idx)=>{ st.id=idx; });
   openScalingEditor();
+  renderPropScalingPlan();
 }
 
 function saveScalingPlan() {
@@ -6769,7 +6742,7 @@ function saveScalingPlan() {
 
 function closeScalingEditor() {
   const m = document.getElementById('scaling-editor-modal');
-  if (m) m.style.display = 'none';
+  if(m) m.style.display='none';
 }
 
 function renderPropPayouts() {
