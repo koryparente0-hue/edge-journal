@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EDGE — Elite Trading Journal</title>
+<title>EDGE — Trading Journal</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1152,152 +1152,6 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 .pd-rule-field input,.pd-rule-field select,.pd-rule-field textarea{background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:var(--r);padding:7px 9px;font-size:12px;font-family:var(--mono);color:var(--text);width:100%;}
 .pd-rule-field input:focus,.pd-rule-field select:focus,.pd-rule-field textarea:focus{outline:none;box-shadow:var(--nm-press),0 0 0 1.5px rgba(155,127,255,0.4);}
 .pd-dd-explain{font-size:11px;color:var(--muted);background:var(--nm-bg);border-radius:var(--r);padding:9px 12px;line-height:1.6;margin-bottom:12px;box-shadow:var(--nm-press-sm);}
-
-/* === 2026 UI POLISH UPDATE === */
-html{scroll-behavior:smooth}
-body{
-  background:
-    radial-gradient(circle at top left, rgba(155,127,255,.08), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(74,158,255,.05), transparent 24%),
-    var(--bg);
-}
-.main{
-  padding-bottom:60px;
-}
-.page-header{
-  position:sticky;
-  top:0;
-  z-index:40;
-  padding:4px 0 18px;
-  backdrop-filter:blur(14px);
-  background:linear-gradient(to bottom, rgba(10,10,11,.92), rgba(10,10,11,.72), transparent);
-}
-body.light-mode .page-header{
-  background:linear-gradient(to bottom, rgba(255,255,255,.94), rgba(255,255,255,.82), transparent);
-}
-.card,
-.metric,
-.playbook-card,
-.routine-block,
-.gallery-card,
-.stat-card{
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-}
-.card:hover,
-.metric:hover,
-.playbook-card:hover,
-.gallery-card:hover{
-  transform:translateY(-3px);
-}
-.btn{
-  font-weight:600;
-}
-.btn-green{
-  background:linear-gradient(135deg,var(--accent),#7b61ff);
-}
-.nav-item{
-  opacity:.88 !important;
-}
-.nav-item.active{
-  opacity:1 !important;
-}
-.nav-item:hover{
-  opacity:1 !important;
-}
-.metric{
-  min-height:118px;
-}
-.metric-val{
-  font-size:30px;
-}
-.card-title{
-  font-size:14px;
-}
-.trades-table td{
-  font-size:12px;
-}
-.trades-table tbody tr{
-  transition:all .16s ease;
-}
-.trades-table tbody tr:hover{
-  transform:scale(1.002);
-}
-.quick-entry{
-  box-shadow:0 10px 40px rgba(155,127,255,.08);
-}
-.chat-panel{
-  background:rgba(17,17,19,.88);
-  backdrop-filter:blur(18px);
-}
-.sidebar{
-  background:rgba(17,17,19,.92);
-  backdrop-filter:blur(18px);
-}
-body.light-mode .sidebar,
-body.light-mode .chat-panel{
-  background:rgba(255,255,255,.9);
-}
-.page{
-  max-width:1700px;
-}
-@media(max-width:900px){
-  .metrics{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-  .page{
-    padding:14px;
-  }
-}
-@media(max-width:640px){
-  .metrics{
-    grid-template-columns:1fr;
-  }
-  .page-header{
-    flex-direction:column;
-    gap:10px;
-  }
-  .qe-row{
-    flex-direction:column;
-    align-items:stretch;
-  }
-  .qe-field,
-  .qe-field input,
-  .qe-field select{
-    width:100% !important;
-  }
-  .grid2,
-  .grid3{
-    grid-template-columns:1fr;
-  }
-}
-
-
-/* === SIMPLIFIED LAYOUT UPDATE === */
-.nav-section{
-  margin-top:22px!important;
-  margin-bottom:10px!important;
-}
-.sidebar{
-  border-right:1px solid rgba(255,255,255,.06)!important;
-}
-.card,
-.metric,
-.gallery-card{
-  box-shadow:none!important;
-}
-.card:hover,
-.metric:hover{
-  transform:translateY(-2px)!important;
-}
-.page{
-  padding-top:8px!important;
-}
-.metrics-grid,
-.stats-grid{
-  gap:14px!important;
-}
-
 </style>
 </head>
 <body>
@@ -1449,7 +1303,7 @@ body.light-mode .chat-panel{
             <li>Setup & mistake analytics</li>
             <li>BE analysis</li>
             <li>Trade Gallery with charts</li>
-            <li>Settings & Risk Consistency</li>
+            <li>Playbook & Risk Consistency</li>
           </ul>
           <button class="btn btn-green" style="width:100%;justify-content:center;font-size:13px;font-weight:700" onclick="window._fbSignIn()">Start with Pro — $9/mo</button>
         </div>
@@ -1514,7 +1368,7 @@ body.light-mode .chat-panel{
     <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5h5M5 8h5M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor" opacity=".2"/></svg>Journal
   </div>
   <div class="nav-item" id="nav-setuplibrary" onclick="go('setuplibrary')">
-    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Settings
+    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Playbook
   </div>
 
   <!-- PERFORMANCE -->
@@ -1525,6 +1379,10 @@ body.light-mode .chat-panel{
   <div class="nav-item" id="nav-insights" onclick="go('insights')">
     <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" fill="currentColor" opacity=".5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>AI Insights
   </div>
+  <div class="nav-item" id="nav-streaks" onclick="go('streaks')">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M9 2c0 3-3 4-3 7a4 4 0 008 0c0-4-5-7-5-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Streaks
+  </div>
+
   <!-- PROP FIRM -->
   <div class="nav-section">Prop Firm</div>
   <div class="nav-item" id="nav-propfirms" onclick="go('propfirms')">
@@ -1533,6 +1391,9 @@ body.light-mode .chat-panel{
 
   <!-- SYSTEM -->
   <div class="nav-section">System</div>
+  <div class="nav-item" id="nav-routine" onclick="go('routine')">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Routines
+  </div>
   <div class="nav-item" id="nav-commandcenter" onclick="go('commandcenter')">
     <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="1.8" fill="currentColor"/><path d="M8 2.5V5M8 11v2.5M2.5 8H5M11 8h2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>Copilot
   </div>
@@ -3445,7 +3306,7 @@ window._mergeCloudData = function(cloudData) {
 };
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
-const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','insights','risk','setuplibrary'];
+const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','insights','routine','risk','streaks','setuplibrary'];
 function go(page) {
   if (ccCleanup) { ccCleanup(); ccCleanup = null; }
   if (_heroRaf) { cancelAnimationFrame(_heroRaf); _heroRaf = null; }
@@ -3463,9 +3324,9 @@ function go(page) {
   if (page==='log')            renderLogPage();
   if (page==='journal')        renderJournalPage();
   if (page==='setuplibrary')   renderSetupLibrary();
-  if (page===)        renderRoutinePage();
+  if (page==='routine')        renderRoutinePage();
   if (page==='risk')           { renderRisk(); renderMistakeAnalytics(); }
-  if (page===)        renderStreaks();
+  if (page==='streaks')        renderStreaks();
   if (page==='copilot')        renderCopilotPage();
   if (page==='insights')       renderInsightsBanner();
   if (page==='commandcenter')  renderCommandCenter();
@@ -10981,3 +10842,4 @@ if (state.trades.length > 0) renderDashboard();
 
 </body>
 </html>
+
