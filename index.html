@@ -1434,67 +1434,87 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
     </div>
   </div>
 
-  <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:170px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
-    <canvas id="dh-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div class="phero-grid" style="position:relative;z-index:1;padding:16px 28px;display:grid;grid-template-columns:repeat(5,1fr)">
-      <div id="dh-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
-      <div id="dh-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
-      <div id="dh-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
-      <div id="dh-s3" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
-      <div id="dh-s4" class="phero-stat"></div>
-    </div>
-  </div>
+  <!-- ═══ ZONE 1: PERFORMANCE ═══ -->
+  <div style="margin-bottom:6px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)">Performance</div>
 
-  <!-- PROP FIRM SUMMARY ON DASHBOARD -->
-  <div class="card" id="dash-prop-card" style="display:none">
-    <div class="card-header">
-      <span class="card-title">Prop Firm Accounts</span>
-      <div style="display:flex;gap:8px;align-items:center">
-        <select id="dash-prop-filter" class="btn btn-sm" style="font-size:11px" onchange="renderDashPropSummary()">
-          <option value="all">All firms</option>
-        </select>
-        <button class="btn btn-sm" onclick="go('propfirms')">Manage →</button>
-      </div>
-    </div>
-    <div id="dash-prop-body"></div>
+  <!-- Key metrics row — neumorphic chips, no hero canvas clutter -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+    <div id="dh-s0" class="nm-chip" style="padding:14px 12px;border-radius:14px"></div>
+    <div id="dh-s1" class="nm-chip" style="padding:14px 12px;border-radius:14px"></div>
+    <div id="dh-s2" class="nm-chip" style="padding:14px 12px;border-radius:14px"></div>
+    <div id="dh-s3" class="nm-chip" style="padding:14px 12px;border-radius:14px"></div>
+    <div id="dh-s4" class="nm-chip" style="padding:14px 12px;border-radius:14px"></div>
   </div>
+  <!-- hidden canvas kept for compat -->
+  <canvas id="dh-c" style="display:none"></canvas>
 
-  <div class="card span2">
-    <div class="card-header"><span class="card-title">Equity Curve</span><span class="card-sub" id="equity-label"></span></div>
+  <!-- Equity curve -->
+  <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px;margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <span style="font-size:13px;font-weight:700;color:var(--text)">Equity Curve</span>
+      <span style="font-size:11px;color:var(--muted)" id="equity-label"></span>
+    </div>
     <div class="equity-wrap"><canvas id="equityChart"></canvas></div>
   </div>
 
-  <!-- WIN/LOSS HEATMAP + DAY OF WEEK -->
-  <div class="grid2">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Win / Loss heatmap</span><span class="card-sub">Last 12 weeks — green=win, red=loss, grey=no trades</span></div>
-      <div id="wl-heatmap" style="padding-top:4px"></div>
+  <!-- Win rate heatmap + DOW side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px">Win / Loss Calendar</div>
+      <div id="wl-heatmap" style="padding-top:2px"></div>
     </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">P&amp;L by day of week</span><span class="card-sub">Are you losing on specific days?</span></div>
+    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px">P&amp;L by Day of Week</div>
       <div style="position:relative;height:130px"><canvas id="dowChart"></canvas></div>
     </div>
   </div>
 
-  <div class="grid2">
-    <div class="card">
-      <div class="card-header"><span class="card-title">P&amp;L by session hour</span></div>
+  <!-- ═══ ZONE 2: EXECUTION ═══ -->
+  <div style="margin-bottom:6px;margin-top:8px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)">Execution</div>
+
+  <!-- Coach messages row -->
+  <div id="dash-coach-row" style="margin-bottom:14px"></div>
+
+  <!-- Prop firm summary + Session hour side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+    <div id="dash-prop-card" style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px;display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Prop Accounts</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <select id="dash-prop-filter" class="nm-btn" style="font-size:11px;padding:5px 8px" onchange="renderDashPropSummary()"><option value="all">All firms</option></select>
+          <button class="nm-btn" onclick="go('propfirms')" style="font-size:11px">Manage →</button>
+        </div>
+      </div>
+      <div id="dash-prop-body"></div>
+    </div>
+    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px">P&amp;L by Session Hour</div>
       <div id="hour-heat"></div>
     </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Recent trades</span><button class="btn btn-sm" onclick="go('history')">All →</button></div>
+  </div>
+
+  <!-- ═══ ZONE 3: REVIEW ═══ -->
+  <div style="margin-bottom:6px;margin-top:8px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)">Review</div>
+
+  <!-- Recent trades + Pattern feed -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Recent Trades</span>
+        <button class="nm-btn" onclick="go('history')" style="font-size:11px">All →</button>
+      </div>
       <div id="recent-trades"></div>
     </div>
-  </div>
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Live pattern feed</span>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:10px;color:var(--accent);font-weight:700;letter-spacing:.04em">● LIVE</span>
-        <button class="btn btn-sm" onclick="refreshPatternFeed()">Refresh ↗</button>
+    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Pattern Feed</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 6px rgba(155,127,255,0.6)"></span>
+          <button class="nm-btn" onclick="refreshPatternFeed()" style="font-size:11px">Refresh</button>
+        </div>
       </div>
+      <div id="pattern-feed"><div class="empty">Log 3+ trades to see patterns.</div></div>
     </div>
-    <div id="pattern-feed"><div class="empty">Log 3+ trades to see your live pattern feed.</div></div>
   </div>
 </div>
 
@@ -3387,7 +3407,6 @@ function renderDashboard() {
   const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : null;
 
   renderDashHero(T);
-  startHeroCanvas('dh-c');
 
   renderEquity(T, pnls);
   renderHourHeat(T);
@@ -3399,6 +3418,54 @@ function renderDashboard() {
   updateLiveClock();
   renderMetricSparklines();
   checkAchievements();
+  renderDashCoach(T);
+}
+
+function renderDashCoach(T) {
+  const el = document.getElementById('dash-coach-row');
+  if (!el) return;
+  const msgs = [];
+  const today = new Date().toISOString().slice(0,10);
+  const todayTrades = (state.trades||[]).filter(t=>t.datetime?.slice(0,10)===today);
+  const todayPnL = todayTrades.reduce((s,t)=>s+calcPnL(t),0);
+  const pnls = T.map(t=>calcPnL(t));
+  const total = pnls.reduce((a,b)=>a+b,0);
+  const wins = T.filter(t=>t.outcome==='win');
+  const wr = T.length ? Math.round(wins.length/T.length*100) : 0;
+
+  // streak
+  const byDay={};
+  (state.trades||[]).forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDay[d]=(byDay[d]||0)+calcPnL(t);});
+  const days=Object.keys(byDay).sort().reverse();
+  let streak=0; for(const d of days){if(byDay[d]>0)streak++;else break;}
+
+  // A+ setup winrate
+  const aPlus=T.filter(t=>t.grade==='A+');
+  const aPlusWR=aPlus.length?Math.round(aPlus.filter(t=>t.outcome==='win').length/aPlus.length*100):null;
+
+  // revenge: 2 losses then immediate trade within 5 min
+  let revengeCount=0;
+  const sorted=[...state.trades].sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
+  for(let i=2;i<sorted.length;i++){
+    if(sorted[i-1].outcome==='loss'&&sorted[i-2].outcome==='loss'){
+      const gap=(new Date(sorted[i].datetime)-new Date(sorted[i-1].datetime))/60000;
+      if(gap<6)revengeCount++;
+    }
+  }
+
+  if(streak>=3) msgs.push({icon:'🔥',text:`${streak} winning days in a row — momentum is building`,col:'var(--green)',bg:'rgba(0,208,132,0.07)'});
+  if(revengeCount===0&&T.length>=10) msgs.push({icon:'🧠',text:`No revenge trading detected in the last ${T.length} trades`,col:'var(--green)',bg:'rgba(0,208,132,0.07)'});
+  if(aPlusWR!==null) msgs.push({icon:'⚡',text:`A+ setup win rate: ${aPlusWR}% — your best edge`,col:'var(--accent)',bg:'rgba(155,127,255,0.07)'});
+  if(todayTrades.length>=6) msgs.push({icon:'⚠️',text:`${todayTrades.length} trades today — watch for overtrading`,col:'var(--amber)',bg:'rgba(245,166,35,0.07)'});
+  if(revengeCount>3) msgs.push({icon:'🛑',text:`${revengeCount} possible revenge trades detected — review your process`,col:'var(--red)',bg:'rgba(255,77,77,0.07)'});
+  if(wr>=70&&T.length>=10) msgs.push({icon:'📈',text:`${wr}% win rate this period — elite execution`,col:'var(--green)',bg:'rgba(0,208,132,0.07)'});
+  if(!msgs.length&&T.length<3) msgs.push({icon:'👋',text:'Log your first trades to see live coaching insights here',col:'var(--muted)',bg:'transparent'});
+
+  el.innerHTML = msgs.slice(0,3).map(m=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:${m.bg};margin-bottom:8px;box-shadow:var(--nm-press-sm)">
+      <span style="font-size:16px;flex-shrink:0">${m.icon}</span>
+      <span style="font-size:12px;font-weight:600;color:${m.col}">${m.text}</span>
+    </div>`).join('');
 }
 
 function renderEquity(T, pnls) {
@@ -10842,4 +10909,3 @@ if (state.trades.length > 0) renderDashboard();
 
 </body>
 </html>
-
