@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EDGE — Trading Journal</title>
+<title>EDGE — Elite Trading Journal</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1152,6 +1152,126 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 .pd-rule-field input,.pd-rule-field select,.pd-rule-field textarea{background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:var(--r);padding:7px 9px;font-size:12px;font-family:var(--mono);color:var(--text);width:100%;}
 .pd-rule-field input:focus,.pd-rule-field select:focus,.pd-rule-field textarea:focus{outline:none;box-shadow:var(--nm-press),0 0 0 1.5px rgba(155,127,255,0.4);}
 .pd-dd-explain{font-size:11px;color:var(--muted);background:var(--nm-bg);border-radius:var(--r);padding:9px 12px;line-height:1.6;margin-bottom:12px;box-shadow:var(--nm-press-sm);}
+
+/* === 2026 UI POLISH UPDATE === */
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(circle at top left, rgba(155,127,255,.08), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(74,158,255,.05), transparent 24%),
+    var(--bg);
+}
+.main{
+  padding-bottom:60px;
+}
+.page-header{
+  position:sticky;
+  top:0;
+  z-index:40;
+  padding:4px 0 18px;
+  backdrop-filter:blur(14px);
+  background:linear-gradient(to bottom, rgba(10,10,11,.92), rgba(10,10,11,.72), transparent);
+}
+body.light-mode .page-header{
+  background:linear-gradient(to bottom, rgba(255,255,255,.94), rgba(255,255,255,.82), transparent);
+}
+.card,
+.metric,
+.playbook-card,
+.routine-block,
+.gallery-card,
+.stat-card{
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+.card:hover,
+.metric:hover,
+.playbook-card:hover,
+.gallery-card:hover{
+  transform:translateY(-3px);
+}
+.btn{
+  font-weight:600;
+}
+.btn-green{
+  background:linear-gradient(135deg,var(--accent),#7b61ff);
+}
+.nav-item{
+  opacity:.88 !important;
+}
+.nav-item.active{
+  opacity:1 !important;
+}
+.nav-item:hover{
+  opacity:1 !important;
+}
+.metric{
+  min-height:118px;
+}
+.metric-val{
+  font-size:30px;
+}
+.card-title{
+  font-size:14px;
+}
+.trades-table td{
+  font-size:12px;
+}
+.trades-table tbody tr{
+  transition:all .16s ease;
+}
+.trades-table tbody tr:hover{
+  transform:scale(1.002);
+}
+.quick-entry{
+  box-shadow:0 10px 40px rgba(155,127,255,.08);
+}
+.chat-panel{
+  background:rgba(17,17,19,.88);
+  backdrop-filter:blur(18px);
+}
+.sidebar{
+  background:rgba(17,17,19,.92);
+  backdrop-filter:blur(18px);
+}
+body.light-mode .sidebar,
+body.light-mode .chat-panel{
+  background:rgba(255,255,255,.9);
+}
+.page{
+  max-width:1700px;
+}
+@media(max-width:900px){
+  .metrics{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .page{
+    padding:14px;
+  }
+}
+@media(max-width:640px){
+  .metrics{
+    grid-template-columns:1fr;
+  }
+  .page-header{
+    flex-direction:column;
+    gap:10px;
+  }
+  .qe-row{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .qe-field,
+  .qe-field input,
+  .qe-field select{
+    width:100% !important;
+  }
+  .grid2,
+  .grid3{
+    grid-template-columns:1fr;
+  }
+}
+
 </style>
 </head>
 <body>
