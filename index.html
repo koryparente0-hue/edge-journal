@@ -1346,67 +1346,59 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <div class="logo">EDGE<span>.</span><span class="logo-sub">Trading Journal</span></div>
-  <div style="padding:0 20px 14px;display:flex;align-items:center;gap:8px">
-    <span id="sidebar-pro-badge" class="pro-badge" style="display:none">⚡ PRO</span>
-    
-  </div>
+  <div class="logo">EDGE<span>.</span><span class="logo-sub">Trading OS</span></div>
 
-  <!-- CORE -->
+  <!-- TODAY — always first, emotional center -->
+  <div class="nav-item" id="nav-today" onclick="go('today')">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Today
+  </div>
   <div class="nav-item active" id="nav-dashboard" onclick="go('dashboard')">
     <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/></svg>Dashboard
   </div>
+
+  <!-- TRADE -->
+  <div class="nav-section">Trade</div>
   <div class="nav-item" id="nav-log" onclick="go('log')">
     <svg viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Log Trade
   </div>
   <div class="nav-item" id="nav-history" onclick="go('history')">
     <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>History
   </div>
-  <div class="nav-item" id="nav-propfirms" onclick="go('propfirms')">
-    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5V3.5A1.5 1.5 0 016.5 2h3A1.5 1.5 0 0111 3.5V5" stroke="currentColor" stroke-width="1.4"/><path d="M1 9h14" stroke="currentColor" stroke-width="1.4"/></svg>Prop Firms
+  <div class="nav-item" id="nav-journal" onclick="go('journal')">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5h5M5 8h5M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor" opacity=".2"/></svg>Journal
+  </div>
+  <div class="nav-item" id="nav-setuplibrary" onclick="go('setuplibrary')">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Playbook
   </div>
 
-  <div class="nav-divider"></div>
-
-  <!-- ANALYTICS -->
+  <!-- PERFORMANCE -->
+  <div class="nav-section">Performance</div>
   <div class="nav-item" id="nav-setups" onclick="go('setups')">
-    <svg viewBox="0 0 16 16" fill="none"><path d="M1 12l4-5 4 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Stats
+    <svg viewBox="0 0 16 16" fill="none"><path d="M1 12l4-5 4 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Analytics
   </div>
   <div class="nav-item" id="nav-insights" onclick="go('insights')">
     <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" fill="currentColor" opacity=".5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>AI Insights
   </div>
-
-  <div class="nav-divider"></div>
-
-  <!-- MORE -->
-  <div class="more-toggle" onclick="toggleMore(this)">
-    <svg viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.5" fill="currentColor"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/></svg>
-    More
-    <span class="more-chevron">▼</span>
+  <div class="nav-item" id="nav-streaks" onclick="go('streaks')">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M9 2c0 3-3 4-3 7a4 4 0 008 0c0-4-5-7-5-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Streaks
   </div>
-  <div class="more-submenu" id="more-submenu">
-    <div class="nav-item" id="nav-journal" onclick="go('journal')">
-      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5h5M5 8h5M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor" opacity=".2"/></svg>Journal
-    </div>
-    <div class="nav-item" id="nav-commandcenter" onclick="go('commandcenter')">
-      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="1.8" fill="currentColor"/><path d="M8 2.5V5M8 11v2.5M2.5 8H5M11 8h2.5M4.2 4.2l1.6 1.6M10.2 10.2l1.6 1.6M4.2 11.8l1.6-1.6M10.2 5.8l1.6-1.6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>Command Center
-    </div>
-    <div class="nav-item" id="nav-routine" onclick="go('routine')">
-      <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Daily Routine
-    </div>
-    <div class="nav-item" id="nav-streaks" onclick="go('streaks')">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M9 2c0 3-3 4-3 7a4 4 0 008 0c0-4-5-7-5-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Streaks
-    </div>
-    <div class="nav-item" id="nav-setuplibrary" onclick="go('setuplibrary')">
-      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Setup Library
-    </div>
-    <div class="nav-divider"></div>
-    <div class="nav-item" id="nav-grading" onclick="openGradingSettings()" style="color:#a78bfa;font-weight:600">
-      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M11.1 4.9l-1.4 1.4M4.9 11.1l-1.4 1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Grading Criteria
-    </div>
-    <div class="nav-item" onclick="if(confirm('Delete ALL trades?')){state.trades=[];save();renderDashboard();}" style="color:var(--red)">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Clear trades
-    </div>
+
+  <!-- PROP FIRM -->
+  <div class="nav-section">Prop Firm</div>
+  <div class="nav-item" id="nav-propfirms" onclick="go('propfirms')">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="14" height="9" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5V3.5A1.5 1.5 0 016.5 2h3A1.5 1.5 0 0111 3.5V5" stroke="currentColor" stroke-width="1.4"/><path d="M1 9h14" stroke="currentColor" stroke-width="1.4"/></svg>Accounts
+  </div>
+
+  <!-- SYSTEM -->
+  <div class="nav-section">System</div>
+  <div class="nav-item" id="nav-routine" onclick="go('routine')">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Routines
+  </div>
+  <div class="nav-item" id="nav-commandcenter" onclick="go('commandcenter')">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="1.8" fill="currentColor"/><path d="M8 2.5V5M8 11v2.5M2.5 8H5M11 8h2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>Copilot
+  </div>
+  <div class="nav-item" id="nav-grading" onclick="openGradingSettings()">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M11.1 4.9l-1.4 1.4M4.9 11.1l-1.4 1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Settings
   </div>
 
   <div style="flex:1"></div>
@@ -1503,6 +1495,133 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
       </div>
     </div>
     <div id="pattern-feed"><div class="empty">Log 3+ trades to see your live pattern feed.</div></div>
+  </div>
+</div>
+
+<!-- TODAY PAGE -->
+<div class="page" id="page-today">
+  <div class="page-header">
+    <div>
+      <div class="page-title" id="today-page-title">Today</div>
+      <div class="page-sub" id="today-page-sub"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-green" onclick="go('log')" style="font-weight:700">+ Log Trade</button>
+    </div>
+  </div>
+
+  <!-- STOP TRADING BANNER — shown if tilted/over limit -->
+  <div id="today-stop-banner" style="display:none;background:#1a0a0a;border:1px solid rgba(255,77,77,0.4);border-radius:14px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:14px">
+    <div style="font-size:28px">🛑</div>
+    <div>
+      <div style="font-size:15px;font-weight:800;color:#ff4d4d;letter-spacing:-.2px">Stop Trading</div>
+      <div id="today-stop-reason" style="font-size:12px;color:var(--muted);margin-top:3px"></div>
+    </div>
+  </div>
+
+  <!-- TOP ROW: Account status + Session -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+
+    <!-- Account snapshot -->
+    <div style="background:var(--nm-bg);border-radius:16px;padding:18px 20px;box-shadow:var(--nm-raise)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Account</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="today-acct-grid">
+        <div><div style="font-size:11px;color:var(--dim);margin-bottom:3px">Today P&L</div><div id="today-pnl" style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px">$0</div></div>
+        <div><div style="font-size:11px;color:var(--dim);margin-bottom:3px">Trades</div><div id="today-trade-count" style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace">0</div></div>
+        <div><div style="font-size:11px;color:var(--dim);margin-bottom:3px">Win Rate</div><div id="today-wr" style="font-size:18px;font-weight:700;font-family:'Geist Mono',monospace">—</div></div>
+        <div><div style="font-size:11px;color:var(--dim);margin-bottom:3px">Streak</div><div id="today-streak" style="font-size:18px;font-weight:700;font-family:'Geist Mono',monospace">—</div></div>
+      </div>
+    </div>
+
+    <!-- Prop firm rules -->
+    <div style="background:var(--nm-bg);border-radius:16px;padding:18px 20px;box-shadow:var(--nm-raise)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Prop Rules</div>
+      <div id="today-prop-rules"><div style="font-size:12px;color:var(--dim)">No active accounts</div></div>
+    </div>
+  </div>
+
+  <!-- MIDDLE ROW: Session + Mindset + Checklist -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+
+    <!-- Session bias -->
+    <div style="background:var(--nm-bg);border-radius:16px;padding:18px 20px;box-shadow:var(--nm-raise)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Session</div>
+      <div id="today-session-status" style="margin-bottom:12px"></div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:6px">Bias for today</div>
+      <div style="display:flex;gap:6px">
+        <button id="bias-bull" onclick="setTodayBias('bull')" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s">🐂 Bull</button>
+        <button id="bias-neutral" onclick="setTodayBias('neutral')" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s">➖ Flat</button>
+        <button id="bias-bear" onclick="setTodayBias('bear')" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s">🐻 Bear</button>
+      </div>
+    </div>
+
+    <!-- Mindset check-in -->
+    <div style="background:var(--nm-bg);border-radius:16px;padding:18px 20px;box-shadow:var(--nm-raise)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Mindset</div>
+      <div style="display:flex;flex-direction:column;gap:10px" id="today-mindset-sliders">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:5px"><span>Focus</span><span id="focus-val" style="color:var(--text);font-weight:600">—</span></div>
+          <input type="range" min="1" max="10" value="5" id="slider-focus" oninput="updateMindset()" style="width:100%;accent-color:var(--accent)">
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:5px"><span>Discipline</span><span id="discipline-val" style="color:var(--text);font-weight:600">—</span></div>
+          <input type="range" min="1" max="10" value="5" id="slider-discipline" oninput="updateMindset()" style="width:100%;accent-color:var(--accent)">
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:5px"><span>Urge to Force</span><span id="force-val" style="color:var(--red);font-weight:600">—</span></div>
+          <input type="range" min="1" max="10" value="3" id="slider-force" oninput="updateMindset()" style="width:100%;accent-color:#ff4d4d">
+        </div>
+      </div>
+    </div>
+
+    <!-- Pre-session checklist -->
+    <div style="background:var(--nm-bg);border-radius:16px;padding:18px 20px;box-shadow:var(--nm-raise)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Pre-Session</div>
+      <div style="display:flex;flex-direction:column;gap:8px" id="today-checklist">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW: Winning days + Goal + Tilt -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px">
+
+    <!-- Winning days tracker -->
+    <div style="background:var(--nm-bg);border-radius:16px;padding:18px 20px;box-shadow:var(--nm-raise)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px">Winning Days</div>
+      <div id="today-wd-section"><div style="font-size:12px;color:var(--dim)">No prop accounts with winning day requirements</div></div>
+    </div>
+
+    <!-- Goal for today + Max loss -->
+    <div style="background:var(--nm-bg);border-radius:16px;padding:18px 20px;box-shadow:var(--nm-raise)">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Today's Goal</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <div style="font-size:11px;color:var(--dim);margin-bottom:5px">Profit goal ($)</div>
+          <input type="number" id="today-profit-goal" placeholder="500" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:8px 10px;font-size:14px;font-weight:700;font-family:'Geist Mono',monospace;color:var(--green)" oninput="saveTodayGoals()">
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--dim);margin-bottom:5px">Max loss ($)</div>
+          <input type="number" id="today-max-loss" placeholder="250" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:8px 10px;font-size:14px;font-weight:700;font-family:'Geist Mono',monospace;color:var(--red)" oninput="saveTodayGoals()">
+        </div>
+        <div id="today-goal-status" style="font-size:11px;font-weight:600;padding:6px 10px;border-radius:8px;text-align:center;display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TILT DETECTION -->
+  <div id="today-tilt-section" style="background:var(--nm-bg);border-radius:16px;padding:18px 20px;box-shadow:var(--nm-raise);margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Tilt Detection</div>
+    <div id="today-tilt-body"></div>
+  </div>
+
+  <!-- RECENT TRADES TODAY -->
+  <div style="background:var(--nm-bg);border-radius:16px;padding:18px 20px;box-shadow:var(--nm-raise)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Today's Trades</div>
+      <button class="nm-btn" onclick="go('history')" style="font-size:11px">All →</button>
+    </div>
+    <div id="today-trades-list"><div class="empty">No trades today yet</div></div>
   </div>
 </div>
 
@@ -3114,6 +3233,14 @@ let state = {
   selectedStrengths: [],
   propAccounts: [],   // user's prop firm accounts
   propPayouts: [],    // logged payouts
+  todayState: {
+    bias: null,
+    mindset: { focus:5, discipline:5, force:3 },
+    checklist: {},
+    profitGoal: null,
+    maxLoss: null,
+    date: null
+  },
   scalingPlan: {
     currentStage: 0,
     stages: [
@@ -3141,6 +3268,7 @@ function _buildSaveData() {
     gradingCriteria: state.gradingCriteria || {},
     propAccounts: state.propAccounts || [],
     propPayouts: state.propPayouts || [],
+    todayState: state.todayState || {},
     scalingPlan: state.scalingPlan || {},
     setupLibrary: state.setupLibrary || [],
     journal: state.journal || { goals: [], dailyEntries: {} }
@@ -3188,6 +3316,7 @@ function go(page) {
   if (pageEl) pageEl.classList.add('active');
   const navEl = document.getElementById('nav-'+page);
   if (navEl) navEl.classList.add('active');
+  if (page==='today')          { renderTodayPage(); return; }
   if (page==='setups')         { renderSetupsPage(); return; }
   if (page==='propfirms')      renderPropFirmsPage();
   if (page==='dashboard')      renderDashboard();
@@ -6569,6 +6698,239 @@ function savePropDetailField(idx, field, value) {
   renderPropAccountsSection();
   renderPropCombinedStats();
   openPropDetail(idx);
+}
+
+// ══════════════════════════════════════════════════════
+// TODAY PAGE
+// ══════════════════════════════════════════════════════
+function renderTodayPage() {
+  const today = new Date().toISOString().slice(0,10);
+  const ts = state.todayState || {};
+
+  // Reset today state if it's a new day
+  if (ts.date !== today) {
+    state.todayState = { bias:null, mindset:{focus:5,discipline:5,force:3}, checklist:{}, profitGoal:null, maxLoss:null, date:today };
+    save();
+  }
+
+  const td = state.todayState;
+  document.getElementById('today-page-title').textContent = 'Today';
+  document.getElementById('today-page-sub').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+  // ── Stats ──────────────────────────────────────────
+  const todayTrades = (state.trades||[]).filter(t => t.datetime?.slice(0,10)===today);
+  const todayPnL = todayTrades.reduce((s,t)=>s+calcPnL(t),0);
+  const todayWins = todayTrades.filter(t=>t.outcome==='win').length;
+  const todayWR = todayTrades.length ? Math.round(todayWins/todayTrades.length*100) : null;
+
+  const pnlEl = document.getElementById('today-pnl');
+  pnlEl.textContent = (todayPnL>=0?'+':'-')+'$'+Math.abs(Math.round(todayPnL)).toLocaleString();
+  pnlEl.style.color = todayPnL>0?'var(--green)':todayPnL<0?'var(--red)':'var(--muted)';
+  document.getElementById('today-trade-count').textContent = todayTrades.length;
+  document.getElementById('today-wr').textContent = todayWR!==null ? todayWR+'%' : '—';
+  document.getElementById('today-wr').style.color = todayWR>=60?'var(--green)':todayWR>=40?'var(--amber)':'var(--muted)';
+
+  // ── Streak ────────────────────────────────────────
+  const sortedDays = {};
+  (state.trades||[]).forEach(t=>{const d=t.datetime?.slice(0,10);if(d)sortedDays[d]=(sortedDays[d]||0)+calcPnL(t);});
+  const dayKeys = Object.keys(sortedDays).sort().reverse();
+  let streak=0;
+  for(const d of dayKeys){ if(sortedDays[d]>0)streak++; else break; }
+  const streakEl = document.getElementById('today-streak');
+  streakEl.textContent = streak>0 ? streak+'🔥' : '0';
+  streakEl.style.color = streak>=3?'var(--green)':streak>0?'var(--amber)':'var(--muted)';
+
+  // ── Session status ────────────────────────────────
+  const est = new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  const h=est.getHours(),m=est.getMinutes(),hm=h*60+m;
+  let sessionLabel, sessionCol;
+  if(hm>=570&&hm<660){sessionLabel='🟢 NY AM Open (9:30–11:00)';sessionCol='var(--green)';}
+  else if(hm>=660&&hm<780){sessionLabel='🟡 Mid-Session (11:00–1:00)';sessionCol='var(--amber)';}
+  else if(hm>=780&&hm<900){sessionLabel='🟢 NY PM (1:00–3:00)';sessionCol='var(--green)';}
+  else if(hm>=540&&hm<570){sessionLabel='⏳ Pre-Market (8:30–9:30)';sessionCol='var(--muted)';}
+  else{sessionLabel='⚫ Market Closed';sessionCol='var(--dim)';}
+  document.getElementById('today-session-status').innerHTML=`<div style="font-size:13px;font-weight:700;color:${sessionCol}">${sessionLabel}</div><div style="font-size:10px;color:var(--dim);margin-top:3px">EST · ${est.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div>`;
+
+  // ── Bias buttons ──────────────────────────────────
+  ['bull','neutral','bear'].forEach(b=>{
+    const btn=document.getElementById('bias-'+b);
+    if(btn){btn.style.background=td.bias===b?'var(--accent-dim)':'var(--bg3)';btn.style.color=td.bias===b?'var(--accent)':'var(--muted)';btn.style.borderColor=td.bias===b?'var(--accent)':'var(--border2)';}
+  });
+
+  // ── Mindset sliders ───────────────────────────────
+  const ms=td.mindset||{focus:5,discipline:5,force:3};
+  ['focus','discipline','force'].forEach(k=>{
+    const el=document.getElementById('slider-'+k);
+    if(el)el.value=ms[k]||5;
+    const vEl=document.getElementById(k+'-val');
+    if(vEl){vEl.textContent=ms[k]||'—';vEl.style.color=k==='force'?(ms[k]>=7?'var(--red)':ms[k]>=5?'var(--amber)':'var(--green)'):(ms[k]>=7?'var(--green)':ms[k]>=4?'var(--amber)':'var(--red)');}
+  });
+
+  // ── Checklist ─────────────────────────────────────
+  const items=['Reviewed trade plan','Checked economic calendar','Identified key S/R levels','Set max loss for today','Completed morning routine','Checked prop firm rules'];
+  const cl=document.getElementById('today-checklist');
+  if(cl){cl.innerHTML=items.map((item,i)=>{
+    const key='item_'+i, checked=td.checklist?.[key];
+    return `<label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:12px;color:${checked?'var(--text)':'var(--muted)'};transition:color .15s">
+      <div onclick="toggleChecklist('${key}')" style="width:16px;height:16px;border-radius:4px;flex-shrink:0;box-shadow:${checked?'var(--nm-press-sm)':'var(--nm-raise-sm)'};background:var(--nm-bg);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:10px;cursor:pointer">${checked?'✓':''}</div>
+      <span onclick="toggleChecklist('${key}')">${item}</span>
+    </label>`;
+  }).join('');}
+
+  // ── Prop rules ────────────────────────────────────
+  const propEl=document.getElementById('today-prop-rules');
+  const activeAccts=(state.propAccounts||[]).filter(a=>a.status!=='blown'&&a.status!=='inactive');
+  if(propEl){
+    if(!activeAccts.length){propEl.innerHTML='<div style="font-size:12px;color:var(--dim)">No active accounts — <span style="color:var(--accent);cursor:pointer" onclick="go(&quot;propfirms&quot;)">add one →</span></div>';}
+    else{propEl.innerHTML=activeAccts.slice(0,2).map(a=>{
+      const dll=parseFloat(a.dll)||0;
+      const acTrades=(state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
+      const todayAcPnL=acTrades.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
+      const dllPct=dll&&todayAcPnL<0?Math.min(100,Math.abs(todayAcPnL)/dll*100):0;
+      const dllRemaining=dll?Math.max(0,dll+Math.min(0,todayAcPnL)):null;
+      const dllCol=dllPct<50?'var(--green)':dllPct<80?'var(--amber)':'var(--red)';
+      const winDayMin=parseFloat(a.winDayMin)||200;
+      const winDaysReq=parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
+      const byDay={};acTrades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDay[d]=(byDay[d]||0)+calcPnL(t);});
+      const wdc=Object.values(byDay).filter(p=>p>=winDayMin).length;
+      const isWinDay=todayAcPnL>=winDayMin;
+      return `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:700;color:var(--text)">${a.name||a.firm}</span>
+          ${isWinDay?`<span style="font-size:10px;font-weight:700;color:var(--green);background:var(--green-dim);padding:2px 7px;border-radius:10px">✓ Win Day</span>`:''}
+        </div>
+        ${dll?`<div style="margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-bottom:4px"><span>Daily limit</span><span style="color:${dllCol};font-weight:600">${dllRemaining!==null?'$'+dllRemaining.toLocaleString()+' left':'$'+dll.toLocaleString()}</span></div>
+          <div class="nm-bar-track" style="height:6px"><div class="nm-bar-fill" style="width:${dllPct}%;background:${dllCol}"></div></div>
+        </div>`:''}
+        ${winDaysReq?`<div style="font-size:10px;color:var(--dim)">${wdc} / ${winDaysReq} winning days</div>`:''}
+      </div>`;
+    }).join('');}
+  }
+
+  // ── Winning days section ──────────────────────────
+  const wdEl=document.getElementById('today-wd-section');
+  const wdAccts=activeAccts.filter(a=>(parseInt(a.winDaysReq)||(parseInt(a.minDays)||0))>0);
+  if(wdEl){
+    if(!wdAccts.length){wdEl.innerHTML='<div style="font-size:12px;color:var(--dim)">No prop accounts with winning day requirements</div>';}
+    else{wdEl.innerHTML=wdAccts.map(a=>{
+      const req=parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
+      const wdMin=parseFloat(a.winDayMin)||200;
+      const acTrades=(state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
+      const byDay={};acTrades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDay[d]=(byDay[d]||0)+calcPnL(t);});
+      const wdc=Object.values(byDay).filter(p=>p>=wdMin).length;
+      const todayPnLAc=byDay[today]||0;
+      const daysToGo=Math.max(0,req-wdc);
+      return `<div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700;color:var(--text)">${a.name||a.firm}</span>
+          <span style="font-size:12px;font-weight:700;font-family:'Geist Mono',monospace;color:${wdc>=req?'var(--green)':daysToGo===1?'var(--amber)':'var(--text)'}">${wdc} / ${req}</span>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
+          ${Array.from({length:req},(_,i)=>{const done=i<wdc;const isToday=i===wdc&&todayPnLAc>=wdMin;return `<div class="prop-wd-dot ${done?'wd-done':isToday?'wd-near':'wd-empty'}">${done?'✓':i+1}</div>`;}).join('')}
+        </div>
+        ${daysToGo===1?`<div style="font-size:11px;color:var(--amber);font-weight:600">⚡ One more winning day to qualify</div>`:wdc>=req?`<div style="font-size:11px;color:var(--green);font-weight:600">✓ Qualifying days complete — request payout</div>`:`<div style="font-size:11px;color:var(--dim)">${daysToGo} more winning day${daysToGo!==1?'s':''} needed · Min $${wdMin.toLocaleString()} per day</div>`}
+      </div>`;
+    }).join('');}
+  }
+
+  // ── Tilt detection ────────────────────────────────
+  const tiltEl=document.getElementById('today-tilt-body');
+  const recentTrades=todayTrades.slice(-5);
+  const recentLosses=recentTrades.filter(t=>t.outcome==='loss').length;
+  const isOvertrading=todayTrades.length>=6;
+  const isDLL=activeAccts.some(a=>{
+    const dll=parseFloat(a.dll)||0;if(!dll)return false;
+    const ac=(state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
+    const todayAcPnL=ac.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
+    return todayAcPnL<0&&Math.abs(todayAcPnL)/dll>0.8;
+  });
+  const forceUrge=ms.force>=7;
+  const flags=[];
+  if(recentLosses>=3)flags.push({icon:'⚠️',label:'3 losses in last 5 trades',col:'var(--red)',sev:'high'});
+  if(isOvertrading)flags.push({icon:'📊',label:`${todayTrades.length} trades today — possible overtrading`,col:'var(--amber)',sev:'med'});
+  if(isDLL)flags.push({icon:'🛑',label:'Approaching daily loss limit',col:'var(--red)',sev:'high'});
+  if(forceUrge)flags.push({icon:'🧠',label:'High urge to force trades detected',col:'var(--amber)',sev:'med'});
+  if(tiltEl){
+    if(!flags.length){tiltEl.innerHTML='<div style="display:flex;align-items:center;gap:10px"><div style="width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(0,208,132,0.5)"></div><div style="font-size:13px;font-weight:600;color:var(--green)">All clear — good conditions to trade</div></div>';}
+    else{
+      tiltEl.innerHTML=flags.map(f=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:${f.sev==='high'?'rgba(255,77,77,0.08)':'rgba(245,166,35,0.08)'};margin-bottom:6px"><span style="font-size:16px">${f.icon}</span><span style="font-size:12px;font-weight:600;color:${f.col}">${f.label}</span></div>`).join('');
+      if(flags.some(f=>f.sev==='high')){const sb=document.getElementById('today-stop-banner');if(sb){sb.style.display='flex';document.getElementById('today-stop-reason').textContent=flags.filter(f=>f.sev==='high').map(f=>f.label).join(' · ');}}
+    }
+  }
+
+  // ── Goals ─────────────────────────────────────────
+  const pgEl=document.getElementById('today-profit-goal');
+  const mlEl=document.getElementById('today-max-loss');
+  if(pgEl&&td.profitGoal)pgEl.value=td.profitGoal;
+  if(mlEl&&td.maxLoss)mlEl.value=td.maxLoss;
+  _updateGoalStatus(todayPnL,td);
+
+  // ── Today's trades list ───────────────────────────
+  const tlist=document.getElementById('today-trades-list');
+  if(tlist){
+    if(!todayTrades.length){tlist.innerHTML='<div class="empty">No trades today yet</div>';}
+    else{tlist.innerHTML=[...todayTrades].reverse().slice(0,8).map(t=>{
+      const p=calcPnL(t);const col=p>0?'var(--green)':p<0?'var(--red)':'var(--muted)';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+        <div style="width:6px;height:6px;border-radius:50%;background:${p>0?'var(--green)':'var(--red)'};flex-shrink:0"></div>
+        <div style="flex:1;font-size:12px;color:var(--text)">${t.ticker||'NQ'} · ${t.setup||''} · ${t.datetime?.slice(11,16)||''}</div>
+        <div style="font-size:13px;font-weight:700;color:${col};font-family:'Geist Mono',monospace">${p>=0?'+':'-'}$${Math.abs(Math.round(p)).toLocaleString()}</div>
+        <div style="font-size:10px;padding:2px 8px;border-radius:10px;background:${p>0?'var(--green-dim)':p<0?'var(--red-dim)':'var(--bg3)'};color:${col};font-weight:600">${t.outcome||''}</div>
+      </div>`;
+    }).join('');}
+  }
+}
+
+function setTodayBias(b) {
+  if(!state.todayState)state.todayState={};
+  state.todayState.bias=b;
+  save();
+  ['bull','neutral','bear'].forEach(x=>{const el=document.getElementById('bias-'+x);if(el){el.style.background=x===b?'var(--accent-dim)':'var(--bg3)';el.style.color=x===b?'var(--accent)':'var(--muted)';el.style.borderColor=x===b?'var(--accent)':'var(--border2)';}});
+}
+
+function updateMindset() {
+  if(!state.todayState)state.todayState={};
+  if(!state.todayState.mindset)state.todayState.mindset={};
+  ['focus','discipline','force'].forEach(k=>{
+    const el=document.getElementById('slider-'+k);
+    if(!el)return;
+    const v=parseInt(el.value);
+    state.todayState.mindset[k]=v;
+    const vEl=document.getElementById(k+'-val');
+    if(vEl){vEl.textContent=v;vEl.style.color=k==='force'?(v>=7?'var(--red)':v>=5?'var(--amber)':'var(--green)'):(v>=7?'var(--green)':v>=4?'var(--amber)':'var(--red)');}
+  });
+  save();
+}
+
+function toggleChecklist(key) {
+  if(!state.todayState)state.todayState={};
+  if(!state.todayState.checklist)state.todayState.checklist={};
+  state.todayState.checklist[key]=!state.todayState.checklist[key];
+  save();
+  renderTodayPage();
+}
+
+function saveTodayGoals() {
+  if(!state.todayState)state.todayState={};
+  const pg=parseFloat(document.getElementById('today-profit-goal')?.value)||null;
+  const ml=parseFloat(document.getElementById('today-max-loss')?.value)||null;
+  state.todayState.profitGoal=pg;
+  state.todayState.maxLoss=ml;
+  save();
+  const today=new Date().toISOString().slice(0,10);
+  const todayPnL=(state.trades||[]).filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
+  _updateGoalStatus(todayPnL,state.todayState);
+}
+
+function _updateGoalStatus(todayPnL,td) {
+  const gs=document.getElementById('today-goal-status');if(!gs)return;
+  const pg=td?.profitGoal,ml=td?.maxLoss;
+  if(!pg&&!ml){gs.style.display='none';return;}
+  gs.style.display='block';
+  if(ml&&todayPnL<=-ml){gs.textContent='🛑 Max loss hit — stop trading';gs.style.background='rgba(255,77,77,0.1)';gs.style.color='var(--red)';}
+  else if(pg&&todayPnL>=pg){gs.textContent='✅ Goal reached — protect profits';gs.style.background='var(--green-dim)';gs.style.color='var(--green)';}
+  else if(pg){const pct=Math.round((todayPnL/pg)*100);gs.textContent=`${pct>0?pct+'% of goal':'Behind goal'}`;gs.style.background='var(--bg3)';gs.style.color='var(--muted)';}
 }
 
 function renderPropScalingPlan() {
@@ -10480,4 +10842,3 @@ if (state.trades.length > 0) renderDashboard();
 
 </body>
 </html>
-
