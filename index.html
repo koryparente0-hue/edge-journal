@@ -1272,6 +1272,32 @@ body.light-mode .chat-panel{
   }
 }
 
+
+/* === SIMPLIFIED LAYOUT UPDATE === */
+.nav-section{
+  margin-top:22px!important;
+  margin-bottom:10px!important;
+}
+.sidebar{
+  border-right:1px solid rgba(255,255,255,.06)!important;
+}
+.card,
+.metric,
+.gallery-card{
+  box-shadow:none!important;
+}
+.card:hover,
+.metric:hover{
+  transform:translateY(-2px)!important;
+}
+.page{
+  padding-top:8px!important;
+}
+.metrics-grid,
+.stats-grid{
+  gap:14px!important;
+}
+
 </style>
 </head>
 <body>
@@ -1423,7 +1449,7 @@ body.light-mode .chat-panel{
             <li>Setup & mistake analytics</li>
             <li>BE analysis</li>
             <li>Trade Gallery with charts</li>
-            <li>Playbook & Risk Consistency</li>
+            <li>Settings & Risk Consistency</li>
           </ul>
           <button class="btn btn-green" style="width:100%;justify-content:center;font-size:13px;font-weight:700" onclick="window._fbSignIn()">Start with Pro — $9/mo</button>
         </div>
@@ -1488,7 +1514,7 @@ body.light-mode .chat-panel{
     <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5h5M5 8h5M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor" opacity=".2"/></svg>Journal
   </div>
   <div class="nav-item" id="nav-setuplibrary" onclick="go('setuplibrary')">
-    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Playbook
+    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="9" r="1.5" fill="currentColor" opacity=".6"/></svg>Settings
   </div>
 
   <!-- PERFORMANCE -->
@@ -1499,10 +1525,6 @@ body.light-mode .chat-panel{
   <div class="nav-item" id="nav-insights" onclick="go('insights')">
     <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" fill="currentColor" opacity=".5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>AI Insights
   </div>
-  <div class="nav-item" id="nav-streaks" onclick="go('streaks')">
-    <svg viewBox="0 0 16 16" fill="none"><path d="M9 2c0 3-3 4-3 7a4 4 0 008 0c0-4-5-7-5-7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>Streaks
-  </div>
-
   <!-- PROP FIRM -->
   <div class="nav-section">Prop Firm</div>
   <div class="nav-item" id="nav-propfirms" onclick="go('propfirms')">
@@ -1511,9 +1533,6 @@ body.light-mode .chat-panel{
 
   <!-- SYSTEM -->
   <div class="nav-section">System</div>
-  <div class="nav-item" id="nav-routine" onclick="go('routine')">
-    <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 1v4M11 1v4M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Routines
-  </div>
   <div class="nav-item" id="nav-commandcenter" onclick="go('commandcenter')">
     <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="1.8" fill="currentColor"/><path d="M8 2.5V5M8 11v2.5M2.5 8H5M11 8h2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>Copilot
   </div>
@@ -3426,7 +3445,7 @@ window._mergeCloudData = function(cloudData) {
 };
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
-const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','insights','routine','risk','streaks','setuplibrary'];
+const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','insights','risk','setuplibrary'];
 function go(page) {
   if (ccCleanup) { ccCleanup(); ccCleanup = null; }
   if (_heroRaf) { cancelAnimationFrame(_heroRaf); _heroRaf = null; }
@@ -3444,9 +3463,9 @@ function go(page) {
   if (page==='log')            renderLogPage();
   if (page==='journal')        renderJournalPage();
   if (page==='setuplibrary')   renderSetupLibrary();
-  if (page==='routine')        renderRoutinePage();
+  if (page===)        renderRoutinePage();
   if (page==='risk')           { renderRisk(); renderMistakeAnalytics(); }
-  if (page==='streaks')        renderStreaks();
+  if (page===)        renderStreaks();
   if (page==='copilot')        renderCopilotPage();
   if (page==='insights')       renderInsightsBanner();
   if (page==='commandcenter')  renderCommandCenter();
