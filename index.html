@@ -2433,11 +2433,11 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
       </div>
     </div>
 
-    <!-- TODAY'S PROXY CHECKINS — step by step daily actions -->
-    <div id="journal-proxy-strip" style="margin-bottom:20px"></div>
+    <!-- Goals grid — full width, dominant -->
+    <div id="journal-goals-grid" style="margin-bottom:20px"></div>
 
-    <!-- Goals grid -->
-    <div id="journal-goals-grid"></div>
+    <!-- TODAY'S PROXY CHECKINS — secondary, below goals -->
+    <div id="journal-proxy-strip"></div>
     <div id="journal-goals-empty" style="display:none" class="card">
       <div class="empty" style="padding:48px;text-align:center">
         <div style="font-size:48px;margin-bottom:14px">🎯</div>
@@ -2470,9 +2470,15 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
           <div id="daily-ro-view" style="display:none"></div>
           <div id="daily-edit-form">
 
-            <!-- MOOD — first thing, most visual -->
-            <div style="margin-bottom:20px">
-              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">How did today feel?</div>
+            <!-- ═══ BEFORE SESSION ═══ -->
+            <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent)">☀ Before Session</div>
+              <div style="flex:1;height:1px;background:rgba(155,127,255,0.2)"></div>
+            </div>
+
+            <!-- Mindset going in -->
+            <div style="margin-bottom:14px">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Mindset going in</div>
               <div style="display:flex;gap:8px" id="daily-mood-row">
                 <button onclick="setDailyMood(0)" class="mood-btn-v2" data-mood="0" style="flex:1"><span>😤</span><span class="mood-label">Frustrated</span></button>
                 <button onclick="setDailyMood(1)" class="mood-btn-v2" data-mood="1" style="flex:1"><span>😐</span><span class="mood-label">Neutral</span></button>
@@ -2482,68 +2488,34 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
               </div>
             </div>
 
-            <!-- RULES — compact toggles -->
-            <div style="margin-bottom:20px">
-              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Rules followed</div>
-              <div id="rule-toggles-wrap" style="box-shadow:var(--nm-press-sm);border-radius:12px;overflow:hidden">
-                <div class="rule-toggle-row"><span class="rule-toggle-lbl">Respected risk limits</span><label class="rule-toggle"><input type="checkbox" id="rl-risk"><span class="rule-toggle-track"></span></label></div>
-                <div class="rule-toggle-row"><span class="rule-toggle-lbl">Waited for confirmation</span><label class="rule-toggle"><input type="checkbox" id="rl-confirmation"><span class="rule-toggle-track"></span></label></div>
-                <div class="rule-toggle-row"><span class="rule-toggle-lbl">No revenge trades</span><label class="rule-toggle"><input type="checkbox" id="rl-noRevenge"><span class="rule-toggle-track"></span></label></div>
-                <div class="rule-toggle-row"><span class="rule-toggle-lbl">No impulsive entries</span><label class="rule-toggle"><input type="checkbox" id="rl-noImpulsive"><span class="rule-toggle-track"></span></label></div>
-                <div class="rule-toggle-row"><span class="rule-toggle-lbl">Journaled today</span><label class="rule-toggle"><input type="checkbox" id="rl-journaled"><span class="rule-toggle-track"></span></label></div>
-                <div class="rule-toggle-row"><span class="rule-toggle-lbl">Stopped at max loss</span><label class="rule-toggle"><input type="checkbox" id="rl-maxLoss"><span class="rule-toggle-track"></span></label></div>
-              </div>
-              <div id="rule-adherence-pct" style="margin-top:8px;font-size:11px;font-weight:700;color:var(--amber)"></div>
-            </div>
-
-            <!-- SCORECARD — compact sliders -->
-            <div style="margin-bottom:20px">
-              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Session scorecard</div>
-              <div id="sc-sliders" style="box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px">
-                <div class="sc-slider-row"><span class="sc-slider-label">Execution</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-execution" oninput="document.getElementById('sc-val-execution').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-execution">5</span></div>
-                <div class="sc-slider-row"><span class="sc-slider-label">Discipline</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-discipline" oninput="document.getElementById('sc-val-discipline').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-discipline">5</span></div>
-                <div class="sc-slider-row" style="margin-bottom:0"><span class="sc-slider-label">Focus</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-focus" oninput="document.getElementById('sc-val-focus').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-focus">5</span></div>
-                <!-- hidden but kept for save compat -->
-                <input type="range" id="sc-energy" value="5" style="display:none">
-                <input type="range" id="sc-confidence" value="5" style="display:none">
-                <span id="sc-val-energy" style="display:none">5</span>
-                <span id="sc-val-confidence" style="display:none">5</span>
-              </div>
-              <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-                <span style="font-size:11px;color:var(--muted)">Respected my identity today?</span>
-                <button class="nm-btn" id="sc-rs-yes" onclick="setSCRespect('yes')" style="font-size:11px;padding:5px 10px">YES</button>
-                <button class="nm-btn" id="sc-rs-no" onclick="setSCRespect('no')" style="font-size:11px;padding:5px 10px">NO</button>
-              </div>
-            </div>
-
-            <!-- ENERGY — compact 2-col chips -->
-            <div style="margin-bottom:20px">
-              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Energy & habits</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <!-- Energy & habits (morning) -->
+            <div style="margin-bottom:14px">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Morning habits</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
-                  <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Sleep hours</div>
-                  <input type="number" id="en-sleep" min="0" max="12" step="0.5" placeholder="7.5" style="width:100%;background:transparent;border:none;outline:none;color:var(--text);font-size:16px;font-weight:700;font-family:var(--mono)">
+                  <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Sleep</div>
+                  <input type="number" id="en-sleep" min="0" max="12" step="0.5" placeholder="7.5h" style="width:100%;background:transparent;border:none;outline:none;color:var(--text);font-size:16px;font-weight:700;font-family:var(--mono)">
                 </div>
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
                   <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Gym</div>
-                  <div style="display:flex;gap:6px">
+                  <div style="display:flex;gap:5px">
                     <button class="nm-btn" id="en-gym-yes" onclick="setEnergyPill('gym','yes')" style="flex:1;justify-content:center;font-size:11px">Yes</button>
                     <button class="nm-btn" id="en-gym-no" onclick="setEnergyPill('gym','no')" style="flex:1;justify-content:center;font-size:11px">No</button>
                   </div>
                 </div>
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
                   <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Ate well</div>
-                  <div style="display:flex;gap:6px">
+                  <div style="display:flex;gap:5px">
                     <button class="nm-btn" id="en-ate-yes" onclick="setEnergyPill('ate','yes')" style="flex:1;justify-content:center;font-size:11px">Yes</button>
                     <button class="nm-btn" id="en-ate-no" onclick="setEnergyPill('ate','no')" style="flex:1;justify-content:center;font-size:11px">No</button>
                   </div>
                 </div>
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
                   <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Caffeine</div>
-                  <div style="display:flex;gap:4px">
-                    <button class="nm-btn" id="en-caf-none" onclick="setEnergyPill('caffeine','none')" style="flex:1;justify-content:center;font-size:10px;padding:5px 4px">None</button>
-                    <button class="nm-btn" id="en-caf-some" onclick="setEnergyPill('caffeine','some')" style="flex:1;justify-content:center;font-size:10px;padding:5px 4px">Some</button>
-                    <button class="nm-btn" id="en-caf-alot" onclick="setEnergyPill('caffeine','alot')" style="flex:1;justify-content:center;font-size:10px;padding:5px 4px">A lot</button>
+                  <div style="display:flex;gap:3px">
+                    <button class="nm-btn" id="en-caf-none" onclick="setEnergyPill('caffeine','none')" style="flex:1;justify-content:center;font-size:10px;padding:5px 2px">None</button>
+                    <button class="nm-btn" id="en-caf-some" onclick="setEnergyPill('caffeine','some')" style="flex:1;justify-content:center;font-size:10px;padding:5px 2px">Some</button>
+                    <button class="nm-btn" id="en-caf-alot" onclick="setEnergyPill('caffeine','alot')" style="flex:1;justify-content:center;font-size:10px;padding:5px 2px">A lot</button>
                   </div>
                 </div>
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
@@ -2557,10 +2529,55 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
               </div>
             </div>
 
-            <!-- JOURNAL NOTE -->
+            <!-- Pre-session note -->
+            <div style="margin-bottom:20px">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Plan / bias for today</div>
+              <textarea id="daily-pre-notes" placeholder="What's your game plan? Market bias? Key levels to watch?" style="width:100%;min-height:80px;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.65;box-sizing:border-box;outline:none"></textarea>
+            </div>
+
+            <!-- ═══ AFTER SESSION ═══ -->
+            <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green)">✓ After Session</div>
+              <div style="flex:1;height:1px;background:rgba(0,208,132,0.2)"></div>
+            </div>
+
+            <!-- Rules followed -->
+            <div style="margin-bottom:14px">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Rules followed</div>
+              <div id="rule-toggles-wrap" style="box-shadow:var(--nm-press-sm);border-radius:12px;overflow:hidden">
+                <div class="rule-toggle-row"><span class="rule-toggle-lbl">Respected risk limits</span><label class="rule-toggle"><input type="checkbox" id="rl-risk"><span class="rule-toggle-track"></span></label></div>
+                <div class="rule-toggle-row"><span class="rule-toggle-lbl">Waited for confirmation</span><label class="rule-toggle"><input type="checkbox" id="rl-confirmation"><span class="rule-toggle-track"></span></label></div>
+                <div class="rule-toggle-row"><span class="rule-toggle-lbl">No revenge trades</span><label class="rule-toggle"><input type="checkbox" id="rl-noRevenge"><span class="rule-toggle-track"></span></label></div>
+                <div class="rule-toggle-row"><span class="rule-toggle-lbl">No impulsive entries</span><label class="rule-toggle"><input type="checkbox" id="rl-noImpulsive"><span class="rule-toggle-track"></span></label></div>
+                <div class="rule-toggle-row"><span class="rule-toggle-lbl">Journaled today</span><label class="rule-toggle"><input type="checkbox" id="rl-journaled"><span class="rule-toggle-track"></span></label></div>
+                <div class="rule-toggle-row"><span class="rule-toggle-lbl">Stopped at max loss</span><label class="rule-toggle"><input type="checkbox" id="rl-maxLoss"><span class="rule-toggle-track"></span></label></div>
+              </div>
+              <div id="rule-adherence-pct" style="margin-top:8px;font-size:11px;font-weight:700;color:var(--amber)"></div>
+            </div>
+
+            <!-- Session scorecard -->
+            <div style="margin-bottom:14px">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Session scorecard</div>
+              <div id="sc-sliders" style="box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px">
+                <div class="sc-slider-row"><span class="sc-slider-label">Execution</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-execution" oninput="document.getElementById('sc-val-execution').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-execution">5</span></div>
+                <div class="sc-slider-row"><span class="sc-slider-label">Discipline</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-discipline" oninput="document.getElementById('sc-val-discipline').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-discipline">5</span></div>
+                <div class="sc-slider-row" style="margin-bottom:0"><span class="sc-slider-label">Focus</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-focus" oninput="document.getElementById('sc-val-focus').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-focus">5</span></div>
+                <input type="range" id="sc-energy" value="5" style="display:none">
+                <input type="range" id="sc-confidence" value="5" style="display:none">
+                <span id="sc-val-energy" style="display:none">5</span>
+                <span id="sc-val-confidence" style="display:none">5</span>
+              </div>
+              <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+                <span style="font-size:11px;color:var(--muted)">Respected my identity today?</span>
+                <button class="nm-btn" id="sc-rs-yes" onclick="setSCRespect('yes')" style="font-size:11px;padding:5px 10px">YES</button>
+                <button class="nm-btn" id="sc-rs-no" onclick="setSCRespect('no')" style="font-size:11px;padding:5px 10px">NO</button>
+              </div>
+            </div>
+
+            <!-- Post-session notes -->
             <div style="margin-bottom:16px">
-              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Notes</div>
-              <textarea id="daily-notes" placeholder="What happened today? What did you learn?" style="width:100%;min-height:120px;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.75;box-sizing:border-box;outline:none"></textarea>
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">What happened? What did you learn?</div>
+              <textarea id="daily-notes" placeholder="Recap the session. Best trade, worst trade, lessons..." style="width:100%;min-height:110px;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.75;box-sizing:border-box;outline:none"></textarea>
             </div>
 
             <div id="daily-goal-checkins" style="margin-bottom:16px"></div>
@@ -9291,7 +9308,7 @@ function renderGoalsTab() {
         ${cat.charAt(0).toUpperCase()+cat.slice(1)}
         <span style="font-size:10px;color:var(--dim);font-weight:400;background:rgba(255,255,255,0.05);padding:2px 7px;border-radius:10px">${gs.length}</span>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr;gap:12px">
         ${cards}
       </div>
     </div>`;
@@ -9465,16 +9482,16 @@ function renderGoalCard(g, staggerIdx) {
   const dlCol  = dl !== null && dl <= 0 ? 'var(--red)' : dl !== null && dl <= 7 ? 'var(--amber)' : 'var(--dim)';
   const todayV = g.type === 'habit' ? (g.completions || {})[today] : null;
 
-  return '<div style="background:var(--nm-bg);border-radius:14px;box-shadow:var(--nm-raise);padding:16px 18px;cursor:pointer;transition:box-shadow .2s,transform .2s;border-left:3px solid '+(done?'var(--green)':col)+';" onclick="openGoalDetail('+g._idx+')" onmouseenter="this.style.transform=&quot;translateY(-2px)&quot;;this.style.boxShadow=&quot;var(--nm-raise-hover)&quot;" onmouseleave="this.style.transform=&quot;&quot;;this.style.boxShadow=&quot;var(--nm-raise)&quot;">'
+  return '<div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:20px 24px;cursor:pointer;transition:box-shadow .2s,transform .2s;border-left:3px solid '+(done?'var(--green)':col)+';" onclick="openGoalDetail('+g._idx+')" onmouseenter="this.style.transform=&quot;translateY(-2px)&quot;;this.style.boxShadow=&quot;var(--nm-raise-hover)&quot;" onmouseleave="this.style.transform=&quot;&quot;;this.style.boxShadow=&quot;var(--nm-raise)&quot;">'
 
     // Row 1: title + count
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px">'
-      + '<div style="font-size:13px;font-weight:700;color:'+(done?'var(--dim)':'var(--text)')+';line-height:1.3;flex:1;'+(done?'text-decoration:line-through':'')+'">' + g.title + '</div>'
+      + '<div style="font-size:15px;font-weight:700;color:'+(done?'var(--dim)':'var(--text)')+';line-height:1.3;flex:1;'+(done?'text-decoration:line-through':'')+'">' + g.title + '</div>'
       + '<div style="font-size:12px;font-weight:700;color:'+(done?'var(--green)':col)+';font-family:Geist Mono,monospace;white-space:nowrap;flex-shrink:0">' + countLabel + '</div>'
     + '</div>'
 
     // Progress bar
-    + '<div class="nm-bar-track" style="height:6px;margin-bottom:6px"><div class="nm-bar-fill" style="width:'+Math.min(pct,100)+'%;background:'+(done?'var(--green)':col)+'"></div></div>'
+    + '<div class="nm-bar-track" style="height:8px;margin-bottom:8px"><div class="nm-bar-fill" style="width:'+Math.min(pct,100)+'%;background:'+(done?'var(--green)':col)+'"></div></div>'
 
     // % + deadline
     + '<div style="display:flex;justify-content:space-between;align-items:center">'
@@ -10288,6 +10305,7 @@ function renderDailyTab(dir) {
     updateRuleAdherencePct();
     document.querySelectorAll('.mood-btn-v2').forEach((b,i)=>b.classList.toggle('selected',i===entry.mood));
     const ta=document.getElementById('daily-notes');if(ta)ta.value=entry.notes||'';
+    const pn=document.getElementById('daily-pre-notes');if(pn)pn.value=entry.preNotes||'';
     // Goal check-ins
     const cc=document.getElementById('daily-goal-checkins');
     if(cc){
@@ -10381,7 +10399,8 @@ function saveDailyEntry() {
   const rl={};
   ['risk','confirmation','noRevenge','noImpulsive','journaled','maxLoss'].forEach(k=>{const cb=document.getElementById('rl-'+k);if(cb)rl[k]=cb.checked;});
   const existing=j.dailyEntries[dailyViewDate]||{};
-  j.dailyEntries[dailyViewDate]={...existing,notes,mood,scorecard:sc,energy:en,rules:rl,
+  const preNotes=document.getElementById('daily-pre-notes')?.value||'';
+  j.dailyEntries[dailyViewDate]={...existing,notes,preNotes,mood,scorecard:sc,energy:en,rules:rl,
     goalCheckins:{...(existing.goalCheckins||{}),...goalCheckins},
     goalValues:{...(existing.goalValues||{}),...goalValues},
     savedAt:new Date().toISOString()};
