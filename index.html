@@ -1361,9 +1361,7 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
   <div class="nav-item" id="nav-log" onclick="go('log')">
     <svg viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Log Trade
   </div>
-  <div class="nav-item" id="nav-history" onclick="go('history')">
-    <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>History
-  </div>
+
   <div class="nav-item" id="nav-journal" onclick="go('journal')">
     <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="1" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5h5M5 8h5M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor" opacity=".2"/></svg>Journal
   </div>
@@ -1498,7 +1496,7 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
     <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <span style="font-size:12px;font-weight:700;color:var(--text)">Recent Trades</span>
-        <button class="nm-btn" onclick="go('history')" style="font-size:11px">All →</button>
+        <button class="nm-btn" onclick="go('setups');setTimeout(()=>switchAnalyticsTab('history'),80)" style="font-size:11px">All →</button>
       </div>
       <div id="recent-trades"></div>
     </div>
@@ -1624,7 +1622,7 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
     <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Today's Trades</div>
-        <button class="nm-btn" onclick="go('history')" style="font-size:11px">All →</button>
+        <button class="nm-btn" onclick="go('setups');setTimeout(()=>switchAnalyticsTab('history'),80)" style="font-size:11px">All →</button>
       </div>
       <div id="today-trades-list"><div class="empty">No trades yet</div></div>
     </div>
@@ -1833,96 +1831,27 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 </div>
 
 <!-- HISTORY -->
-<div class="page" id="page-history">
-  <div class="page-header">
-    <div><div class="page-title">Trade History</div><div class="page-sub" id="history-count"></div></div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <div style="display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:2px;gap:2px">
-        <button id="hist-view-table" onclick="setHistoryView('table')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:var(--accent);color:#fff;transition:all .15s">Table</button>
-        <button id="hist-view-cal" onclick="setHistoryView('calendar')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s">Calendar</button>
-      </div>
-      <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
-    </div>
-  </div>
-  <div id="hi-hero-banner" class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:120px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
-    <canvas id="hi-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-    <div class="phero-grid" style="position:relative;z-index:1;padding:20px 28px;display:grid;grid-template-columns:repeat(4,1fr)">
-      <div id="hi-s0" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
-      <div id="hi-s1" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
-      <div id="hi-s2" class="phero-stat" style="border-right:1px solid rgba(255,255,255,.07)"></div>
-      <div id="hi-s3" class="phero-stat"></div>
-    </div>
-  </div>
-
-  <div id="hist-table-view">
-    <!-- ROLLING 10-TRADE SPARKLINE + HOUR HEATMAP -->
-    <div class="grid2" style="margin-bottom:12px">
-      <div class="card" style="padding:14px 16px">
-        <div class="card-header" style="margin-bottom:10px"><span class="card-title">Last 10 trades</span><span class="card-sub" id="rolling10-sub">Rolling performance</span></div>
-        <div id="rolling10-dots" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
-        <div style="display:flex;justify-content:space-between;margin-top:10px">
-          <span style="font-size:11px;color:var(--muted)" id="rolling10-wr"></span>
-          <span style="font-size:11px;font-family:'Geist Mono',monospace;font-weight:700" id="rolling10-pnl"></span>
-        </div>
-      </div>
-      <div class="card" style="padding:14px 16px">
-        <div class="card-header" style="margin-bottom:8px"><span class="card-title">P&amp;L by hour</span><span class="card-sub">All-time breakdown with totals</span></div>
-        <div id="hist-hour-heat"></div>
-      </div>
-    </div>
-    <div class="filters">
-      <input class="filter-input" id="f-ticker" placeholder="Ticker..." onkeyup="renderHistory()" style="width:90px">
-      <select class="filter-input" id="f-side" onchange="renderHistory()"><option value="">All sides</option><option value="long">Long</option><option value="short">Short</option></select>
-      <select class="filter-input" id="f-result" onchange="renderHistory()"><option value="">Win / Loss</option><option value="win">Wins only</option><option value="loss">Losses only</option></select>
-      <select class="filter-input" id="f-setup-filter" onchange="renderHistory()"><option value="">All setups</option></select>
-      <select class="filter-input" id="f-mistake-filter" onchange="renderHistory()"><option value="">All mistakes</option></select>
-      <input class="filter-input" id="f-date-from" type="date" onchange="renderHistory()" title="From date">
-      <input class="filter-input" id="f-date-to" type="date" onchange="renderHistory()" title="To date">
-      <button class="btn btn-sm" onclick="clearFilters()">Clear filters</button>
-    </div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <div style="overflow-x:auto">
-        <table class="trades-table">
-          <thead><tr>
-            <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>TTC</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th>Did Well</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
-          </tr></thead>
-          <tbody id="history-body"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  <div id="hist-cal-view" style="display:none">
-    <div class="cal-premium-wrap" style="position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#080810,#0d0d1a);border:1px solid rgba(155,127,255,.15)">
-      <canvas id="cal-hero-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
-      <div style="position:relative;z-index:1;padding:24px">
-        <div style="text-align:center;margin-bottom:22px">
-          <div style="font-size:10px;font-weight:700;letter-spacing:.12em;color:rgba(155,127,255,.5);text-transform:uppercase;margin-bottom:10px">Monthly P&amp;L</div>
-          <div id="cal-monthly-pnl" style="font-size:44px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2.5px;line-height:1;color:var(--muted)">—</div>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-          <button onclick="calNav(-1)" style="background:rgba(155,127,255,.1);border:1px solid rgba(155,127,255,.2);color:rgba(155,127,255,.9);font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:7px 18px;border-radius:8px;cursor:pointer;transition:background .15s,border-color .15s" onmouseover="this.style.background='rgba(155,127,255,.2)';this.style.borderColor='rgba(155,127,255,.45)'" onmouseout="this.style.background='rgba(155,127,255,.1)';this.style.borderColor='rgba(155,127,255,.2)'">← Prev</button>
-          <div style="font-size:16px;font-weight:700;color:var(--text);font-family:'Geist',sans-serif;letter-spacing:-.2px" id="cal-month-label"></div>
-          <button onclick="calNav(1)" style="background:rgba(155,127,255,.1);border:1px solid rgba(155,127,255,.2);color:rgba(155,127,255,.9);font-family:'Geist',sans-serif;font-size:12px;font-weight:600;padding:7px 18px;border-radius:8px;cursor:pointer;transition:background .15s,border-color .15s" onmouseover="this.style.background='rgba(155,127,255,.2)';this.style.borderColor='rgba(155,127,255,.45)'" onmouseout="this.style.background='rgba(155,127,255,.1)';this.style.borderColor='rgba(155,127,255,.2)'">Next →</button>
-        </div>
-        <div id="cal-grid-wrap"></div>
-        <div id="cal-day-detail" style="display:none;margin-top:16px"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- SETUPS -->
 <div class="page" id="page-setups">
   <div class="page-header">
-    <div><div class="page-title">Setup Stats</div><div class="page-sub">Performance breakdown by timeframe, result, and setup</div></div>
-    <div style="display:flex;gap:8px">
+    <div><div class="page-title">Analytics</div><div class="page-sub">Performance breakdown, stats, and full trade history</div></div>
+    <div style="display:flex;gap:8px;align-items:center">
       <select id="stats-period" class="btn btn-sm" style="font-size:11px" onchange="renderSetupsPage()">
         <option value="all">All time</option>
         <option value="week">This week</option>
         <option value="month">This month</option>
       </select>
+      <button class="btn btn-green" onclick="go('log')">+ Log trade</button>
     </div>
   </div>
+
+  <!-- ANALYTICS TABS -->
+  <div style="display:flex;gap:4px;margin-bottom:20px;background:var(--nm-bg);border-radius:12px;padding:5px;box-shadow:var(--nm-press-sm);width:fit-content">
+    <button id="atab-stats-btn" onclick="switchAnalyticsTab('stats')" style="padding:7px 18px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'Geist',sans-serif;background:var(--accent);color:#fff;transition:all .15s">Stats</button>
+    <button id="atab-history-btn" onclick="switchAnalyticsTab('history')" style="padding:7px 18px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:'Geist',sans-serif;background:transparent;color:var(--muted);transition:all .15s">History</button>
+  </div>
+
+  <!-- STATS TAB -->
+  <div id="atab-stats">
 
   <div class="page-hero-banner" style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:20px;min-height:170px;background:linear-gradient(135deg,#0a0a14,#111128);border:1px solid rgba(155,127,255,.2)">
     <canvas id="sp-c" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
@@ -2192,6 +2121,85 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
       <button class="nm-btn nm-btn-green" onclick="openPayoutModal()">+ Log Payout</button>
     </div>
     <div id="prop-payouts-list"><div class="empty">No payouts logged yet</div></div>
+  </div>
+</div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="atab-history" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div id="history-count" style="font-size:13px;color:var(--muted)"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;background:var(--nm-bg);border-radius:10px;padding:3px;gap:2px;box-shadow:var(--nm-press-sm)">
+          <button id="hist-view-table" onclick="setHistoryView('table')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:7px;cursor:pointer;background:var(--accent);color:#fff;transition:all .15s">Table</button>
+          <button id="hist-view-cal" onclick="setHistoryView('calendar')" style="font-size:11px;font-family:'Geist',sans-serif;font-weight:600;padding:5px 14px;border:none;border-radius:7px;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s">Calendar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History hero stats (neumorphic chips, no canvas) -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+      <div id="hi-s0" class="nm-chip" style="padding:14px 12px;border-radius:14px"></div>
+      <div id="hi-s1" class="nm-chip" style="padding:14px 12px;border-radius:14px"></div>
+      <div id="hi-s2" class="nm-chip" style="padding:14px 12px;border-radius:14px"></div>
+      <div id="hi-s3" class="nm-chip" style="padding:14px 12px;border-radius:14px"></div>
+    </div>
+    <!-- hidden canvas kept for compat -->
+    <canvas id="hi-c" style="display:none"></canvas>
+    <canvas id="cal-hero-c" style="display:none"></canvas>
+
+    <div id="hist-table-view">
+      <div class="grid2" style="margin-bottom:12px">
+        <div class="card" style="padding:14px 16px">
+          <div class="card-header" style="margin-bottom:10px"><span class="card-title">Last 10 trades</span><span class="card-sub" id="rolling10-sub">Rolling performance</span></div>
+          <div id="rolling10-dots" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:10px">
+            <span style="font-size:11px;color:var(--muted)" id="rolling10-wr"></span>
+            <span style="font-size:11px;font-family:'Geist Mono',monospace;font-weight:700" id="rolling10-pnl"></span>
+          </div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div class="card-header" style="margin-bottom:8px"><span class="card-title">P&amp;L by hour</span><span class="card-sub">All-time breakdown</span></div>
+          <div id="hist-hour-heat"></div>
+        </div>
+      </div>
+      <div class="filters">
+        <input class="filter-input" id="f-ticker" placeholder="Ticker..." onkeyup="renderHistory()" style="width:90px">
+        <select class="filter-input" id="f-side" onchange="renderHistory()"><option value="">All sides</option><option value="long">Long</option><option value="short">Short</option></select>
+        <select class="filter-input" id="f-result" onchange="renderHistory()"><option value="">Win / Loss</option><option value="win">Wins only</option><option value="loss">Losses only</option></select>
+        <select class="filter-input" id="f-setup-filter" onchange="renderHistory()"><option value="">All setups</option></select>
+        <select class="filter-input" id="f-mistake-filter" onchange="renderHistory()"><option value="">All mistakes</option></select>
+        <input class="filter-input" id="f-date-from" type="date" onchange="renderHistory()" title="From date">
+        <input class="filter-input" id="f-date-to" type="date" onchange="renderHistory()" title="To date">
+        <button class="btn btn-sm" onclick="clearFilters()">Clear filters</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="overflow-x:auto">
+          <table class="trades-table">
+            <thead><tr>
+              <th>Date / Time</th><th>Ticker</th><th>Side</th><th>Entry</th><th>Exit</th><th>Qty</th><th>Fees</th><th>P&amp;L</th><th>Outcome</th><th>R:R</th><th>TTC</th><th>Firm</th><th>Setup</th><th>Mistakes</th><th>Did Well</th><th style="text-align:center;color:var(--text)">Grade</th><th></th>
+            </tr></thead>
+            <tbody id="history-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="hist-cal-view" style="display:none">
+      <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:24px">
+        <div style="text-align:center;margin-bottom:22px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:10px">Monthly P&amp;L</div>
+          <div id="cal-monthly-pnl" style="font-size:44px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-2.5px;line-height:1;color:var(--muted)">—</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <button onclick="calNav(-1)" class="nm-btn">← Prev</button>
+          <div style="font-size:16px;font-weight:700;color:var(--text)" id="cal-month-label"></div>
+          <button onclick="calNav(1)" class="nm-btn">Next →</button>
+        </div>
+        <div id="cal-grid-wrap"></div>
+        <div id="cal-day-detail" style="display:none;margin-top:16px"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3236,7 +3244,7 @@ function go(page) {
   if (page==='setups')         { renderSetupsPage(); return; }
   if (page==='propfirms')      renderPropFirmsPage();
   if (page==='dashboard')      renderDashboard();
-  if (page==='history')        { if (typeof histView !== 'undefined' && histView === 'calendar') renderCalendar(); else renderHistory(); }
+  if (page==='history')        { go('setups'); setTimeout(()=>switchAnalyticsTab('history'),80); return; }
   if (page==='log')            renderLogPage();
   if (page==='journal')        renderJournalPage();
   if (page==='risk')           { renderRisk(); renderMistakeAnalytics(); }
@@ -7503,6 +7511,40 @@ function renderDashPropSummary() {
 }
 
 // ─── SETUP STATS PAGE ─────────────────────────────────────────────────────────
+function switchAnalyticsTab(tab) {
+  const statsTab = document.getElementById('atab-stats');
+  const histTab  = document.getElementById('atab-history');
+  const statsBtn = document.getElementById('atab-stats-btn');
+  const histBtn  = document.getElementById('atab-history-btn');
+  if (!statsTab || !histTab) return;
+  const onStats = tab === 'stats';
+  statsTab.style.display = onStats ? '' : 'none';
+  histTab.style.display  = onStats ? 'none' : '';
+  statsBtn.style.background = onStats ? 'var(--accent)' : 'transparent';
+  statsBtn.style.color      = onStats ? '#fff' : 'var(--muted)';
+  histBtn.style.background  = onStats ? 'transparent' : 'var(--accent)';
+  histBtn.style.color       = onStats ? 'var(--muted)' : '#fff';
+  if (!onStats) { renderHistoryHero(); renderHistory(); }
+}
+
+function renderHistoryHero() {
+  const T = state.trades || [];
+  const pnls = T.map(t => calcPnL(t));
+  const total = pnls.reduce((a,b)=>a+b,0);
+  const wins = T.filter(t=>t.outcome==='win').length;
+  const wr = T.length ? Math.round(wins/T.length*100) : 0;
+  const col = total>=0?'var(--green)':'var(--red)';
+  const sc = (el, html) => { const e=document.getElementById(el); if(e) e.innerHTML=html; };
+  const lbl = t => `<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:5px">${t}</div>`;
+  const val = (v,c) => `<div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${c||'var(--text)'};line-height:1">${v}</div>`;
+  sc('hi-s0', val((total>=0?'+':'-')+'$'+Math.abs(Math.round(total)).toLocaleString(), col)+lbl('Total P&L'));
+  sc('hi-s1', val(T.length,'var(--text)')+lbl('Trades'));
+  sc('hi-s2', val(wr+'%',wr>=55?'var(--green)':wr>=40?'var(--amber)':'var(--red)')+lbl('Win Rate'));
+  sc('hi-s3', val(T.length-wins,'var(--muted)')+lbl('Losses'));
+  const hc = document.getElementById('history-count');
+  if(hc) hc.textContent = T.length + ' trade' + (T.length!==1?'s':'');
+}
+
 function renderSetupsPage() {
   const period = document.getElementById('stats-period')?.value || 'all';
   const T = periodFilter(state.trades, period);
