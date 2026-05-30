@@ -860,12 +860,12 @@ body.light-mode .copilot-wrap { box-shadow: none; }
 .ms-check-label:hover{color:var(--text)}
 
 /* Mood buttons v2 (large emoji circle) */
-.mood-btn-v2{width:52px;height:52px;border-radius:50%;border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);font-size:22px;cursor:pointer;transition:all .2s cubic-bezier(0.23,1,0.32,1);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
+.mood-btn-v2{border-radius:12px;border:1px solid var(--border2);background:var(--nm-bg);box-shadow:var(--nm-raise-sm);font-size:20px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;padding:10px 6px;}
 .mood-btn-v2:hover{transform:scale(1.1);border-color:rgba(155,127,255,.3)}
 .mood-btn-v2:active{transform:scale(0.95)}
-.mood-btn-v2.selected{transform:scale(1.18);border-color:var(--accent);box-shadow:0 0 18px rgba(155,127,255,.4),0 0 6px rgba(155,127,255,.3)}
-.mood-label{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);margin-top:2px;display:none}
-.mood-btn-v2.selected .mood-label{display:block;color:var(--accent)}
+.mood-btn-v2.selected{border-color:var(--accent);box-shadow:var(--nm-press-sm),0 0 12px rgba(155,127,255,.3);background:var(--nm-bg);color:var(--accent)}
+.mood-label{font-size:9px;font-weight:700;letter-spacing:.03em;color:var(--dim);margin-top:2px;display:block}
+.mood-btn-v2.selected .mood-label{color:var(--accent)}
 
 /* Daily log slide transitions */
 @keyframes dlSlideInFromRight{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
@@ -2447,68 +2447,66 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 
   <!-- DAILY LOG TAB -->
   <div id="jtab-daily" style="display:none">
-    <div style="display:grid;grid-template-columns:1fr 260px;gap:14px;align-items:start">
+    <div style="display:grid;grid-template-columns:1fr 240px;gap:14px;align-items:start">
 
-      <!-- LEFT: main entry form -->
-      <div style="background:var(--nm-bg);border-radius:18px;box-shadow:var(--nm-raise);padding:22px 24px">
+      <!-- LEFT: main entry -->
+      <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:20px 22px">
 
         <!-- Date nav -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <div id="daily-date-label" style="font-size:15px;font-weight:700;color:var(--text)"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div id="daily-date-label" style="font-size:14px;font-weight:700;color:var(--text)"></div>
           <div style="display:flex;gap:6px;align-items:center">
             <div id="daily-edit-btn-wrap"></div>
-            <button class="nm-btn" onclick="dailyNavDay(-1)" style="font-size:12px">← Prev</button>
-            <button class="nm-btn" onclick="dailyNavDay(1)" id="daily-next-btn" style="font-size:12px">Next →</button>
+            <button class="nm-btn" onclick="dailyNavDay(-1)" style="font-size:11px">← Prev</button>
+            <button class="nm-btn" onclick="dailyNavDay(1)" id="daily-next-btn" style="font-size:11px">Next →</button>
           </div>
         </div>
 
         <div id="daily-main-content">
-          <div id="daily-trade-summary" style="margin-bottom:16px"></div>
+          <div id="daily-trade-summary" style="margin-bottom:14px"></div>
           <div id="daily-ro-view" style="display:none"></div>
           <div id="daily-edit-form">
 
-            <!-- ═══ BEFORE SESSION ═══ -->
-            <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
-              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent)">☀ Before Session</div>
+            <!-- BEFORE SESSION -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent)">☀ Before Session</span>
               <div style="flex:1;height:1px;background:rgba(155,127,255,0.2)"></div>
             </div>
 
-            <!-- Mindset going in -->
             <div style="margin-bottom:14px">
               <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Mindset going in</div>
-              <div style="display:flex;gap:8px" id="daily-mood-row">
-                <button onclick="setDailyMood(0)" class="mood-btn-v2" data-mood="0" style="flex:1"><span>😤</span><span class="mood-label">Frustrated</span></button>
+              <div style="display:flex;gap:6px" id="daily-mood-row">
+                <button onclick="setDailyMood(0)" class="mood-btn-v2" data-mood="0" style="flex:1"><span>😤</span><span class="mood-label">Rough</span></button>
                 <button onclick="setDailyMood(1)" class="mood-btn-v2" data-mood="1" style="flex:1"><span>😐</span><span class="mood-label">Neutral</span></button>
                 <button onclick="setDailyMood(2)" class="mood-btn-v2" data-mood="2" style="flex:1"><span>😊</span><span class="mood-label">Focused</span></button>
-                <button onclick="setDailyMood(3)" class="mood-btn-v2" data-mood="3" style="flex:1"><span>🔥</span><span class="mood-label">Confident</span></button>
+                <button onclick="setDailyMood(3)" class="mood-btn-v2" data-mood="3" style="flex:1"><span>🔥</span><span class="mood-label">Locked in</span></button>
                 <button onclick="setDailyMood(4)" class="mood-btn-v2" data-mood="4" style="flex:1"><span>😴</span><span class="mood-label">Tired</span></button>
               </div>
             </div>
 
-            <!-- Energy & habits (morning) -->
             <div style="margin-bottom:14px">
               <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Morning habits</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
-                  <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Sleep</div>
-                  <input type="number" id="en-sleep" min="0" max="12" step="0.5" placeholder="7.5h" style="width:100%;background:transparent;border:none;outline:none;color:var(--text);font-size:16px;font-weight:700;font-family:var(--mono)">
+                  <div style="font-size:10px;color:var(--dim);margin-bottom:5px">Sleep</div>
+                  <input type="number" id="en-sleep" min="0" max="12" step="0.5" placeholder="7.5h" style="width:100%;background:transparent;border:none;outline:none;color:var(--text);font-size:15px;font-weight:700;font-family:var(--mono)">
                 </div>
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
-                  <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Gym</div>
-                  <div style="display:flex;gap:5px">
+                  <div style="font-size:10px;color:var(--dim);margin-bottom:5px">Gym</div>
+                  <div style="display:flex;gap:4px">
                     <button class="nm-btn" id="en-gym-yes" onclick="setEnergyPill('gym','yes')" style="flex:1;justify-content:center;font-size:11px">Yes</button>
                     <button class="nm-btn" id="en-gym-no" onclick="setEnergyPill('gym','no')" style="flex:1;justify-content:center;font-size:11px">No</button>
                   </div>
                 </div>
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
-                  <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Ate well</div>
-                  <div style="display:flex;gap:5px">
+                  <div style="font-size:10px;color:var(--dim);margin-bottom:5px">Ate well</div>
+                  <div style="display:flex;gap:4px">
                     <button class="nm-btn" id="en-ate-yes" onclick="setEnergyPill('ate','yes')" style="flex:1;justify-content:center;font-size:11px">Yes</button>
                     <button class="nm-btn" id="en-ate-no" onclick="setEnergyPill('ate','no')" style="flex:1;justify-content:center;font-size:11px">No</button>
                   </div>
                 </div>
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
-                  <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Caffeine</div>
+                  <div style="font-size:10px;color:var(--dim);margin-bottom:5px">Caffeine</div>
                   <div style="display:flex;gap:3px">
                     <button class="nm-btn" id="en-caf-none" onclick="setEnergyPill('caffeine','none')" style="flex:1;justify-content:center;font-size:10px;padding:5px 2px">None</button>
                     <button class="nm-btn" id="en-caf-some" onclick="setEnergyPill('caffeine','some')" style="flex:1;justify-content:center;font-size:10px;padding:5px 2px">Some</button>
@@ -2516,32 +2514,30 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
                   </div>
                 </div>
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
-                  <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Stress</div>
+                  <div style="font-size:10px;color:var(--dim);margin-bottom:5px">Stress</div>
                   <div class="dot-sel" id="en-stress-dots"></div>
                 </div>
                 <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px">
-                  <div style="font-size:10px;color:var(--dim);margin-bottom:6px">Motivation</div>
+                  <div style="font-size:10px;color:var(--dim);margin-bottom:5px">Motivation</div>
                   <div class="dot-sel" id="en-motivation-dots"></div>
                 </div>
               </div>
             </div>
 
-            <!-- Pre-session note -->
-            <div style="margin-bottom:20px">
+            <div style="margin-bottom:18px">
               <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Plan / bias for today</div>
-              <textarea id="daily-pre-notes" placeholder="What's your game plan? Market bias? Key levels to watch?" style="width:100%;min-height:80px;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.65;box-sizing:border-box;outline:none"></textarea>
+              <textarea id="daily-pre-notes" placeholder="Market bias, key levels, game plan..." style="width:100%;min-height:72px;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.6;box-sizing:border-box;outline:none"></textarea>
             </div>
 
-            <!-- ═══ AFTER SESSION ═══ -->
-            <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
-              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green)">✓ After Session</div>
+            <!-- AFTER SESSION -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green)">✓ After Session</span>
               <div style="flex:1;height:1px;background:rgba(0,208,132,0.2)"></div>
             </div>
 
-            <!-- Rules followed -->
             <div style="margin-bottom:14px">
-              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Rules followed</div>
-              <div id="rule-toggles-wrap" style="box-shadow:var(--nm-press-sm);border-radius:12px;overflow:hidden">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Rules followed</div>
+              <div id="rule-toggles-wrap" style="box-shadow:var(--nm-press-sm);border-radius:10px;overflow:hidden">
                 <div class="rule-toggle-row"><span class="rule-toggle-lbl">Respected risk limits</span><label class="rule-toggle"><input type="checkbox" id="rl-risk"><span class="rule-toggle-track"></span></label></div>
                 <div class="rule-toggle-row"><span class="rule-toggle-lbl">Waited for confirmation</span><label class="rule-toggle"><input type="checkbox" id="rl-confirmation"><span class="rule-toggle-track"></span></label></div>
                 <div class="rule-toggle-row"><span class="rule-toggle-lbl">No revenge trades</span><label class="rule-toggle"><input type="checkbox" id="rl-noRevenge"><span class="rule-toggle-track"></span></label></div>
@@ -2549,13 +2545,12 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
                 <div class="rule-toggle-row"><span class="rule-toggle-lbl">Journaled today</span><label class="rule-toggle"><input type="checkbox" id="rl-journaled"><span class="rule-toggle-track"></span></label></div>
                 <div class="rule-toggle-row"><span class="rule-toggle-lbl">Stopped at max loss</span><label class="rule-toggle"><input type="checkbox" id="rl-maxLoss"><span class="rule-toggle-track"></span></label></div>
               </div>
-              <div id="rule-adherence-pct" style="margin-top:8px;font-size:11px;font-weight:700;color:var(--amber)"></div>
+              <div id="rule-adherence-pct" style="margin-top:7px;font-size:11px;font-weight:700;color:var(--amber)"></div>
             </div>
 
-            <!-- Session scorecard -->
             <div style="margin-bottom:14px">
-              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Session scorecard</div>
-              <div id="sc-sliders" style="box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px">
+              <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Session scorecard</div>
+              <div id="sc-sliders" style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:12px 14px">
                 <div class="sc-slider-row"><span class="sc-slider-label">Execution</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-execution" oninput="document.getElementById('sc-val-execution').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-execution">5</span></div>
                 <div class="sc-slider-row"><span class="sc-slider-label">Discipline</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-discipline" oninput="document.getElementById('sc-val-discipline').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-discipline">5</span></div>
                 <div class="sc-slider-row" style="margin-bottom:0"><span class="sc-slider-label">Focus</span><input type="range" min="0" max="10" value="5" class="sc-slider" id="sc-focus" oninput="document.getElementById('sc-val-focus').textContent=this.value;updateSliderFill(this)"><span class="sc-val" id="sc-val-focus">5</span></div>
@@ -2566,24 +2561,22 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
               </div>
               <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
                 <span style="font-size:11px;color:var(--muted)">Respected my identity today?</span>
-                <button class="nm-btn" id="sc-rs-yes" onclick="setSCRespect('yes')" style="font-size:11px;padding:5px 10px">YES</button>
-                <button class="nm-btn" id="sc-rs-no" onclick="setSCRespect('no')" style="font-size:11px;padding:5px 10px">NO</button>
+                <button class="nm-btn" id="sc-rs-yes" onclick="setSCRespect('yes')" style="font-size:11px;padding:5px 12px">YES</button>
+                <button class="nm-btn" id="sc-rs-no" onclick="setSCRespect('no')" style="font-size:11px;padding:5px 12px">NO</button>
               </div>
             </div>
 
-            <!-- Post-session notes -->
-            <div style="margin-bottom:16px">
+            <div style="margin-bottom:14px">
               <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">What happened? What did you learn?</div>
-              <textarea id="daily-notes" placeholder="Recap the session. Best trade, worst trade, lessons..." style="width:100%;min-height:110px;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.75;box-sizing:border-box;outline:none"></textarea>
+              <textarea id="daily-notes" placeholder="Recap the session. Best trade, worst trade, lessons..." style="width:100%;min-height:100px;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:10px;padding:10px 12px;color:var(--text);font-size:13px;font-family:var(--display);resize:vertical;line-height:1.7;box-sizing:border-box;outline:none"></textarea>
             </div>
 
-            <div id="daily-goal-checkins" style="margin-bottom:16px"></div>
-            <button class="nm-btn nm-btn-green" style="width:100%;justify-content:center;padding:11px;font-size:13px;font-weight:700;border-radius:12px" onclick="saveDailyEntry()">Save entry</button>
+            <div id="daily-goal-checkins" style="margin-bottom:14px"></div>
+            <button class="nm-btn nm-btn-green" style="width:100%;justify-content:center;padding:11px;font-size:13px;font-weight:700;border-radius:10px" onclick="saveDailyEntry()">Save entry</button>
 
           </div><!-- /daily-edit-form -->
 
-          <!-- CAPTURES -->
-          <div id="daily-captures-section" style="margin-top:22px">
+          <div id="daily-captures-section" style="margin-top:20px">
             <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Captures</div>
             <div id="daily-captures-list"></div>
             <div id="daily-captures-hint" style="font-size:11px;color:var(--dim);margin-top:6px">Use the <span style="color:var(--accent)">+</span> button to add a capture.</div>
@@ -2591,14 +2584,13 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
         </div>
       </div>
 
-      <!-- RIGHT: history sidebar -->
+      <!-- RIGHT: history -->
       <div>
         <div id="daily-journal-header" style="margin-bottom:10px"></div>
         <div id="daily-history-list"></div>
       </div>
     </div>
   </div>
-
   <!-- CAPTURES TAB -->
   <div id="jtab-captures" style="display:none">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap">
