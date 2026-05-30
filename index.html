@@ -72,7 +72,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .nav-item.active svg{opacity:1}
 
 .main{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);min-width:0;height:100vh}
-.page{display:none;padding:24px}
+.page{display:none;padding:24px;max-width:1400px;margin:0 auto}
 .page.active{display:block}
 
 .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
@@ -780,7 +780,7 @@ body.light-mode .btn-green { box-shadow: 0 2px 14px rgba(155,127,255,0.25); }
 body.light-mode .quick-entry,
 body.light-mode .copilot-wrap { box-shadow: none; }
 /* ── JOURNAL ─────────────────────────────────────────────────────────── */
-.jtab{font-size:11px;font-weight:600;padding:5px 14px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--muted);font-family:var(--display);transition:all .15s}
+.jtab{font-size:12px;font-weight:600;padding:6px 16px;border:none;border-radius:7px;cursor:pointer;background:transparent;color:var(--muted);font-family:var(--display);transition:all .15s}
 .jtab-active{background:var(--accent)!important;color:#fff!important}
 
 /* Goal card */
@@ -2388,13 +2388,13 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 <!-- DAILY ROUTINE -->
 <!-- JOURNAL -->
 <div class="page" id="page-journal">
-  <div class="page-header">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
       <div class="page-title">Journal</div>
       <div class="page-sub">Goals, progress, and daily reflections</div>
     </div>
-    <div style="display:flex;gap:8px">
-      <div style="display:flex;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:2px;gap:2px">
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;background:var(--nm-bg);border-radius:10px;padding:3px;gap:2px;box-shadow:var(--nm-press-sm)">
         <button id="jtab-goals-btn" onclick="switchJournalTab('goals')" class="jtab jtab-active">Goals</button>
         <button id="jtab-daily-btn" onclick="switchJournalTab('daily')" class="jtab">Daily Log</button>
         <button id="jtab-captures-btn" onclick="switchJournalTab('captures')" class="jtab">⚡ Captures</button>
