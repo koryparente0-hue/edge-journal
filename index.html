@@ -3255,6 +3255,11 @@ function go(page) {
 }
 
 // ─── CALC ─────────────────────────────────────────────────────────────────────
+// BE trades (be_win / be_loss) are excluded from win rate calculations
+function isWin(t)  { return t.outcome === 'win'; }
+function isLoss(t) { return t.outcome === 'loss'; }
+function isCountable(t) { return t.outcome === 'win' || t.outcome === 'loss'; }
+
 function calcPnL(t) {
   if (t.quickMode && t.quickPnL !== undefined) return t.quickPnL - (t.fees||0);
   const m = {NQ:20,MNQ:2,ES:50,MES:5};
@@ -3292,16 +3297,17 @@ function renderDashboard() {
   const T = periodFilter(state.trades, period);
   const pnls = T.map(t => calcPnL(t));
   const total = pnls.reduce((a,b)=>a+b,0);
-  const wins = T.filter(t=>t.outcome==='win');
-  const losses = T.filter(t=>t.outcome==='loss');
-  const wr = T.length ? wins.length/T.length*100 : 0;
+  const wins = T.filter(isWin);
+  const losses = T.filter(isLoss);
+  const countable = T.filter(isCountable);
+  const wr = countable.length ? wins.length/countable.length*100 : 0;
   const avgW = wins.length ? wins.reduce((a,t)=>a+calcPnL(t),0)/wins.length : 0;
   const avgL = losses.length ? Math.abs(losses.reduce((a,t)=>a+calcPnL(t),0)/losses.length) : 0;
   let peak=0,dd=0,run=0;
   for (const p of pnls) { run+=p; if(run>peak)peak=run; dd=Math.min(dd,run-peak); }
   const validRRTrades = T.filter(t => { const r = parseFloat(calcRR(t)) || parseFloat(t.quickRR) || 0; return r !== 0 && !isNaN(r); });
-  const winnerRRs = validRRTrades.filter(t => t.outcome === 'win').map(t => parseFloat(calcRR(t)) || parseFloat(t.quickRR));
-  const loserRRs  = validRRTrades.filter(t => t.outcome === 'loss').map(t => Math.abs(parseFloat(calcRR(t)) || parseFloat(t.quickRR)));
+  const winnerRRs = validRRTrades.filter(isWin).map(t => parseFloat(calcRR(t)) || parseFloat(t.quickRR));
+  const loserRRs  = validRRTrades.filter(isLoss).map(t => Math.abs(parseFloat(calcRR(t)) || parseFloat(t.quickRR)));
   const avgWinnerR = winnerRRs.length ? winnerRRs.reduce((a,b)=>a+b,0)/winnerRRs.length : null;
   const avgLoserR  = loserRRs.length  ? loserRRs.reduce((a,b)=>a+b,0)/loserRRs.length   : null;
   const grossProfit = wins.reduce((a,t) => a + calcPnL(t), 0);
@@ -3332,8 +3338,9 @@ function renderDashCoach(T) {
   const todayPnL = todayTrades.reduce((s,t)=>s+calcPnL(t),0);
   const pnls = T.map(t=>calcPnL(t));
   const total = pnls.reduce((a,b)=>a+b,0);
-  const wins = T.filter(t=>t.outcome==='win');
-  const wr = T.length ? Math.round(wins.length/T.length*100) : 0;
+  const wins = T.filter(isWin);
+  const countable2 = T.filter(isCountable);
+  const wr = countable2.length ? Math.round(wins.length/countable2.length*100) : 0;
 
   // streak
   const byDay={};
@@ -3343,13 +3350,13 @@ function renderDashCoach(T) {
 
   // A+ setup winrate
   const aPlus=T.filter(t=>t.grade==='A+');
-  const aPlusWR=aPlus.length?Math.round(aPlus.filter(t=>t.outcome==='win').length/aPlus.length*100):null;
+  const aPlusWR=aPlus.length?Math.round(aPlus.filter(isWin).length/Math.max(1,aPlus.filter(isCountable).length)*100):null;
 
   // revenge: 2 losses then immediate trade within 5 min
   let revengeCount=0;
   const sorted=[...state.trades].sort((a,b)=>new Date(a.datetime)-new Date(b.datetime));
   for(let i=2;i<sorted.length;i++){
-    if(sorted[i-1].outcome==='loss'&&sorted[i-2].outcome==='loss'){
+    if(isLoss(sorted[i-1])&&isLoss(sorted[i-2])){
       const gap=(new Date(sorted[i].datetime)-new Date(sorted[i-1].datetime))/60000;
       if(gap<6)revengeCount++;
     }
@@ -3722,7 +3729,7 @@ async function reviewTrade(idx) {
   const hourPerf=thisHour&&hourStats[thisHour]?hourStats[thisHour]:null;
 
   const setupStats={};
-  prevTrades.forEach(x=>(x.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0};setupStats[s].n++;if(x.outcome==='win')setupStats[s].wins++;}));
+  prevTrades.forEach(x=>(x.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0};setupStats[s].n++;if(isWin(x))setupStats[s].wins++;}));
 
   const prevLoss=prevTrades.length&&calcPnL(prevTrades[prevTrades.length-1])<0;
   const timeDiffMin=prevTrades.length&&prevTrades[prevTrades.length-1].datetime?Math.round((new Date(t.datetime)-new Date(prevTrades[prevTrades.length-1].datetime))/60000):null;
@@ -3736,7 +3743,7 @@ async function reviewTrade(idx) {
 
   const histContext=`
 TRADER HISTORY CONTEXT (${prevTrades.length} prior trades):
-- Overall win rate: ${prevTrades.length?Math.round(prevTrades.filter(x=>x.outcome==='win').length/prevTrades.length*100)+'%':'unknown'}
+- Overall win rate: ${prevTrades.length?Math.round(prevTrades.filter(isWin).length/Math.max(1,prevTrades.filter(isCountable).length)*100)+'%':'unknown'}
 - Avg risk per trade: ${avgRiskVal?avgRiskVal.toFixed(1)+' pts':'unknown'}
 - This trade risk: ${thisRisk?thisRisk.toFixed(1)+' pts ('+riskSpike+'x avg)':'unknown'}
 - Performance at ${thisHour?thisHour+':00':'this hour'}: ${hourPerf?'avg $'+Math.round(hourPerf.pnl/hourPerf.n)+' over '+hourPerf.n+' trades':'no data'}
@@ -4061,7 +4068,7 @@ function switchReviewTab(tab, idx, loading) {
     if (!improvements.length&&pnl>0)                         improvements.push({title:'Clean execution',          body:'No major mistakes flagged. Focus on replicating this process consistently.'});
 
     const winsBySetup = {};
-    state.trades.forEach(tr=>(tr.setups||[]).forEach(s=>{ if(!winsBySetup[s])winsBySetup[s]={w:0,n:0}; winsBySetup[s].n++; if(tr.outcome==='win')winsBySetup[s].w++; }));
+    state.trades.forEach(tr=>(tr.setups||[]).forEach(s=>{ if(!winsBySetup[s])winsBySetup[s]={w:0,n:0}; winsBySetup[s].n++; if(isWin(tr))winsBySetup[s].w++; }));
     const setupRows = (t.setups||[]).map(s=>{ const d=winsBySetup[s]; if(!d||d.n<2)return ''; return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:12px">${s}</span><span style="font-size:12px;font-weight:700;color:${d.w/d.n>=0.6?'var(--accent)':'var(--amber)'}">${Math.round(d.w/d.n*100)}% WR (${d.n} trades)</span></div>`; }).filter(Boolean);
 
     body.innerHTML = `
@@ -4174,7 +4181,7 @@ function renderSetupAnalytics() {
     (t.setups||[]).forEach(s=>{
       if(!stats[s])stats[s]={wins:0,losses:0,pnl:0,count:0,winPnls:[],lossPnls:[]};
       const p=calcPnL(t); stats[s].count++; stats[s].pnl+=p;
-      if(t.outcome==='win'){stats[s].wins++;stats[s].winPnls.push(p);}else if(t.outcome==='loss'){stats[s].losses++;stats[s].lossPnls.push(p);}
+      if(isWin(t)){stats[s].wins++;stats[s].winPnls.push(p);}else if(isLoss(t)){stats[s].losses++;stats[s].lossPnls.push(p);}
     });
   });
   const active=Object.entries(stats).filter(([,v])=>v.count>0).sort((a,b)=>b[1].count-a[1].count);
@@ -4213,8 +4220,8 @@ function renderSetupAnalytics() {
   const headEl = document.getElementById('be-headline');
   const T = state.trades;
 
-  const wins    = T.filter(t=>t.outcome==='win');
-  const losses  = T.filter(t=>t.outcome==='loss');
+  const wins    = T.filter(isWin);
+  const losses  = T.filter(isLoss);
   const beWins  = T.filter(t=>t.outcome==='be_win');
   const beLoss  = T.filter(t=>t.outcome==='be_loss');
   const allBE   = [...beWins, ...beLoss];
@@ -4493,8 +4500,8 @@ function renderTTCAnalysis(T) {
     return;
   }
 
-  const winTTC = withTTC.filter(t => t.outcome === 'win');
-  const lossTTC = withTTC.filter(t => t.outcome === 'loss');
+  const winTTC = withTTC.filter(isWin);
+  const lossTTC = withTTC.filter(isLoss);
   const avgWinTTC = winTTC.length ? (winTTC.reduce((a,t) => a + t.ttc, 0) / winTTC.length).toFixed(1) : null;
   const avgLossTTC = lossTTC.length ? (lossTTC.reduce((a,t) => a + t.ttc, 0) / lossTTC.length).toFixed(1) : null;
 
@@ -4502,7 +4509,7 @@ function renderTTCAnalysis(T) {
   const fast = withTTC.filter(t => t.ttc <= 3);
   const mid  = withTTC.filter(t => t.ttc > 3 && t.ttc <= 6);
   const slow = withTTC.filter(t => t.ttc > 6);
-  const wr = arr => arr.length ? Math.round(arr.filter(t => t.outcome === 'win').length / arr.length * 100) : null;
+  const wr = arr => arr.filter(isCountable).length ? Math.round(arr.filter(isWin).length / arr.filter(isCountable).length * 100) : null;
   const fastWR = wr(fast); const midWR = wr(mid); const slowWR = wr(slow);
 
   headEl.textContent = `${withTTC.length} trades with TTC · avg ${(withTTC.reduce((a,t)=>a+t.ttc,0)/withTTC.length).toFixed(1)}m`;
@@ -4579,7 +4586,7 @@ async function runInsights() {
     return `${t.datetime?t.datetime.slice(0,10):''} ${h}:00 | ${t.ticker} ${t.side} | PnL:$${Math.round(pnl)} | setups:${(t.setups||[]).join('+')||'none'} | mistakes:${(t.mistakes||[]).join('+')||'none'} | grade:${t.grade||'?'}`;
   }).join('\n');
   const totalPnL=state.trades.reduce((a,t)=>a+calcPnL(t),0);
-  const wr=Math.round(state.trades.filter(t=>t.outcome==='win').length/state.trades.length*100);
+  const wr=Math.round(state.trades.filter(isWin).length/Math.max(1,state.trades.filter(isCountable).length)*100);
   const prompt=`You are an expert trading coach analyzing a futures scalper's journal. Trader uses ICT methods on NQ/MNQ.
 ${buildGradingContext()}
 JOURNAL (${state.trades.length} trades, ${wr}% win rate, $${Math.round(totalPnL)} total P&L):
@@ -4610,7 +4617,7 @@ Be specific with actual numbers from the data. Use ICT terms where relevant.`;
 
 function _insSetupChart() {
   const stats={};
-  state.trades.forEach(t=>{(t.setups||[]).forEach(s=>{if(!stats[s])stats[s]={n:0,w:0,pnl:0};stats[s].n++;stats[s].pnl+=calcPnL(t);if(t.outcome==='win')stats[s].w++;});});
+  state.trades.forEach(t=>{(t.setups||[]).forEach(s=>{if(!stats[s])stats[s]={n:0,w:0,pnl:0};stats[s].n++;stats[s].pnl+=calcPnL(t);if(isWin(t))stats[s].w++;});});
   const entries=Object.entries(stats).filter(([,v])=>v.n>=2).sort((a,b)=>(b[1].w/b[1].n)-(a[1].w/a[1].n)).slice(0,5);
   if(!entries.length)return`<div style="text-align:center;color:var(--dim);font-size:12px;padding:16px 0">No setups with 2+ trades yet</div>`;
   const lW=88,bAreaW=160,svgW=320,barH=13,gap=9;
@@ -4697,7 +4704,7 @@ function _insTrendChart() {
   }).join(' ');
   const finalVal=pts[pts.length-1];const col=finalVal>=0?'#00d084':'#ff4d4d';
   const lastX=((1*(svgW-12))+6).toFixed(1);const baseY=(svgH-14).toFixed(1);
-  const wins=recent.filter(t=>t.outcome==='win').length;const wr=Math.round(wins/recent.length*100);
+  const wins=recent.filter(isWin).length;const wr=Math.round(wins/Math.max(1,recent.filter(isCountable).length)*100);
   return`<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" fill="none">
     <polygon points="6,${baseY} ${coords} ${lastX},${baseY}" fill="${col}" opacity="0.08"/>
     <polyline points="${coords}" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" fill="none"/>
@@ -4944,7 +4951,7 @@ function refreshPatternFeed() {
 
   // Hour performance
   const hourPnL={};
-  T.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(t.outcome==='win')hourPnL[h].wins++;});
+  T.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(isWin(t))hourPnL[h].wins++;});
   const bestHour=Object.entries(hourPnL).sort((a,b)=>b[1].pnl-a[1].pnl)[0];
   const worstHour=Object.entries(hourPnL).sort((a,b)=>a[1].pnl-b[1].pnl)[0];
   if(bestHour&&bestHour[1].n>=2)patterns.push({color:'#4a9eff',icon:'🕐',title:`Best hour: ${bestHour[0]}:00 EST`,subtitle:`${Math.round(bestHour[1].wins/bestHour[1].n*100)}% win rate · avg +$${Math.round(bestHour[1].pnl/bestHour[1].n)}/trade`,badge:'+$'+Math.round(bestHour[1].pnl/bestHour[1].n)});
@@ -4952,7 +4959,7 @@ function refreshPatternFeed() {
 
   // Setup win rates
   const setupStats={};
-  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(t.outcome==='win')setupStats[s].wins++;}));
+  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(isWin(t))setupStats[s].wins++;}));
   const setups=Object.entries(setupStats).filter(([,v])=>v.n>=2).sort((a,b)=>b[1].wins/b[1].n-a[1].wins/a[1].n);
   if(setups.length)patterns.push({color:'#9B7FFF',icon:'🎯',title:`${setups[0][0]} is strongest`,subtitle:`${Math.round(setups[0][1].wins/setups[0][1].n*100)}% win rate over ${setups[0][1].n} trades`,badge:Math.round(setups[0][1].wins/setups[0][1].n*100)+'% WR'});
   if(setups.length>1){const worst=setups[setups.length-1];patterns.push({color:'#f5a623',icon:'📉',title:`${worst[0]} underperforming`,subtitle:`${Math.round(worst[1].wins/worst[1].n*100)}% WR — reduce size or avoid`,badge:Math.round(worst[1].wins/worst[1].n*100)+'% WR'});}
@@ -4986,7 +4993,7 @@ function refreshPatternFeed() {
   if(quickEntries.length>=2){const revWR=Math.round(quickEntries.filter(t=>t.outcome==='win').length/quickEntries.length*100);patterns.push({color:'#ff4d4d',icon:'🔄',title:`Revenge entries flagged`,subtitle:`${quickEntries.length} trades within 5m of a loss · ${revWR}% WR`,badge:revWR+'% WR'});}
 
   // Win/loss ratio
-  const wins=T.filter(t=>t.outcome==='win');const losses=T.filter(t=>t.outcome==='loss');
+  const wins=T.filter(isWin);const losses=T.filter(isLoss);const countableT=T.filter(isCountable);
   const avgW=wins.length?wins.reduce((a,t)=>a+calcPnL(t),0)/wins.length:0;
   const avgL=losses.length?Math.abs(losses.reduce((a,t)=>a+calcPnL(t),0)/losses.length):0;
   if(avgW&&avgL){const ratio=avgW/avgL;patterns.push({color:ratio>=1.5?'#00d084':'#f5a623',icon:ratio>=1.5?'💰':'⚖️',title:`${ratio.toFixed(2)}:1 win/loss ratio`,subtitle:`Avg win $${Math.round(avgW)} · avg loss $${Math.round(avgL)} · ${ratio>=2?'Excellent':ratio>=1?'Keep above 1.5x':'Losses too large'}`,badge:ratio.toFixed(2)+'x'});}
@@ -5016,14 +5023,14 @@ function renderCopilotPage(){
 function renderCopilotStats(){
   // Setup stats
   const setupStats={};
-  state.trades.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(t.outcome==='win')setupStats[s].wins++;}));
+  state.trades.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(isWin(t))setupStats[s].wins++;}));
   const ssEl=document.getElementById('copilot-setup-stats');
   const ssEntries=Object.entries(setupStats).filter(([,v])=>v.n>0).sort((a,b)=>b[1].n-a[1].n);
   ssEl.innerHTML=ssEntries.length?ssEntries.map(([s,v])=>{const wr=Math.round(v.wins/v.n*100);return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;font-weight:600;flex:1">${s}</span><span style="font-size:12px;font-family:var(--mono);font-weight:700" class="${wr>=50?'pnl-pos':'pnl-neg'}">${wr}% WR</span><span style="font-size:11px;color:var(--muted)">${v.n} trades</span></div>`;}).join(''):'<div class="empty">No setup data yet</div>';
 
   // Hour stats
   const hourPnL={};
-  state.trades.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(t.outcome==='win')hourPnL[h].wins++;});
+  state.trades.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0,wins:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;if(isWin(t))hourPnL[h].wins++;});
   const hsEl=document.getElementById('copilot-time-stats');
   const now=new Date().getHours();
   const hoursToShow=[9,10,11];
@@ -5056,7 +5063,7 @@ async function runCopilot(){
   // Build history context
   const T=state.trades;
   const setupStats={};
-  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(t.outcome==='win')setupStats[s].wins++;}));
+  T.forEach(t=>(t.setups||[]).forEach(s=>{if(!setupStats[s])setupStats[s]={wins:0,n:0,pnl:0};setupStats[s].n++;setupStats[s].pnl+=calcPnL(t);if(isWin(t))setupStats[s].wins++;}));
   const hourPnL={};
   T.forEach(t=>{const h=new Date(t.datetime||'').getHours();if(isNaN(h))return;if(!hourPnL[h])hourPnL[h]={pnl:0,n:0};hourPnL[h].pnl+=calcPnL(t);hourPnL[h].n++;});
   const avgRisks=T.filter(t=>t.sl&&t.entry&&t.sl!==t.entry).map(t=>Math.abs(t.entry-t.sl)*t.qty);
@@ -5074,7 +5081,7 @@ ${ticker} ${copilotSide.toUpperCase()} | Entry:${entry} | Stop:${sl||'none'} | T
 Setup: ${setup||'not specified'} | Context: ${context||'none provided'} | Time: ${nowHour}:00 EST
 
 TRADER'S HISTORY (${T.length} trades):
-- Win rate: ${T.length?Math.round(T.filter(t=>t.outcome==='win').length/T.length*100)+'%':'unknown'}
+- Win rate: ${T.length?Math.round(T.filter(isWin).length/Math.max(1,T.filter(isCountable).length)*100)+'%':'unknown'}
 - Avg risk per trade: ${avgRisk?avgRisk.toFixed(1)+' pts':'unknown'} | This trade risk: ${thisRisk?thisRisk.toFixed(1)+' pts':'unknown'}
 - ${setup&&setupStats[setup]?`${setup} win rate: ${Math.round(setupStats[setup].wins/setupStats[setup].n*100)}% over ${setupStats[setup].n} trades`:'No history on this setup yet'}
 - Performance at ${nowHour}:00: ${hourPnL[nowHour]?'avg $'+Math.round(hourPnL[nowHour].pnl/hourPnL[nowHour].n)+' ('+hourPnL[nowHour].n+' trades)':'no data'}
@@ -5443,7 +5450,7 @@ function renderStreaks() {
 
   // Win streak
   let winStreak=0;
-  for(let i=state.trades.length-1;i>=0;i--){if(state.trades[i].outcome==='win')winStreak++;else break;}
+  for(let i=state.trades.length-1;i>=0;i--){if(isWin(state.trades[i]))winStreak++;else if(isLoss(state.trades[i]))break;}
 
   document.getElementById('s-journal').textContent=journalStreak;
   document.getElementById('s-journal-sub').textContent=journalStreak>0?'Keep it going!':'Log today to start';
@@ -6139,7 +6146,7 @@ function renderPropTodayBanner() {
   let todayPnL=0,todayTrades=0,todayWins=0,totalWD=0,totalWDReq=0;
   accounts.forEach(a => {
     const ac = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
-    ac.filter(t=>t.datetime?.slice(0,10)===today).forEach(t=>{const p=calcPnL(t);todayPnL+=p;todayTrades++;if(t.outcome==='win')todayWins++;});
+    ac.filter(t=>t.datetime?.slice(0,10)===today).forEach(t=>{const p=calcPnL(t);todayPnL+=p;todayTrades++;if(isWin(t))todayWins++;});
     const wd=parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
     if(wd>0){const wdMin=parseFloat(a.winDayMin)||200;const bd={};ac.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)bd[d]=(bd[d]||0)+calcPnL(t);});totalWD+=Object.values(bd).filter(p=>p>=wdMin).length;totalWDReq+=wd;}
   });
@@ -6312,8 +6319,8 @@ function renderPropAccountsSection() {
           const acTrades  = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
           const {ddUsed,ddRemaining,ddPct} = _calcPropDD(a,acTrades);
           const progPct   = !pa&&target&&pnl>0 ? Math.min(100,(pnl/target)*100) : 0;
-          const acWins    = acTrades.filter(t=>t.outcome==='win').length;
-          const acWR      = acTrades.length ? Math.round(acWins/acTrades.length*100) : null;
+          const acWins    = acTrades.filter(isWin).length;
+          const acWR      = acTrades.filter(isCountable).length ? Math.round(acWins/acTrades.filter(isCountable).length*100) : null;
           const acPayouts = (state.propPayouts||[]).filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
           const today     = new Date().toISOString().slice(0,10);
           const todayPnL  = acTrades.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
@@ -6482,8 +6489,8 @@ function openPropDetail(idx, period) {
   // ── Period-filtered perf calcs
   const totalPnLf=trades.reduce((s,t)=>s+calcPnL(t),0);
   const tradeCount=trades.length;
-  const winsF=trades.filter(t=>t.outcome==='win');
-  const lossesF=trades.filter(t=>t.outcome==='loss');
+  const winsF=trades.filter(isWin);
+  const lossesF=trades.filter(isLoss);
   const winCountF=winsF.length, lossCountF=lossesF.length;
   const winPctF=tradeCount?Math.round(winCountF/tradeCount*100):0;
   const avgWin=winCountF?winsF.reduce((s,t)=>s+calcPnL(t),0)/winCountF:0;
@@ -6683,8 +6690,8 @@ function renderTodayPage() {
   // ── Stat chips ────────────────────────────────────
   const todayTrades = (state.trades||[]).filter(t => t.datetime?.slice(0,10)===today);
   const todayPnL    = todayTrades.reduce((s,t)=>s+calcPnL(t),0);
-  const todayWins   = todayTrades.filter(t=>t.outcome==='win').length;
-  const todayWR     = todayTrades.length ? Math.round(todayWins/todayTrades.length*100) : null;
+  const todayWins   = todayTrades.filter(isWin).length;
+  const todayWR     = todayTrades.filter(isCountable).length ? Math.round(todayWins/todayTrades.filter(isCountable).length*100) : null;
 
   const pnlEl = document.getElementById('today-pnl');
   if(pnlEl){ pnlEl.textContent=(todayPnL>=0?'+':'-')+'$'+Math.abs(Math.round(todayPnL)).toLocaleString(); pnlEl.style.color=todayPnL>0?'var(--green)':todayPnL<0?'var(--red)':'var(--muted)'; }
@@ -6823,7 +6830,7 @@ function renderTodayPage() {
 
   // ── Tilt detection ────────────────────────────────
   const tiltEl=document.getElementById('today-tilt-body');
-  const recentLosses=todayTrades.slice(-5).filter(t=>t.outcome==='loss').length;
+  const recentLosses=todayTrades.slice(-5).filter(isLoss).length;
   const isOT=todayTrades.length>=6;
   const isDLL=activeAccts.some(a=>{
     const dll=parseFloat(a.dll)||0;if(!dll)return false;
@@ -7531,7 +7538,7 @@ function renderHistoryHero() {
   const T = state.trades || [];
   const pnls = T.map(t => calcPnL(t));
   const total = pnls.reduce((a,b)=>a+b,0);
-  const wins = T.filter(t=>t.outcome==='win').length;
+  const wins = T.filter(isWin).length;
   const wr = T.length ? Math.round(wins/T.length*100) : 0;
   const col = total>=0?'var(--green)':'var(--red)';
   const sc = (el, html) => { const e=document.getElementById(el); if(e) e.innerHTML=html; };
@@ -7554,7 +7561,7 @@ function renderSetupsPage() {
   renderSetupRadar(T);
   const spSetups=new Set(state.trades.flatMap(t=>t.setups||[]));
   const spStats={};
-  state.trades.forEach(t=>{(t.setups||[]).forEach(s=>{if(!spStats[s])spStats[s]={wins:0,n:0,pnl:0};const p=calcPnL(t);spStats[s].n++;spStats[s].pnl+=p;if(t.outcome==='win')spStats[s].wins++;});});
+  state.trades.forEach(t=>{(t.setups||[]).forEach(s=>{if(!spStats[s])spStats[s]={wins:0,n:0,pnl:0};const p=calcPnL(t);spStats[s].n++;spStats[s].pnl+=p;if(isWin(t))spStats[s].wins++;});});
   const spActive=Object.entries(spStats).filter(([,v])=>v.n>=2);
   let spBestWR='—', spBestPnL='—';
   if(spActive.length){
@@ -7564,18 +7571,18 @@ function renderSetupsPage() {
     spBestPnL=(bPnL[1].pnl>=0?'+':'')+'$'+Math.abs(Math.round(bPnL[1].pnl));
   }
   const spValidRR = T.filter(t => { const r = parseFloat(calcRR(t)) || parseFloat(t.quickRR) || 0; return r !== 0 && !isNaN(r); });
-  const spWinnerRRs = spValidRR.filter(t => t.outcome === 'win').map(t => parseFloat(calcRR(t)) || parseFloat(t.quickRR));
-  const spLoserRRs  = spValidRR.filter(t => t.outcome === 'loss').map(t => Math.abs(parseFloat(calcRR(t)) || parseFloat(t.quickRR)));
+  const spWinnerRRs = spValidRR.filter(isWin).map(t => parseFloat(calcRR(t)) || parseFloat(t.quickRR));
+  const spLoserRRs  = spValidRR.filter(isLoss).map(t => Math.abs(parseFloat(calcRR(t)) || parseFloat(t.quickRR)));
   const spAvgWinnerR = spWinnerRRs.length ? spWinnerRRs.reduce((a,b)=>a+b,0)/spWinnerRRs.length : null;
   const spAvgLoserR  = spLoserRRs.length  ? spLoserRRs.reduce((a,b)=>a+b,0)/spLoserRRs.length   : null;
-  const spWinTrades = T.filter(t => t.outcome === 'win');
-  const spLossTrades = T.filter(t => t.outcome === 'loss');
+  const spWinTrades = T.filter(isWin);
+  const spLossTrades = T.filter(isLoss);
   const spGrossProfit = spWinTrades.reduce((a,t) => a + calcPnL(t), 0);
   const spGrossLoss   = Math.abs(spLossTrades.reduce((a,t) => a + calcPnL(t), 0));
   const spPF = spGrossLoss > 0 ? spGrossProfit / spGrossLoss : null;
   const spAvgWinnerRStr = spAvgWinnerR ? spAvgWinnerR.toFixed(2)+'R' : '—';
   const spPFStr = spPF != null ? spPF.toFixed(2) : '—';
-  const spWR = T.length ? Math.round(T.filter(t=>t.outcome==='win').length/T.length*100) : 0;
+  const spWR = T.filter(isCountable).length ? Math.round(T.filter(isWin).length/T.filter(isCountable).length*100) : 0;
   renderStatsHero(T, spSetups, spBestWR, spBestPnL, spAvgWinnerR, spAvgLoserR, spPF, spWR);
   startHeroCanvas('sp-c');
   if (!T.length) return;
@@ -9209,9 +9216,10 @@ function _gaugeSVG(value) {
 function renderDashHero(T) {
   const pnls = T.map(t => calcPnL(t));
   const total = pnls.reduce((a,b)=>a+b,0);
-  const wins = T.filter(t=>t.outcome==='win');
-  const losses = T.filter(t=>t.outcome==='loss');
-  const wr = T.length ? wins.length/T.length*100 : 0;
+  const wins = T.filter(isWin);
+  const losses = T.filter(isLoss);
+  const countable = T.filter(isCountable);
+  const wr = countable.length ? wins.length/countable.length*100 : 0;
   let peak=0,dd=0,run=0;
   for (const p of pnls){run+=p;if(run>peak)peak=run;dd=Math.min(dd,run-peak);}
   const validRR=T.filter(t=>{const r=parseFloat(calcRR(t))||parseFloat(t.quickRR)||0;return r!==0&&!isNaN(r);});
