@@ -43,8 +43,6 @@ body.light-mode input,body.light-mode select,body.light-mode textarea{background
 body.light-mode .btn{background:var(--bg3);color:var(--text);border-color:var(--border2)}
 body.light-mode .btn:hover{background:var(--bg4)}
 body.light-mode .tag-pill{background:var(--bg4);color:var(--muted)}
-body.light-mode .chat-panel{background:var(--bg2);border-left:1px solid var(--border2)}
-body.light-mode .chat-bubble-ai{background:var(--bg3)}
 body.light-mode .modal-overlay{background:rgba(0,0,0,0.3)}
 body.light-mode .modal-box{background:var(--bg2)}
 body.light-mode .stat-card{background:#F0F0F8!important;border-color:#E0E0EC}
@@ -421,36 +419,8 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:v
 .onboard-checklist li .oc-action{font-size:11px;color:var(--accent);font-weight:700}
 
 /* AI CHAT PANEL */
-.chat-panel{width:280px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;height:100vh;overflow:hidden}
-.chat-panel-header{padding:16px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.chat-panel-title{font-size:13px;font-weight:600;letter-spacing:-.1px;color:var(--text);font-family:'Geist',sans-serif;display:flex;align-items:center;gap:8px}
-.chat-panel-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0}
 .chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
-.chat-msg{max-width:100%;animation:fadeUp .2s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.chat-msg-user{align-self:flex-end}
-.chat-msg-ai{align-self:flex-start}
-.chat-bubble{padding:9px 12px;border-radius:10px;font-size:13px;line-height:1.6;font-family:'Geist',sans-serif}
-.chat-bubble-user{background:var(--accent);color:#fff;border-radius:10px 10px 2px 10px;box-shadow:0 2px 10px #9B7FFF30}
-.chat-bubble-ai{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:10px 10px 10px 2px}
-.chat-bubble-ai.thinking{color:var(--muted);font-style:italic}
-.chat-sender{font-size:11px;color:var(--dim);margin-bottom:3px;font-family:'Geist',sans-serif;font-weight:500}
-.chat-input-wrap{padding:12px;border-top:1px solid var(--border);flex-shrink:0}
-.chat-input-row{display:flex;gap:6px;align-items:flex-end}
-.chat-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-size:13px;font-family:'Geist',sans-serif;color:var(--text);resize:none;min-height:36px;max-height:100px;line-height:1.5}
-.chat-input:focus{outline:none;border-color:var(--accent)}
-.chat-send-btn{background:var(--accent);border:none;border-radius:var(--r);width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
-.chat-send-btn:hover{background:#00bc74}
-.chat-send-btn:active{transform:scale(.95)}
-.chat-suggestions{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
-.chat-suggestion{font-size:12px;font-family:'Geist',sans-serif;color:var(--muted);border:1px solid var(--border);border-radius:var(--r);padding:7px 10px;cursor:pointer;text-align:left;background:none;transition:all .15s;line-height:1.4}
-.chat-suggestion:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
-.chat-collapse-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px;transition:color .15s}
-.chat-collapse-btn:hover{color:var(--text)}
-.chat-panel.collapsed{width:42px}
-.chat-panel.collapsed .chat-messages,.chat-panel.collapsed .chat-input-wrap,.chat-panel.collapsed .chat-suggestions-wrap{display:none}
-.chat-panel.collapsed .chat-panel-title span{display:none}
-.chat-panel.collapsed .chat-panel-header{justify-content:center;padding:16px 0}
 
 @media(max-width:1100px){.chat-panel{display:none}}
 /* MORE MENU */
@@ -2701,36 +2671,6 @@ Weigh in and log it" style="resize:vertical;font-family:var(--display)"></textar
   </div>
 </div>
 
-<!-- AI CHAT PANEL -->
-<div class="chat-panel" id="chat-panel">
-  <div class="chat-panel-header">
-    <div class="chat-panel-title"><span>AI Coach</span></div>
-    <button class="chat-collapse-btn" onclick="toggleChatPanel()" title="Collapse">←</button>
-  </div>
-  <div class="chat-messages" id="chat-messages">
-    <div class="chat-msg chat-msg-ai">
-      <div class="chat-sender">Edge AI</div>
-      <div class="chat-bubble chat-bubble-ai">Hey Kory. Ask me anything about your trading — patterns, setups, mistakes, stats, or what to improve. I know your full journal.</div>
-    </div>
-    <div class="chat-suggestions-wrap" id="chat-suggestions-wrap">
-      <div class="chat-suggestions">
-        <button class="chat-suggestion" onclick="sendSuggestion(this)">What's my best setup?</button>
-        <button class="chat-suggestion" onclick="sendSuggestion(this)">Where am I losing the most money?</button>
-        <button class="chat-suggestion" onclick="sendSuggestion(this)">Am I revenge trading?</button>
-        <button class="chat-suggestion" onclick="sendSuggestion(this)">What should I focus on this week?</button>
-        <button class="chat-suggestion" onclick="sendSuggestion(this)">Grade my last 5 trades</button>
-      </div>
-    </div>
-  </div>
-  <div class="chat-input-wrap">
-    <div class="chat-input-row">
-      <textarea class="chat-input" id="chat-input" placeholder="Ask anything about your trading..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage()}"></textarea>
-      <button class="chat-send-btn" onclick="sendChatMessage()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M14 2L2 7l5 2 2 5 5-12z" fill="#000"/></svg>
-      </button>
-    </div>
-  </div>
-</div>
 
 </div><!-- /shell -->
 <!-- ONBOARDING TOUR -->
@@ -5438,125 +5378,6 @@ function renderInsightsBanner() {
 }
 
 // ─── AI CHAT PANEL ────────────────────────────────────────────────────────────
-let chatHistory = [];
-let chatCollapsed = false;
-
-function toggleChatPanel() {
-  chatCollapsed = !chatCollapsed;
-  const panel = document.getElementById('chat-panel');
-  const btn = panel.querySelector('.chat-collapse-btn');
-  panel.classList.toggle('collapsed', chatCollapsed);
-  btn.textContent = chatCollapsed ? '→' : '←';
-}
-
-function sendSuggestion(btn) {
-  const text = btn.textContent;
-  document.getElementById('chat-suggestions-wrap').style.display = 'none';
-  document.getElementById('chat-input').value = text;
-  sendChatMessage();
-}
-
-function appendChatMsg(role, text, isThinking) {
-  const msgs = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.className = `chat-msg chat-msg-${role}`;
-  div.innerHTML = `
-    <div class="chat-sender">${role === 'user' ? 'You' : 'Edge AI'}</div>
-    <div class="chat-bubble chat-bubble-${role}${isThinking ? ' thinking' : ''}">${text}</div>`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-  return div;
-}
-
-async function sendChatMessage() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  input.style.height = 'auto';
-
-  appendChatMsg('user', text);
-  chatHistory.push({ role: 'user', content: text });
-
-  const thinkingEl = appendChatMsg('ai', 'Analyzing your journal...', true);
-
-  // Build rich context from trade data
-  const T = state.trades;
-  const totalPnL = T.reduce((a, t) => a + calcPnL(t), 0);
-  const wins = T.filter(t => calcPnL(t) > 0);
-  const losses = T.filter(t => calcPnL(t) < 0);
-  const wr = T.length ? Math.round(wins.length / T.length * 100) : 0;
-  const avgW = wins.length ? wins.reduce((a, t) => a + calcPnL(t), 0) / wins.length : 0;
-  const avgL = losses.length ? Math.abs(losses.reduce((a, t) => a + calcPnL(t), 0) / losses.length) : 0;
-
-  const setupStats = {};
-  T.forEach(t => (t.setups || []).forEach(s => {
-    if (!setupStats[s]) setupStats[s] = { wins: 0, n: 0, pnl: 0 };
-    setupStats[s].n++; setupStats[s].pnl += calcPnL(t);
-    if (calcPnL(t) > 0) setupStats[s].wins++;
-  }));
-
-  const mistakeStats = {};
-  T.forEach(t => (t.mistakes || []).forEach(m => {
-    if (!mistakeStats[m]) mistakeStats[m] = { cost: 0, n: 0 };
-    mistakeStats[m].cost += calcPnL(t); mistakeStats[m].n++;
-  }));
-
-  const recentTrades = T.slice(-5).map(t => {
-    const pnl = calcPnL(t);
-    return `${t.datetime?.slice(0, 10) || '?'} | ${t.ticker} ${t.side} | $${Math.round(pnl)} | grade:${t.grade || '?'} | setups:${(t.setups || []).join('+') || 'none'} | mistakes:${(t.mistakes || []).join('+') || 'none'}`;
-  }).join('\n');
-
-  const systemPrompt = `You are EDGE AI — a sharp, direct trading coach embedded in a trading journal app. You know this trader's full history and give specific, data-driven answers. Never be generic. Always reference their actual numbers.
-${buildGradingContext()}
-TRADER PROFILE:
-- Trades: NQ/MNQ futures, NY session 9:30-11:00 EST only
-- Strategy: ICT-based — Mech Model (HTF sweep → inversion FVG entry) and Continuation setups
-- Total trades: ${T.length} | Win rate: ${wr}% | Total P&L: $${Math.round(totalPnL)}
-- Avg win: $${Math.round(avgW)} | Avg loss: $${Math.round(avgL)} | W/L ratio: ${avgL ? (avgW / avgL).toFixed(2) : '—'}x
-
-SETUP PERFORMANCE:
-${Object.entries(setupStats).map(([s, v]) => `${s}: ${Math.round(v.wins / v.n * 100)}% WR, $${Math.round(v.pnl)} total (${v.n} trades)`).join('\n') || 'No setup data yet'}
-
-MISTAKE COSTS:
-${Object.entries(mistakeStats).sort((a, b) => a[1].cost - b[1].cost).map(([m, v]) => `${m}: -$${Math.abs(Math.round(v.cost))} total (${v.n}x)`).join('\n') || 'No mistake data yet'}
-
-LAST 5 TRADES:
-${recentTrades || 'No trades yet'}
-
-RULES: Be concise (under 120 words). Use the trader's own terminology (FVG, sweep, inversion, LRLR). Be direct — no fluff, no disclaimers. If they have no data to answer a question, tell them to log more trades first.`;
-
-  const messages = [
-    ...chatHistory.slice(-6).slice(0, -1), // last few turns for context
-    { role: 'user', content: text }
-  ];
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        system: systemPrompt,
-        messages
-      })
-    });
-    const data = await res.json();
-    if (data.error) {
-      thinkingEl.querySelector('.chat-bubble').textContent = `API Error: ${data.error.message}`;
-      return;
-    }
-    const reply = data.content?.map(b => b.text || '').join('') || 'Something went wrong. Try again.';
-    chatHistory.push({ role: 'assistant', content: reply });
-    thinkingEl.querySelector('.chat-bubble').textContent = reply;
-    thinkingEl.querySelector('.chat-bubble').classList.remove('thinking');
-  } catch (e) {
-    thinkingEl.querySelector('.chat-bubble').textContent = `Failed: ${e.message}`;
-  }
-
-  document.getElementById('chat-messages').scrollTop = 999999;
-}
 
 // Auto-resize chat textarea
 document.addEventListener('DOMContentLoaded', () => {
@@ -10739,6 +10560,128 @@ const _localDT = `${_now.getFullYear()}-${_pad(_now.getMonth()+1)}-${_pad(_now.g
 document.getElementById('q-datetime').value = _localDT;
 updateLogPropOptions();
 if (state.trades.length > 0) renderDashboard();
+
+function renderPropScalingPlan() {
+  const el = document.getElementById('prop-scaling-section');
+  if (!el) return;
+  const plan = state.scalingPlan || {};
+  const stages = plan.stages || [];
+  const totalPayouts = (state.propPayouts||[]).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+
+  stages.forEach((st,i) => { st.unlocked = i===0 || totalPayouts >= (stages[i-1].targetPayout||0); });
+  let activeStage = 0;
+  stages.forEach((st,i) => { if(st.unlocked && totalPayouts < st.targetPayout) activeStage = i; });
+  if(stages.length && totalPayouts >= (stages[stages.length-1].targetPayout||0)) activeStage = stages.length-1;
+
+  const cur = stages[activeStage]||{};
+  const pct = cur.targetPayout ? Math.min(100,Math.round(totalPayouts/cur.targetPayout*100)) : 100;
+  const next = stages[activeStage+1];
+  const toUnlock = next ? Math.max(0,(cur.targetPayout||0)-totalPayouts) : 0;
+
+  el.innerHTML = `<div style="background:var(--nm-bg);border-radius:20px;box-shadow:var(--nm-raise);padding:22px 24px;margin-bottom:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.2px">🚀 Scaling Plan</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Stage ${activeStage+1} of ${stages.length} · $${totalPayouts.toLocaleString()} earned total</div>
+      </div>
+      <button class="nm-btn nm-btn-primary" onclick="openScalingEditor()" style="font-size:11px">Edit Plan</button>
+    </div>
+    <div style="margin-bottom:22px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em">
+        <span>${cur.label||''} — ${cur.firm||''} ${cur.plan||''}</span>
+        <span style="color:var(--amber);font-weight:700">$${totalPayouts.toLocaleString()} / $${(cur.targetPayout||0).toLocaleString()}</span>
+      </div>
+      <div class="nm-bar-track" style="height:10px">
+        <div class="nm-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,var(--accent),#00d084);box-shadow:0 0 12px rgba(0,208,132,.5)"></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      ${stages.map((st,i) => {
+        const isDone=totalPayouts>=st.targetPayout, isActive=i===activeStage&&!isDone, isLocked=!st.unlocked, isLast=i===stages.length-1;
+        const totalInvest=(st.costPerAcct||0)*(st.qty||1);
+        const acCol=isDone?'var(--green)':isActive?'var(--accent)':'var(--dim)';
+        return `<div style="display:flex;gap:16px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:4px">
+            <div style="width:22px;height:22px;border-radius:50%;background:${isDone?'var(--green)':isActive?'var(--accent)':'var(--nm-bg)'};box-shadow:${isActive?'0 0 10px rgba(155,127,255,.6),var(--nm-raise-sm)':isDone?'0 0 8px rgba(0,208,132,.4)':'var(--nm-raise-sm)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:${isDone||isActive?'#fff':'var(--dim)'};flex-shrink:0">${isDone?'✓':i+1}</div>
+            ${!isLast?`<div style="width:2px;flex:1;min-height:28px;background:${isDone?'var(--green)':'rgba(255,255,255,0.08)'};margin:4px 0;border-radius:1px"></div>`:''}
+          </div>
+          <div style="flex:1;background:var(--nm-bg);border-radius:14px;box-shadow:${isActive?'var(--nm-raise),0 0 0 1.5px rgba(155,127,255,0.4)':isDone?'var(--nm-raise),0 0 0 1px rgba(0,208,132,0.25)':'var(--nm-press)'};padding:14px 16px;margin-bottom:${isLast?'0':'10px'};opacity:${isLocked?'.5':'1'}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px">
+              <div>
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${acCol};margin-bottom:3px">${st.label}${isLocked?' 🔒':''}</div>
+                <div style="font-size:14px;font-weight:800;color:var(--text);letter-spacing:-.2px">${st.firm||'—'}</div>
+                <div style="font-size:11px;color:var(--muted)">${st.plan||''}${st.size?' · '+st.size:''}</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:20px;font-weight:800;color:${acCol};font-family:'Geist Mono',monospace;line-height:1">${st.qty}x</div>
+                <div style="font-size:9px;color:var(--dim);text-transform:uppercase;margin-top:2px">accounts</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              ${totalInvest?`<span style="font-size:11px;font-weight:600;color:var(--amber);background:rgba(245,166,35,0.1);padding:3px 9px;border-radius:20px">$${totalInvest.toLocaleString()} invest</span>`:'<span style="font-size:11px;font-weight:600;color:var(--green);background:var(--green-dim);padding:3px 9px;border-radius:20px">Free</span>'}
+              <span style="font-size:11px;color:var(--muted)">Target: <span style="font-weight:700;color:${isDone?'var(--green)':'var(--text)'};font-family:'Geist Mono',monospace">$${(st.targetPayout||0).toLocaleString()}</span></span>
+              ${isDone?'<span style="font-size:11px;font-weight:700;color:var(--green);margin-left:auto">✓ Complete</span>':''}
+              ${isActive?'<span style="font-size:11px;font-weight:700;color:var(--accent);margin-left:auto">▶ Active</span>':''}
+            </div>
+            ${st.notes?`<div style="margin-top:8px;font-size:10px;color:var(--dim);line-height:1.5;border-top:1px solid rgba(255,255,255,0.05);padding-top:8px">${st.notes}</div>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+      <div style="display:flex;gap:16px;align-items:flex-start;margin-top:10px">
+        <div style="width:22px;flex-shrink:0"></div>
+        <div style="flex:1;border-radius:14px;box-shadow:var(--nm-press);background:var(--nm-bg);padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:box-shadow .2s" onclick="addScalingStage()" onmouseenter="this.style.boxShadow='var(--nm-raise)'" onmouseleave="this.style.boxShadow='var(--nm-press)'">
+          <div style="width:28px;height:28px;border-radius:8px;box-shadow:var(--nm-raise-sm);background:var(--nm-bg);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted)">+</div>
+          <div style="font-size:12px;color:var(--dim)">Add next stage</div>
+        </div>
+      </div>
+    </div>
+    ${next&&toUnlock>0?`<div style="margin-top:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--nm-press-sm);background:var(--nm-bg);border-radius:12px;padding:13px 16px"><div style="font-size:20px">🎯</div><div><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px">Next: ${next.label} — ${next.firm} ${next.plan}</div><div style="font-size:11px;color:var(--muted)">$${toUnlock.toLocaleString()} more to unlock ${next.qty}x ${next.size} accounts</div></div></div>`:''}
+  </div>
+  <div class="modal-overlay" id="scaling-editor-modal" onclick="if(event.target===this)closeScalingEditor()" style="display:none">
+    <div class="modal" style="width:560px;max-height:88vh;overflow-y:auto">
+      <div class="modal-title">Edit Scaling Plan</div>
+      <div id="scaling-editor-body"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+        <button class="nm-btn" onclick="closeScalingEditor()">Cancel</button>
+        <button class="nm-btn nm-btn-green" style="padding:9px 18px" onclick="saveScalingPlan()">Save Plan</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function addScalingStage() {
+  const stages=state.scalingPlan.stages, last=stages[stages.length-1]||{};
+  stages.push({id:stages.length,label:'Stage '+(stages.length+1),firm:'',plan:'',size:'',qty:1,targetPayout:(last.targetPayout||0)*2,costPerAcct:0,notes:'',unlocked:false});
+  save(); renderPropScalingPlan();
+}
+
+function openScalingEditor() {
+  const stages=state.scalingPlan?.stages||[];
+  document.getElementById('scaling-editor-body').innerHTML=stages.map((st,i)=>`
+    <div style="background:var(--nm-bg);border-radius:14px;box-shadow:var(--nm-press-sm);padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:12px;font-weight:700;color:var(--text)">${st.label}</span>
+        <button class="nm-btn nm-btn-danger" style="padding:3px 9px;font-size:11px" onclick="removeScalingStage(${i})">Remove</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${[['Label','label',st.label],['Firm','firm',st.firm],['Plan','plan',st.plan],['Size','size',st.size]].map(([lbl,fld,val])=>`<div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">${lbl}</label><input style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${val||''}" oninput="state.scalingPlan.stages[${i}]['${fld}']=this.value"></div>`).join('')}
+        <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px"># Accounts</label><input type="number" min="1" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.qty||1}" oninput="state.scalingPlan.stages[${i}].qty=parseInt(this.value)||1"></div>
+        <div><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Cost / Acct ($)</label><input type="number" min="0" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.costPerAcct||0}" oninput="state.scalingPlan.stages[${i}].costPerAcct=parseFloat(this.value)||0"></div>
+        <div style="grid-column:1/-1"><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Payout target ($)</label><input type="number" min="0" style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.targetPayout||0}" oninput="state.scalingPlan.stages[${i}].targetPayout=parseFloat(this.value)||0"></div>
+        <div style="grid-column:1/-1"><label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px">Notes</label><input style="width:100%;background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:8px;padding:7px 9px;font-size:12px;color:var(--text)" value="${st.notes||''}" oninput="state.scalingPlan.stages[${i}].notes=this.value"></div>
+      </div>
+    </div>`).join('');
+  document.getElementById('scaling-editor-modal').style.display='flex';
+}
+
+function removeScalingStage(i) {
+  state.scalingPlan.stages.splice(i,1);
+  state.scalingPlan.stages.forEach((st,idx)=>{st.id=idx;});
+  openScalingEditor(); renderPropScalingPlan();
+}
+
+function saveScalingPlan() { save(); closeScalingEditor(); renderPropScalingPlan(); }
+function closeScalingEditor() { const m=document.getElementById('scaling-editor-modal'); if(m)m.style.display='none'; }
 
 </script>
 
