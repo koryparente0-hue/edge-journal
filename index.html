@@ -6147,7 +6147,7 @@ function renderPropAccountsSection() {
           acTrades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDayMap[d]=(byDayMap[d]||0)+calcPnL(t);});
           const winDayCount = Object.values(byDayMap).filter(p=>p>=winDayMin).length;
           const daysToGo   = Math.max(0, winDaysReq - winDayCount);
-          const bestDayProfit = winDayMap && Object.values(byDayMap).length ? Math.max(0,...Object.values(byDayMap)) : 0;
+          const bestDayProfit = Object.values(byDayMap).length ? Math.max(0,...Object.values(byDayMap)) : 0;
 
           return `<div class="prop-acct-card${dllWarn?' dll-warn':''}" onclick="openPropDetail(${a._idx})" style="cursor:pointer;overflow:hidden">
             <!-- colour stripe -->
