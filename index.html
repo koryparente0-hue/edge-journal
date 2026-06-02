@@ -6147,6 +6147,7 @@ function renderPropAccountsSection() {
           acTrades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDayMap[d]=(byDayMap[d]||0)+calcPnL(t);});
           const winDayCount = Object.values(byDayMap).filter(p=>p>=winDayMin).length;
           const daysToGo   = Math.max(0, winDaysReq - winDayCount);
+          const bestDayProfit = winDayMap && Object.values(byDayMap).length ? Math.max(0,...Object.values(byDayMap)) : 0;
 
           return `<div class="prop-acct-card${dllWarn?' dll-warn':''}" onclick="openPropDetail(${a._idx})" style="cursor:pointer;overflow:hidden">
             <!-- colour stripe -->
@@ -6178,19 +6179,27 @@ function renderPropAccountsSection() {
               ${todayPnL!==0?`<div style="margin-bottom:12px;display:inline-block;font-size:11px;font-weight:700;color:${todayPnL>0?'var(--green)':'var(--red)'};padding:4px 10px;border-radius:8px;box-shadow:var(--nm-press-sm);background:var(--nm-bg)">Today ${todayPnL>=0?'+':'-'}$${Math.abs(Math.round(todayPnL)).toLocaleString()}</div>`:'<div style="height:6px"></div>'}
 
               <!-- WINNING DAYS DOTS -->
-              ${winDaysReq>0?`<div style="margin-bottom:14px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-                  <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Winning Days</span>
-                  <span style="font-size:11px;font-weight:700;font-family:'Geist Mono',monospace;color:${winDayCount>=winDaysReq?'var(--green)':daysToGo===1?'var(--amber)':'var(--text)'}">${winDayCount}<span style="color:var(--dim);font-weight:400"> / ${winDaysReq}</span>${winDayCount>=winDaysReq?' ✓':''}</span>
-                </div>
-                <div style="display:flex;gap:5px;flex-wrap:wrap">
-                  ${Array.from({length:winDaysReq},(_,i)=>{
-                    const done = i<winDayCount;
-                    const near = !done && i===winDayCount && daysToGo===1;
-                    return `<div class="prop-wd-dot ${done?'wd-done':near?'wd-near':'wd-empty'}">${done?'✓':i+1}</div>`;
-                  }).join('')}
-                </div>
-              </div>`:''}
+              ${(()=>{
+                // Payout eligibility badge on card
+                const totalPnLCard = pnl;
+                let cardEligible = true;
+                const cardIssues = [];
+                if (winDaysReq > 0 && winDayCount < winDaysReq) { cardEligible=false; cardIssues.push((winDaysReq-winDayCount)+' winning day'+(winDaysReq-winDayCount!==1?'s':'')+' needed'); }
+                const consistMax = parseFloat(a.consistencyMax)||40;
+                if (consistMax > 0 && bestDayProfit > 0 && totalPnLCard > 0) {
+                  const cp = Math.round(bestDayProfit/totalPnLCard*100);
+                  if (cp > consistMax) { cardEligible=false; const mn=Math.ceil(bestDayProfit/(consistMax/100)); cardIssues.push('$'+Math.ceil(mn-totalPnLCard).toLocaleString()+' more profit for consistency'); }
+                }
+                if (cardEligible && (winDaysReq===0 || winDayCount>=winDaysReq)) {
+                  return '<div style="margin-bottom:12px;display:flex;align-items:center;gap:7px;background:rgba(0,208,132,0.08);border:1px solid rgba(0,208,132,0.3);border-radius:8px;padding:7px 10px"><span style="font-size:13px">✅</span><span style="font-size:11px;font-weight:700;color:var(--green)">Payout Eligible</span></div>';
+                } else if (winDaysReq>0) {
+                  return '<div style="margin-bottom:12px">'
+                    +'<div style="display:flex;align-items:center;gap:7px;background:rgba(255,77,77,0.07);border:1px solid rgba(255,77,77,0.2);border-radius:8px;padding:7px 10px;margin-bottom:6px"><span style="font-size:13px">🚫</span><span style="font-size:11px;font-weight:700;color:var(--red)">Not Eligible Yet</span></div>'
+                    +(cardIssues.length?'<div style="font-size:10px;color:var(--muted);padding-left:2px">'+cardIssues.map(i=>'· '+i).join('<br>')+'</div>':'')
+                    +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:7px">'+Array.from({length:winDaysReq},(_,i)=>{const done=i<winDayCount;const near=!done&&i===winDayCount&&daysToGo===1;return '<div class="prop-wd-dot '+(done?'wd-done':near?'wd-near':'wd-empty')+'">'+(done?'✓':i+1)+'</div>';}).join('')+'</div>'
+                    +'</div>';
+                } else return '';
+              })()}
 
               <!-- PROFIT TARGET BAR -->
               ${!pa&&target?`<div style="margin-bottom:12px">
@@ -6417,6 +6426,59 @@ function openPropDetail(idx, period) {
         </div>
       </div>
     </div>`:''}
+
+    <!-- PAYOUT ELIGIBILITY BANNER -->
+    <div class="pd-section">
+      <div class="pd-sec-title">Payout Eligibility</div>
+      ${(()=>{
+        // Check each requirement
+        const totalPnL = _propAcctPnL(a);
+        const reqs = [];
+        let eligible = true;
+
+        // 1. Winning days
+        if (winDaysReq > 0) {
+          const wdOk = winDayCount >= winDaysReq;
+          if (!wdOk) eligible = false;
+          reqs.push({ label: 'Winning Days', ok: wdOk, detail: wdOk ? winDayCount+' / '+winDaysReq+' ✓' : winDayCount+' / '+winDaysReq+' — need '+(winDaysReq-winDayCount)+' more' });
+        }
+
+        // 2. Consistency rule (all-time profit, not just winning days)
+        if (consistencyMax > 0 && bestDayProfit > 0) {
+          // Use total P&L (not just winning days) for consistency if positive
+          const totalProfit = Math.max(totalPnL, totalWinProfit);
+          const conPctFull = totalProfit > 0 ? Math.round(bestDayProfit / totalProfit * 100) : 999;
+          const conOkFull = conPctFull <= consistencyMax;
+          if (!conOkFull) {
+            eligible = false;
+            const minTotalNeeded = Math.ceil(bestDayProfit / (consistencyMax / 100));
+            const stillNeed = Math.ceil(minTotalNeeded - totalProfit);
+            reqs.push({ label: 'Consistency Rule (≤'+consistencyMax+'%)', ok: false,
+              detail: 'Best day $'+Math.round(bestDayProfit).toLocaleString()+' is '+conPctFull+'% of $'+Math.round(totalProfit).toLocaleString()+' total profit. Need ~$'+stillNeed.toLocaleString()+' more profit to qualify.' });
+          } else {
+            reqs.push({ label: 'Consistency Rule (≤'+consistencyMax+'%)', ok: true,
+              detail: 'Best day is '+conPctFull+'% of total profit ✓' });
+          }
+        }
+
+        // 3. Minimum profit target (for eval)
+        if (a.target && totalPnL < parseFloat(a.target)) {
+          eligible = false;
+          reqs.push({ label: 'Profit Target', ok: false, detail: '$'+Math.round(totalPnL).toLocaleString()+' / $'+(parseFloat(a.target)).toLocaleString()+' — need $'+Math.round(parseFloat(a.target)-totalPnL).toLocaleString()+' more' });
+        }
+
+        const banner = eligible
+          ? '<div style="display:flex;align-items:center;gap:12px;background:rgba(0,208,132,0.08);border:1px solid rgba(0,208,132,0.3);border-radius:10px;padding:12px 16px;margin-bottom:12px"><div style="font-size:22px">✅</div><div><div style="font-size:14px;font-weight:800;color:var(--green)">Eligible for Payout</div><div style="font-size:11px;color:var(--muted);margin-top:2px">All requirements met — you can request a payout</div></div></div>'
+          : '<div style="display:flex;align-items:center;gap:12px;background:rgba(255,77,77,0.07);border:1px solid rgba(255,77,77,0.25);border-radius:10px;padding:12px 16px;margin-bottom:12px"><div style="font-size:22px">🚫</div><div><div style="font-size:14px;font-weight:800;color:var(--red)">Not Yet Eligible</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Requirements below must be met first</div></div></div>';
+
+        const rows = reqs.map(r => '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)">'
+          + '<div style="width:18px;height:18px;border-radius:50%;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;background:'+(r.ok?'rgba(0,208,132,0.15)':'rgba(255,77,77,0.12)')+';color:'+(r.ok?'var(--green)':'var(--red)')+'">'+( r.ok?'✓':'✗')+'</div>'
+          + '<div><div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px">'+r.label+'</div>'
+          + '<div style="font-size:11px;color:var(--muted)">'+r.detail+'</div></div></div>').join('');
+
+        return banner + '<div>' + rows + '</div>';
+      })()}
+    </div>
 
     ${dll?`<div class="pd-section">
       <div class="pd-sec-title">Daily Loss Limit</div>
@@ -7015,6 +7077,7 @@ function _renderPerfBalanceChart(trades) {
   if (window._perfChart) { window._perfChart.destroy(); window._perfChart = null; }
   const canvas = document.getElementById('perf-balance-chart');
   if (!canvas || !trades.length) return;
+  if (!canvas.offsetWidth || !canvas.offsetHeight) return;
   const sorted = [...trades].sort((a,b) => (a.datetime||'').localeCompare(b.datetime||''));
   const byDay = {};
   sorted.forEach(t => { const d=t.datetime?.slice(0,10); if(d) byDay[d]=(byDay[d]||0)+calcPnL(t); });
@@ -8035,6 +8098,7 @@ function handlePhotoUpload(e) {
         const scale = Math.min(1, maxW / img.width);
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
+        if (!canvas.width || !canvas.height) return;
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
         const compressed = canvas.toDataURL('image/jpeg', 0.78);
         if (pendingPhotos.length < 4) {
@@ -8247,7 +8311,7 @@ function renderGallery() {
       ctx.fillRect(0,0,W,H);
 
       // dot grid
-      if(gridCanvas) ctx.drawImage(gridCanvas, 0, 0);
+      if(gridCanvas && gridCanvas.width > 0 && gridCanvas.height > 0) ctx.drawImage(gridCanvas, 0, 0);
 
       // mouse radial glow
       const mx=mouse.x, my=mouse.y;
