@@ -6148,7 +6148,7 @@ function renderPropAccountsSection() {
           const winDayCount = Object.values(byDayMap).filter(p=>p>=winDayMin).length;
           const daysToGo   = Math.max(0, winDaysReq - winDayCount);
           const bestDayProfit = Object.values(byDayMap).length ? Math.max(0,...Object.values(byDayMap)) : 0;
-          const totalWinProfit = Object.values(byDayMap).filter(p=>p>=winDayMin).reduce((s,p)=>s+p,0);
+          const totalWinProfit = Object.values(byDayMap).filter(p=>p>0).reduce((s,p)=>s+p,0);
 
           return `<div class="prop-acct-card${dllWarn?' dll-warn':''}" onclick="openPropDetail(${a._idx})" style="cursor:pointer;overflow:hidden">
             <!-- colour stripe -->
@@ -6296,8 +6296,9 @@ function openPropDetail(idx, period) {
   acTrades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDayMap[d]=(byDayMap[d]||0)+calcPnL(t);});
   const winDays=Object.values(byDayMap).filter(p=>p>=winDayMin);
   const winDayCount=winDays.length;
-  const totalWinProfit=winDays.reduce((s,p)=>s+p,0);
-  const bestDayProfit=winDays.length?Math.max(...winDays):0;
+  const allPosDays=Object.values(byDayMap).filter(p=>p>0);
+  const totalWinProfit=allPosDays.reduce((s,p)=>s+p,0);
+  const bestDayProfit=allPosDays.length?Math.max(...allPosDays):0;
   const conPct=totalWinProfit>0?Math.round(bestDayProfit/totalWinProfit*100):0;
   const conOk=conPct<=consistencyMax;
   const daysToGo=Math.max(0,winDaysReq-winDayCount);
