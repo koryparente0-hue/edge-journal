@@ -6556,6 +6556,40 @@ function savePropDetailField(idx, field, value) {
 // ══════════════════════════════════════════════════════
 // TODAY PAGE
 // ══════════════════════════════════════════════════════
+function _propPayoutEligibility(a) {
+  const acTrades = (state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
+  const byDay = {};
+  acTrades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDay[d]=(byDay[d]||0)+calcPnL(t);});
+  const wdMin      = parseFloat(a.winDayMin)||200;
+  const wdReq      = parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
+  const wdc        = Object.values(byDay).filter(p=>p>=wdMin).length;
+  const totalPnL   = acTrades.reduce((s,t)=>s+calcPnL(t),0);
+  const grossPnL   = acTrades.reduce((s,t)=>s+calcPnL(t)+(parseFloat(t.fees)||0),0);
+  const allPosDays = Object.values(byDay).filter(p=>p>0);
+  const bestDay    = allPosDays.length ? Math.max(...allPosDays) : 0;
+  const consistMax = parseFloat(a.consistencyMax)||40;
+  const issues     = [];
+  let eligible     = true;
+
+  if (wdReq > 0 && wdc < wdReq) {
+    eligible = false;
+    issues.push((wdReq-wdc)+' more winning day'+(wdReq-wdc!==1?'s':'')+' needed');
+  }
+  if (consistMax > 0 && bestDay > 0 && totalPnL > 0) {
+    const cp = Math.round(bestDay/totalPnL*100);
+    if (cp > consistMax) {
+      eligible = false;
+      const mn = Math.ceil(bestDay/(consistMax/100));
+      issues.push('$'+Math.ceil(mn-grossPnL).toLocaleString()+' more profit for consistency ('+cp+'% vs '+consistMax+'% max)');
+    }
+  }
+  if (a.target && totalPnL < parseFloat(a.target)) {
+    eligible = false;
+    issues.push('$'+Math.round(parseFloat(a.target)-totalPnL).toLocaleString()+' to hit profit target');
+  }
+  return { eligible, issues, wdc, wdReq, totalPnL, bestDay };
+}
+
 function renderTodayPage() {
   const today = new Date().toISOString().slice(0,10);
   const ts    = state.todayState || {};
@@ -6626,16 +6660,18 @@ function renderTodayPage() {
         const bd={};ac.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)bd[d]=(bd[d]||0)+calcPnL(t);});
         const wdc=Object.values(bd).filter(p=>p>=wdMin).length;
         const isWD=todayAcPnL>=wdMin;
+        const elig=_propPayoutEligibility(a);
         return `<div style="box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px;background:var(--nm-bg)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="font-size:12px;font-weight:700;color:var(--text)">${a.name||a.firm}</span>
-            ${isWD?'<span style="font-size:10px;font-weight:700;color:var(--green);background:var(--green-dim);padding:2px 7px;border-radius:10px">✓ Win Day</span>':''}
+            <span style="font-size:10px;font-weight:700;color:${elig.eligible?'var(--green)':'var(--red)'};background:${elig.eligible?'var(--green-dim)':'rgba(255,77,77,0.1)'};padding:2px 7px;border-radius:10px">${elig.eligible?'✓ Eligible':'🚫 Not Eligible'}</span>
           </div>
           ${dll?`<div style="margin-bottom:6px">
             <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-bottom:4px"><span>Daily limit</span><span style="color:${dllCol};font-weight:700">${dllRem!==null?'$'+dllRem.toLocaleString()+' left':'$'+dll.toLocaleString()}</span></div>
             <div class="nm-bar-track" style="height:6px"><div class="nm-bar-fill" style="width:${dllPct}%;background:${dllCol}"></div></div>
           </div>`:''}
-          ${wdReq?`<div style="font-size:10px;color:var(--dim)">${wdc} / ${wdReq} winning days</div>`:''}
+          ${wdReq?`<div style="font-size:10px;color:var(--dim);margin-bottom:3px">${wdc} / ${wdReq} winning days</div>`:''}
+          ${!elig.eligible&&elig.issues.length?`<div style="font-size:10px;color:var(--red)">${elig.issues[0]}</div>`:''}
         </div>`;
       }).join('')+'</div>';
     }
@@ -6667,7 +6703,7 @@ function renderTodayPage() {
           ${Array.from({length:req},(_,i)=>{const done=i<wdc;const isTd=i===wdc&&todayAcPnL>=wdMin;return `<div class="prop-wd-dot ${done?'wd-done':isTd?'wd-near':'wd-empty'}">${done?'✓':i+1}</div>`;}).join('')}
         </div>
         <div style="font-size:11px;color:${wdc>=req?'var(--green)':daysToGo===1?'var(--amber)':'var(--dim)'}">
-          ${wdc>=req?'✓ Qualifying complete — request payout':daysToGo===1?'⚡ One more winning day to qualify':''+daysToGo+' more winning day'+(daysToGo!==1?'s':'')+' needed · min $'+wdMin.toLocaleString()+'/day'}
+          ${(()=>{const el=_propPayoutEligibility(a);if(el.eligible)return '<span style="color:var(--green);font-weight:700">✅ Payout Eligible</span>';if(wdc>=req&&el.issues.length)return '<span style="color:var(--red)">🚫 '+el.issues[0]+'</span>';return daysToGo===1?'⚡ One more winning day to qualify':daysToGo+' more winning day'+(daysToGo!==1?'s':'')+' needed';})()}
         </div>
       </div>`;
     }).join('');}
@@ -7388,7 +7424,8 @@ function renderDashPropSummary() {
           </div>
           <div style="font-size:10px;color:var(--muted);margin-bottom:6px">${a.firm} · ${a.size}</div>
           <div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;color:${pnl>0?'var(--green)':pnl<0?'var(--red)':'var(--text)'}">${pnl>=0?'+':'-'}$${Math.abs(pnl).toLocaleString()}</div>
-          ${a.target?`<div style="margin-top:6px"><div style="height:2px;background:var(--bg4);border-radius:1px"><div style="height:100%;width:${Math.min(100,Math.max(0,(pnl/a.target)*100))}%;background:var(--green);border-radius:1px"></div></div><div style="font-size:9px;color:var(--dim);margin-top:2px">$${pnl.toLocaleString()} / $${Number(a.target).toLocaleString()} target</div></div>`:''}
+          ${(()=>{const el=_propPayoutEligibility(a);return `<div style="margin-top:6px;font-size:10px;font-weight:700;color:${el.eligible?'var(--green)':'var(--red)'}">${el.eligible?'✅ Payout Eligible':'🚫 '+el.issues[0]||'Not Eligible'}</div>`;})()}
+          ${a.target?`<div style="margin-top:4px"><div style="height:2px;background:var(--bg4);border-radius:1px"><div style="height:100%;width:${Math.min(100,Math.max(0,(pnl/a.target)*100))}%;background:var(--green);border-radius:1px"></div></div><div style="font-size:9px;color:var(--dim);margin-top:2px">$${pnl.toLocaleString()} / $${Number(a.target).toLocaleString()} target</div></div>`:''}
           ${acPay?`<div style="font-size:10px;color:var(--green);margin-top:4px">+$${acPay.toLocaleString()} paid out</div>`:''}
         </div>`;
       }).join('')}
