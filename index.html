@@ -6189,7 +6189,12 @@ function renderPropAccountsSection() {
                 const consistMax = parseFloat(a.consistencyMax)||40;
                 if (consistMax > 0 && bestDayProfit > 0 && totalPnLCard > 0) {
                   const cp = Math.round(bestDayProfit/totalPnLCard*100);
-                  if (cp > consistMax) { cardEligible=false; const mn=Math.ceil(bestDayProfit/(consistMax/100)); cardIssues.push('$'+Math.ceil(mn-totalPnLCard).toLocaleString()+' more profit for consistency'); }
+                  if (cp > consistMax) {
+                    cardEligible=false;
+                    const grossPnLCard = acTrades.reduce((s,t)=>s+calcPnL(t)+(parseFloat(t.fees)||0),0);
+                    const mn=Math.ceil(bestDayProfit/(consistMax/100));
+                    cardIssues.push('$'+Math.ceil(mn-grossPnLCard).toLocaleString()+' more profit for consistency');
+                  }
                 }
                 if (cardEligible && (winDaysReq===0 || winDayCount>=winDaysReq)) {
                   return '<div style="margin-bottom:12px;display:flex;align-items:center;gap:7px;background:rgba(0,208,132,0.08);border:1px solid rgba(0,208,132,0.3);border-radius:8px;padding:7px 10px"><span style="font-size:13px">✅</span><span style="font-size:11px;font-weight:700;color:var(--green)">Payout Eligible</span></div>';
@@ -6449,14 +6454,16 @@ function openPropDetail(idx, period) {
         if (consistencyMax > 0 && bestDayProfit > 0) {
           // Use total P&L (not just winning days) for consistency if positive
           // totalPnL already computed above — used directly for consistency check
+          // Alpha uses gross P&L (before fees) for consistency required profit calc
+          const grossPnL = acTrades.reduce((s,t)=>s+calcPnL(t)+(parseFloat(t.fees)||0), 0);
           const conPctFull = totalPnL > 0 ? Math.round(bestDayProfit / totalPnL * 100) : 999;
           const conOkFull = conPctFull <= consistencyMax;
           if (!conOkFull) {
             eligible = false;
             const minTotalNeeded = Math.ceil(bestDayProfit / (consistencyMax / 100));
-            const stillNeed = Math.ceil(minTotalNeeded - totalPnL);
+            const stillNeed = Math.ceil(minTotalNeeded - grossPnL);
             reqs.push({ label: 'Consistency Rule (≤'+consistencyMax+'%)', ok: false,
-              detail: 'Best day $'+Math.round(bestDayProfit).toLocaleString()+' is '+conPctFull+'% of $'+Math.round(totalPnL).toLocaleString()+' total profit. Need ~$'+stillNeed.toLocaleString()+' more profit to qualify.' });
+              detail: 'Best day $'+Math.round(bestDayProfit).toLocaleString()+' is '+conPctFull+'% of $'+Math.round(totalPnL).toLocaleString()+' net profit. Need ~$'+stillNeed.toLocaleString()+' more gross profit to qualify.' });
           } else {
             reqs.push({ label: 'Consistency Rule (≤'+consistencyMax+'%)', ok: true,
               detail: 'Best day is '+conPctFull+'% of $'+Math.round(totalPnL).toLocaleString()+' total profit ✓' });
