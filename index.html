@@ -2156,6 +2156,9 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
   <!-- SCALING PLAN -->
   <div id="prop-scaling-section" style="margin-top:16px"></div>
 
+  <!-- PROP ANALYTICS -->
+  <div id="prop-analytics-section" style="margin-top:16px"></div>
+
   <!-- PAYOUTS -->
   <div style="background:var(--nm-bg);border-radius:20px;box-shadow:var(--nm-raise);padding:20px;margin-top:16px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
@@ -5939,6 +5942,7 @@ function renderPropFirmsPage() {
   renderPropTodayBanner();
   renderPropAccountsSection();
   renderPropScalingPlan();
+  renderPropAnalytics();
   renderPropPayouts();
   populatePayoutAccountSelect();
 }
@@ -6996,6 +7000,123 @@ function saveScalingPlan() {
 function closeScalingEditor() {
   const m = document.getElementById('scaling-editor-modal');
   if(m) m.style.display='none';
+}
+
+function renderPropAnalytics() {
+  const el = document.getElementById('prop-analytics-section');
+  if (!el) return;
+  const accounts = state.propAccounts || [];
+  const payouts  = state.propPayouts  || [];
+  const trades   = state.trades       || [];
+  if (!accounts.length) { el.innerHTML = ''; return; }
+
+  // ── Per-firm rollup ────────────────────────────────────────────────────────
+  const byFirm = {};
+  accounts.forEach(a => {
+    if (!byFirm[a.firm]) byFirm[a.firm] = { accounts:[], spent:0, paid:0, pnl:0, evals:0, funded:0, blown:0 };
+    const f = byFirm[a.firm];
+    f.accounts.push(a);
+    f.spent += (parseFloat(a.fee)||0) + (parseFloat(a.activation)||0);
+    f.paid  += payouts.filter(p=>p.accountName===a.name).reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+    const acTrades = trades.filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
+    f.pnl += acTrades.reduce((s,t)=>s+calcPnL(t),0);
+    if (a.status==='eval')  f.evals++;
+    if (a.status==='funded'||a.status==='passed') f.funded++;
+    if (a.status==='blown') f.blown++;
+  });
+
+  // ── Overall totals ─────────────────────────────────────────────────────────
+  const totalSpent  = accounts.reduce((s,a)=>s+(parseFloat(a.fee)||0)+(parseFloat(a.activation)||0),0);
+  const totalPaid   = payouts.reduce((s,p)=>s+(parseFloat(p.amount)||0),0);
+  const totalPnL    = Object.values(byFirm).reduce((s,f)=>s+f.pnl,0);
+  const netROI      = totalPaid - totalSpent;
+  const roiCol      = netROI>=0?'var(--green)':'var(--red)';
+  const totalFunded = accounts.filter(a=>a.status==='funded'||a.status==='passed').length;
+  const totalBlown  = accounts.filter(a=>a.status==='blown').length;
+  const totalEvals  = accounts.filter(a=>a.status==='eval').length;
+  const passRate    = (totalFunded+totalBlown) > 0 ? Math.round(totalFunded/(totalFunded+totalBlown)*100) : null;
+
+  el.innerHTML = `<div style="background:var(--nm-bg);border-radius:20px;box-shadow:var(--nm-raise);padding:22px 24px">
+    <div style="font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.2px;margin-bottom:18px">📊 Prop Analytics</div>
+
+    <!-- Overview chips -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px">
+      <div class="nm-chip" style="padding:12px 10px;border-radius:14px;text-align:center">
+        <div style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:${roiCol};letter-spacing:-.5px;line-height:1">${netROI>=0?'+':'-'}$${Math.abs(Math.round(netROI)).toLocaleString()}</div>
+        <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:5px">Net ROI</div>
+      </div>
+      <div class="nm-chip" style="padding:12px 10px;border-radius:14px;text-align:center">
+        <div style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:var(--red);letter-spacing:-.5px;line-height:1">-$${Math.round(totalSpent).toLocaleString()}</div>
+        <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:5px">Total Spent</div>
+      </div>
+      <div class="nm-chip" style="padding:12px 10px;border-radius:14px;text-align:center">
+        <div style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:var(--green);letter-spacing:-.5px;line-height:1">+$${Math.round(totalPaid).toLocaleString()}</div>
+        <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:5px">Paid Out</div>
+      </div>
+      <div class="nm-chip" style="padding:12px 10px;border-radius:14px;text-align:center">
+        <div style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:${totalPnL>=0?'var(--green)':'var(--red)'};letter-spacing:-.5px;line-height:1">${totalPnL>=0?'+':'-'}$${Math.abs(Math.round(totalPnL)).toLocaleString()}</div>
+        <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:5px">Trading P&L</div>
+      </div>
+      <div class="nm-chip" style="padding:12px 10px;border-radius:14px;text-align:center">
+        <div style="font-size:20px;font-weight:800;font-family:'Geist Mono',monospace;color:${passRate>=50?'var(--green)':passRate!==null?'var(--amber)':'var(--muted)'};letter-spacing:-.5px;line-height:1">${passRate!==null?passRate+'%':'—'}</div>
+        <div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:5px">Pass Rate</div>
+      </div>
+    </div>
+
+    <!-- Account status breakdown -->
+    <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap">
+      ${[['Eval',totalEvals,'var(--amber)'],['Funded',totalFunded,'var(--green)'],['Blown',totalBlown,'var(--red)']].map(([lbl,cnt,col])=>
+        cnt>0?`<div style="display:flex;align-items:center;gap:6px;box-shadow:var(--nm-press-sm);border-radius:10px;padding:7px 14px;background:var(--nm-bg)"><div style="width:8px;height:8px;border-radius:50%;background:${col}"></div><span style="font-size:12px;font-weight:700;color:${col}">${cnt}</span><span style="font-size:11px;color:var(--muted)">${lbl}</span></div>`:''
+      ).join('')}
+    </div>
+
+    <!-- Per-firm table -->
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">By Firm</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${Object.entries(byFirm).map(([firm,f])=>{
+        const net = f.paid - f.spent;
+        const netCol = net>=0?'var(--green)':'var(--red)';
+        const acTrades = trades.filter(t=>f.accounts.some(a=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm)));
+        const wins = acTrades.filter(isWin).length;
+        const countable = acTrades.filter(isCountable).length;
+        const wr = countable ? Math.round(wins/countable*100) : null;
+        const wrCol = wr>=60?'var(--green)':wr>=45?'var(--amber)':'var(--red)';
+        const byDay={};
+        acTrades.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDay[d]=(byDay[d]||0)+calcPnL(t);});
+        const allPosDays=Object.values(byDay).filter(p=>p>0);
+        const bestDay=allPosDays.length?Math.max(...allPosDays):0;
+        const consistMax=parseFloat(f.accounts[0]?.consistencyMax)||40;
+        const conPct=f.pnl>0?Math.round(bestDay/f.pnl*100):null;
+        const passCount = f.accounts.filter(a=>a.status==='funded'||a.status==='passed').length;
+        const blownCount = f.accounts.filter(a=>a.status==='blown').length;
+        const firmPassRate = (passCount+blownCount)>0?Math.round(passCount/(passCount+blownCount)*100):null;
+
+        return `<div style="background:var(--nm-bg);border-radius:14px;box-shadow:var(--nm-press-sm);padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-size:14px;font-weight:800;color:var(--text)">${firm}</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-size:12px;font-weight:700;color:${netCol}">${net>=0?'+':'-'}$${Math.abs(Math.round(net)).toLocaleString()} net</span>
+              ${firmPassRate!==null?`<span style="font-size:10px;color:var(--muted)">${firmPassRate}% pass rate</span>`:''}
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+            <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Spent</div><div style="font-size:13px;font-weight:700;color:var(--red);font-family:'Geist Mono',monospace">-$${Math.round(f.spent).toLocaleString()}</div></div>
+            <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Paid Out</div><div style="font-size:13px;font-weight:700;color:var(--green);font-family:'Geist Mono',monospace">+$${Math.round(f.paid).toLocaleString()}</div></div>
+            <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Trading P&L</div><div style="font-size:13px;font-weight:700;color:${f.pnl>=0?'var(--green)':'var(--red)'};font-family:'Geist Mono',monospace">${f.pnl>=0?'+':'-'}$${Math.abs(Math.round(f.pnl)).toLocaleString()}</div></div>
+            <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Win Rate</div><div style="font-size:13px;font-weight:700;color:${wr!==null?wrCol:'var(--dim)'}">${wr!==null?wr+'%':'—'}</div></div>
+            <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Consistency</div><div style="font-size:13px;font-weight:700;color:${conPct!==null?(conPct<=consistMax?'var(--green)':'var(--red)'):'var(--dim)'}">${conPct!==null?conPct+'%':'—'}</div></div>
+            <div><div style="font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Accounts</div><div style="font-size:13px;font-weight:700;color:var(--muted)">${f.accounts.length}</div></div>
+          </div>
+          <!-- Funded vs eval breakdown -->
+          ${(f.funded+f.blown)>0?`<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+            ${f.evals>0?`<span style="font-size:10px;color:var(--amber)">● ${f.evals} eval</span>`:''}
+            ${f.funded>0?`<span style="font-size:10px;color:var(--green)">● ${f.funded} funded</span>`:''}
+            ${f.blown>0?`<span style="font-size:10px;color:var(--red)">● ${f.blown} blown</span>`:''}
+          </div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
 }
 
 function renderPropPayouts() {
