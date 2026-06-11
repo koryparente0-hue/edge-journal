@@ -1122,191 +1122,18 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 </style>
 </head>
 <body>
-<!-- LANDING PAGE / LOGIN SCREEN -->
-<div id="login-screen" class="lp-page" style="display:flex">
-
-  <!-- NAV -->
-  <nav class="lp-nav">
-    <div class="lp-logo">EDGE<span>.</span></div>
-    <button class="lp-google-btn" style="min-width:0;padding:10px 20px;font-size:13px" onclick="window._fbSignIn()">
-      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Sign in
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#080810;font-family:Geist,sans-serif">
+  <canvas id="heroBurst" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0"></canvas>
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center">
+    <div style="font-size:40px;font-weight:800;letter-spacing:-2px;color:#fff;font-family:Syne,sans-serif">EDGE<span style="color:#9B7FFF">.</span></div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.4);letter-spacing:.08em;text-transform:uppercase">Trading Journal</div>
+    <button onclick="window._fbSignIn()" style="display:flex;align-items:center;gap:10px;background:#fff;color:#111;border:none;border-radius:12px;padding:14px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:Geist,sans-serif;box-shadow:0 4px 24px rgba(0,0,0,0.4);transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 32px rgba(0,0,0,0.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 24px rgba(0,0,0,0.4)'">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Continue with Google
     </button>
-  </nav>
-
-  <!-- HERO -->
-  <div style="position:relative;overflow:hidden;width:100%;min-height:90vh;display:flex;justify-content:center;align-items:center;background:#080810">
-    <canvas id="heroBurst" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;display:block"></canvas>
-  <div class="lp-hero" style="position:relative;z-index:1">
-    <div class="lp-eyebrow">AI-Powered Trading Journal</div>
-    <h1 class="lp-headline">Stop guessing.<br><span>Start knowing</span> why<br>you lose.</h1>
-    <p class="lp-sub">EDGE grades every trade A–F, finds your real patterns, and tells you exactly what's costing you money — before you blow another account.</p>
-
-    <!-- TWO CTAs -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:320px">
-      <button class="lp-google-btn" style="width:100%" onclick="window._fbSignIn()">
-        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Sign in with Google — it's free
-      </button>
-    </div>
-    <div class="lp-price-note" style="margin-top:8px">Free · No credit card required</div>
-    <div class="lp-social">
-      <div class="lp-social-item"><strong>NQ / MNQ</strong> focused</div>
-      <div class="lp-divider"></div>
-      <div class="lp-social-item"><strong>ICT strategy</strong> aware</div>
-      <div class="lp-divider"></div>
-      <div class="lp-social-item"><strong>Grades every trade</strong> instantly</div>
-      <div class="lp-divider"></div>
-      <div class="lp-social-item"><strong>Works on any device</strong></div>
-    </div>
-    </div>
-  </div><!-- /hero wrapper -->
-
-  <!-- FEATURES -->
-  <div class="lp-section alt">
-    <div class="lp-inner">
-      <div class="lp-section-label">What it does</div>
-      <div class="lp-section-title">Everything your journal should be doing but isn't</div>
-      <div class="lp-cards">
-        <div class="lp-card">
-          <div class="lp-card-icon">🎯</div>
-          <div class="lp-card-title">AI grades every trade A–F</div>
-          <div class="lp-card-body">Log a trade and instantly get a letter grade with a full breakdown — what you did right, what went wrong, and the one thing to fix next time. Graded against your own criteria, not generic rules.</div>
-        </div>
-        <div class="lp-card">
-          <div class="lp-card-icon">🧠</div>
-          <div class="lp-card-title">Finds patterns you can't see</div>
-          <div class="lp-card-body">After 5+ trades, the Live Pattern Feed starts firing: "You lose 70% of trades after 10:30AM" or "FOMO has cost you $1,200 this month." Data you'd never calculate yourself.</div>
-        </div>
-        <div class="lp-card">
-          <div class="lp-card-icon">💬</div>
-          <div class="lp-card-title">AI Coach that knows your journal</div>
-          <div class="lp-card-body">Ask it anything. "What's my best setup?" "Am I revenge trading?" "What should I focus on this week?" It reads your entire trade history before answering.</div>
-        </div>
-        <div class="lp-card">
-          <div class="lp-card-icon">⚡</div>
-          <div class="lp-card-title">Trade Copilot — before you enter</div>
-          <div class="lp-card-body">Type in your entry, stop, and target before pulling the trigger. Get a GO / CAUTION / SKIP verdict based on how you've performed in similar setups historically.</div>
-        </div>
-        <div class="lp-card">
-          <div class="lp-card-icon">📉</div>
-          <div class="lp-card-title">Tilt Detection</div>
-          <div class="lp-card-body">Automatically flags when you're revenge trading, overtrading, or your results are deteriorating across a session. Catches the patterns that cost you the most before they spiral.</div>
-        </div>
-        <div class="lp-card">
-          <div class="lp-card-icon">📊</div>
-          <div class="lp-card-title">Setup & mistake analytics</div>
-          <div class="lp-card-body">See exactly which setups make you money and which don't. See how much FOMO, early exits, and ignored stops have cost you in dollars — not percentages.</div>
-        </div>
-      </div>
-    </div>
   </div>
-
-  <!-- HOW IT WORKS -->
-  <div class="lp-section">
-    <div class="lp-inner">
-      <div class="lp-section-label">How it works</div>
-      <div class="lp-section-title">Profitable in 4 steps</div>
-      <div class="lp-steps">
-        <div class="lp-step">
-          <div class="lp-step-num">01</div>
-          <div class="lp-step-title">Set your grading criteria</div>
-          <div class="lp-step-body">Tell EDGE what an A+ trade looks like for you. Your minimum R:R, your session hours, your must-follow rules. The AI grades based on your standards — not someone else's.</div>
-        </div>
-        <div class="lp-step">
-          <div class="lp-step-num">02</div>
-          <div class="lp-step-title">Log trades in 10 seconds</div>
-          <div class="lp-step-body">Ticker, side, entry, exit, stop, target. Hit log. The AI reviews it instantly — grade, what worked, what didn't, key lesson. Attach chart screenshots right in the form.</div>
-        </div>
-        <div class="lp-step">
-          <div class="lp-step-num">03</div>
-          <div class="lp-step-title">Patterns emerge fast</div>
-          <div class="lp-step-body">After a week of trades your dashboard shows your real edge — best hours, best setups, most costly mistakes, tilt patterns. Numbers don't lie about what you're actually doing.</div>
-        </div>
-        <div class="lp-step">
-          <div class="lp-step-num">04</div>
-          <div class="lp-step-title">Fix one thing at a time</div>
-          <div class="lp-step-body">The AI Coach gives you one specific action every week. Not ten things. One. The highest-leverage change based on your actual data. That's how accounts grow.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PRICING -->
-  <div class="lp-section alt">
-    <div class="lp-inner">
-      <div class="lp-section-label">Pricing</div>
-      <div class="lp-section-title">Start free. Upgrade when you're ready.</div>
-      <div class="lp-plans">
-        <div class="lp-plan">
-          <div class="lp-plan-name">Free</div>
-          <div class="lp-plan-price">$0<span>/mo</span></div>
-          <div class="lp-plan-desc">Log trades, track history, build the habit.</div>
-          <ul class="lp-plan-features">
-            <li>Log unlimited trades</li>
-            <li>Trade history & filters</li>
-            <li>Dashboard & equity curve</li>
-            <li>Daily Routine & Streaks</li>
-            <li>Rule Tracker</li>
-            <li>Grading criteria setup</li>
-            <li class="dim">AI trade reviews</li>
-            <li class="dim">AI Coach chat</li>
-            <li class="dim">Pattern feed & insights</li>
-            <li class="dim">Tilt Detection</li>
-          </ul>
-          <button class="btn" style="width:100%;justify-content:center;font-size:13px" onclick="window._fbSignIn()">Get started free</button>
-        </div>
-        <div class="lp-plan featured">
-          <div class="lp-plan-name">Pro</div>
-          <div class="lp-plan-price">$9<span>/mo</span></div>
-          <div class="lp-plan-desc">The full coaching system. Everything you need to actually improve.</div>
-          <ul class="lp-plan-features">
-            <li>Everything in Free</li>
-            <li>AI grade on every trade</li>
-            <li>AI Coach — ask anything</li>
-            <li>AI Insights — weekly analysis</li>
-            <li>Trade Copilot</li>
-            <li>Tilt Detection</li>
-            <li>Setup & mistake analytics</li>
-            <li>BE analysis</li>
-            <li>Trade Gallery with charts</li>
-            <li>Playbook & Risk Consistency</li>
-          </ul>
-          <button class="btn btn-green" style="width:100%;justify-content:center;font-size:13px;font-weight:700" onclick="window._fbSignIn()">Start with Pro — $9/mo</button>
-        </div>
-      </div>
-
-      <!-- QUOTE -->
-      <div class="lp-quote">
-        <div class="lp-quote-text">"I'd been trading NQ for 8 months and had no idea FOMO was costing me over $3,000. It was right there in the data the whole time. EDGE showed me in the first week."</div>
-        <div class="lp-quote-author">— NQ futures trader, 14 months profitable</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FINAL CTA -->
-  <div class="lp-section" style="text-align:center">
-    <div class="lp-inner" style="display:flex;flex-direction:column;align-items:center">
-      <div class="lp-eyebrow">Ready?</div>
-      <h2 class="lp-section-title" style="margin-bottom:16px">Your edge is already in the data.<br>You just can't see it yet.</h2>
-      <p style="font-size:15px;color:var(--muted);margin-bottom:32px;font-family:'Montserrat',sans-serif;max-width:420px;line-height:1.6">Start free today. Log your first trade. The AI gets smarter with every entry.</p>
-      <button class="lp-google-btn" onclick="window._fbSignIn()">
-        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Start free with Google
-      </button>
-      <div class="lp-price-note" style="margin-top:12px">No credit card required · Free plan available</div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <div class="lp-footer">
-    <div class="lp-logo" style="font-size:16px">EDGE<span>.</span></div>
-    <div class="lp-footer-copy">Built for NQ/MNQ futures traders · ICT strategy aware · © 2026</div>
-    <div class="lp-footer-copy" style="cursor:pointer;text-decoration:underline" onclick="window._fbSignIn()">Sign in →</div>
-  </div>
-
 </div>
-
 <!-- APP SHELL -->
 <div id="app-shell" style="display:none;width:100%;height:100vh">
 <div class="shell">
@@ -7405,23 +7232,6 @@ function switchAnalyticsTab(tab) {
   if (!onStats) { renderHistoryHero(); renderHistory(); }
 }
 
-function renderHistoryHero() {
-  const T = state.trades || [];
-  const pnls = T.map(t => calcPnL(t));
-  const total = pnls.reduce((a,b)=>a+b,0);
-  const wins = T.filter(isWin).length;
-  const wr = T.length ? Math.round(wins/T.length*100) : 0;
-  const col = total>=0?'var(--green)':'var(--red)';
-  const sc = (el, html) => { const e=document.getElementById(el); if(e) e.innerHTML=html; };
-  const lbl = t => `<div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:5px">${t}</div>`;
-  const val = (v,c) => `<div style="font-size:22px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;color:${c||'var(--text)'};line-height:1">${v}</div>`;
-  sc('hi-s0', val((total>=0?'+':'-')+'$'+Math.abs(Math.round(total)).toLocaleString(), col)+lbl('Total P&L'));
-  sc('hi-s1', val(T.length,'var(--text)')+lbl('Trades'));
-  sc('hi-s2', val(wr+'%',wr>=55?'var(--green)':wr>=40?'var(--amber)':'var(--red)')+lbl('Win Rate'));
-  sc('hi-s3', val(T.length-wins,'var(--muted)')+lbl('Losses'));
-  const hc = document.getElementById('history-count');
-  if(hc) hc.textContent = T.length + ' trade' + (T.length!==1?'s':'');
-}
 
 function renderSetupsPage() {
   const period = document.getElementById('stats-period')?.value || 'all';
