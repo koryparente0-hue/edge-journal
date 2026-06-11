@@ -1316,10 +1316,7 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
   <div class="logo">EDGE<span>.</span><span class="logo-sub">Trading OS</span></div>
 
   <!-- TODAY — always first, emotional center -->
-  <div class="nav-item active" id="nav-today" onclick="go('today')">
-    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Today
-  </div>
-  <div class="nav-item" id="nav-dashboard" onclick="go('dashboard')">
+  <div class="nav-item active" id="nav-dashboard" onclick="go('dashboard')">
     <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/></svg>Dashboard
   </div>
 
@@ -1481,159 +1478,6 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 </div>
 
 <!-- TODAY PAGE -->
-<div class="page" id="page-today">
-  <div class="page-header">
-    <div>
-      <div class="page-title" id="today-page-title">Today</div>
-      <div class="page-sub" id="today-page-sub"></div>
-    </div>
-    <button class="btn btn-green" onclick="go('log')" style="font-weight:700;padding:10px 20px">+ Log Trade</button>
-  </div>
-
-  <!-- STOP TRADING BANNER -->
-  <div id="today-stop-banner" style="display:none;background:#1a0a0a;border:1px solid rgba(255,77,77,0.4);border-radius:14px;padding:14px 18px;margin-bottom:16px;align-items:center;gap:14px">
-    <div style="font-size:26px">🛑</div>
-    <div>
-      <div style="font-size:14px;font-weight:800;color:#ff4d4d">Stop Trading</div>
-      <div id="today-stop-reason" style="font-size:11px;color:var(--muted);margin-top:2px"></div>
-    </div>
-  </div>
-
-  <!-- ROW 1: Big stat chips -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px">
-    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Today P&L</div>
-      <div id="today-pnl" style="font-size:28px;font-weight:800;font-family:'Geist Mono',monospace;letter-spacing:-1px;line-height:1">$0</div>
-      <div id="today-goal-status" style="font-size:10px;font-weight:600;margin-top:6px"></div>
-    </div>
-    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Trades Today</div>
-      <div id="today-trade-count" style="font-size:28px;font-weight:800;font-family:'Geist Mono',monospace;line-height:1">0</div>
-      <div id="today-session-status" style="margin-top:6px"></div>
-    </div>
-    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Win Rate</div>
-      <div id="today-wr" style="font-size:28px;font-weight:800;font-family:'Geist Mono',monospace;line-height:1">—</div>
-    </div>
-    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px">Win Streak</div>
-      <div id="today-streak" style="font-size:28px;font-weight:800;font-family:'Geist Mono',monospace;line-height:1">0</div>
-    </div>
-  </div>
-
-  <!-- ROW 2: Prop rules full width -->
-  <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px;margin-bottom:14px">
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Prop Firm Rules</div>
-    <div id="today-prop-rules"><div style="font-size:12px;color:var(--dim)">No active prop accounts</div></div>
-  </div>
-
-  <!-- ROW 3: Winning days full width -->
-  <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px;margin-bottom:14px">
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Winning Days Progress</div>
-    <div id="today-wd-section"><div style="font-size:12px;color:var(--dim)">No winning day targets set on your prop accounts</div></div>
-  </div>
-
-  <!-- ROW 4: Bias + Mindset + Checklist -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
-
-    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Session Bias</div>
-      <div style="display:flex;gap:6px;margin-bottom:16px">
-        <button id="bias-bull" onclick="setTodayBias('bull')" class="nm-btn" style="flex:1;justify-content:center;font-size:11px">🐂 Bull</button>
-        <button id="bias-neutral" onclick="setTodayBias('neutral')" class="nm-btn" style="flex:1;justify-content:center;font-size:11px">➖ Flat</button>
-        <button id="bias-bear" onclick="setTodayBias('bear')" class="nm-btn" style="flex:1;justify-content:center;font-size:11px">🐻 Bear</button>
-      </div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px">Daily Targets</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:9px 12px">
-          <div style="font-size:10px;color:var(--dim);margin-bottom:4px">Profit goal ($)</div>
-          <input type="number" id="today-profit-goal" placeholder="500" style="width:100%;background:transparent;border:none;outline:none;font-size:16px;font-weight:700;font-family:'Geist Mono',monospace;color:var(--green)" oninput="saveTodayGoals()">
-        </div>
-        <div style="box-shadow:var(--nm-press-sm);border-radius:10px;padding:9px 12px">
-          <div style="font-size:10px;color:var(--dim);margin-bottom:4px">Max loss ($)</div>
-          <input type="number" id="today-max-loss" placeholder="250" style="width:100%;background:transparent;border:none;outline:none;font-size:16px;font-weight:700;font-family:'Geist Mono',monospace;color:var(--red)" oninput="saveTodayGoals()">
-        </div>
-      </div>
-    </div>
-
-    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Mindset Check-in</div>
-      <div style="display:flex;flex-direction:column;gap:13px" id="today-mindset-sliders">
-        <div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:5px"><span>Focus</span><span id="focus-val" style="font-weight:700;color:var(--text)">—</span></div>
-          <input type="range" min="1" max="10" value="5" id="slider-focus" oninput="updateMindset()" style="width:100%;accent-color:var(--accent)">
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:5px"><span>Discipline</span><span id="discipline-val" style="font-weight:700;color:var(--text)">—</span></div>
-          <input type="range" min="1" max="10" value="5" id="slider-discipline" oninput="updateMindset()" style="width:100%;accent-color:var(--accent)">
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:5px"><span>Urge to Force</span><span id="force-val" style="font-weight:700;color:var(--red)">—</span></div>
-          <input type="range" min="1" max="10" value="3" id="slider-force" oninput="updateMindset()" style="width:100%;accent-color:#ff4d4d">
-        </div>
-      </div>
-    </div>
-
-    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Pre-Session Checklist</div>
-      <div style="display:flex;flex-direction:column;gap:9px" id="today-checklist"></div>
-    </div>
-  </div>
-
-  <!-- ROW 5: Tilt + Trades -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:12px">Tilt Detection</div>
-      <div id="today-tilt-body"></div>
-    </div>
-    <div style="background:var(--nm-bg);border-radius:16px;box-shadow:var(--nm-raise);padding:18px 20px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)">Today's Trades</div>
-        <button class="nm-btn" onclick="go('setups');setTimeout(()=>switchAnalyticsTab('history'),80)" style="font-size:11px">All →</button>
-      </div>
-      <div id="today-trades-list"><div class="empty">No trades yet</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- COPILOT -->
-<div class="page" id="page-copilot">
-  <div class="page-header">
-    <div><div class="page-title">Trade Copilot</div><div class="page-sub">Analyze a trade BEFORE you take it — based on your history</div></div>
-  </div>
-  <div class="copilot-wrap" style="margin-bottom:16px">
-    <div class="copilot-label">Pre-trade analysis</div>
-    <div class="grid3" style="gap:10px;margin-bottom:12px">
-      <div class="qe-field"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;display:block;margin-bottom:5px">Ticker</label><input id="cp-ticker" placeholder="NQ" value="NQ" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 11px;font-size:13px;font-family:var(--mono);color:var(--text);width:100%"></div>
-      <div class="qe-field"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;display:block;margin-bottom:5px">Side</label>
-        <div class="side-toggle">
-          <button class="side-btn long-active" id="cp-btn-long" onclick="setCopilotSide('long')">LONG</button>
-          <button class="side-btn" id="cp-btn-short" onclick="setCopilotSide('short')">SHORT</button>
-        </div>
-      </div>
-      <div class="qe-field"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;display:block;margin-bottom:5px">Setup</label><select id="cp-setup" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 11px;font-size:13px;font-family:var(--display);color:var(--text);width:100%"><option value="">— select —</option></select></div>
-    </div>
-    <div class="grid3" style="gap:10px;margin-bottom:12px">
-      <div class="qe-field"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;display:block;margin-bottom:5px">Entry price</label><input id="cp-entry" type="number" placeholder="21000" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 11px;font-size:13px;font-family:var(--mono);color:var(--text);width:100%"></div>
-      <div class="qe-field"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;display:block;margin-bottom:5px">Stop loss</label><input id="cp-sl" type="number" placeholder="20970" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 11px;font-size:13px;font-family:var(--mono);color:var(--text);width:100%"></div>
-      <div class="qe-field"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;display:block;margin-bottom:5px">Target</label><input id="cp-tp" type="number" placeholder="21090" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 11px;font-size:13px;font-family:var(--mono);color:var(--text);width:100%"></div>
-    </div>
-    <div style="margin-bottom:12px"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;display:block;margin-bottom:5px">Context (optional)</label><input id="cp-context" placeholder="e.g. 1h FVG just swept, waiting for 5m inversion..." style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:8px 11px;font-size:13px;font-family:var(--display);color:var(--text);width:100%"></div>
-    <button class="btn btn-green" onclick="runCopilot()" style="width:100%;justify-content:center;font-size:13px;padding:11px">Analyze this trade ↗</button>
-    <div id="copilot-output" style="margin-top:14px"></div>
-  </div>
-  <div class="grid2">
-    <div class="card">
-      <div class="card-header"><span class="card-title">Your setup performance</span><span class="card-sub">Referenced in analysis</span></div>
-      <div id="copilot-setup-stats"></div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">Time of day performance</span><span class="card-sub">Is now a good time?</span></div>
-      <div id="copilot-time-stats"></div>
-    </div>
-  </div>
-</div>
-
 <!-- LOG TRADE -->
 <div class="page" id="page-log">
   <div class="page-header">
@@ -2054,15 +1898,6 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
     <div id="be-analysis-content"><div class="empty"><strong>No BE data yet</strong> — tag trades with BE → Win or BE → Loss outcomes to see this.</div></div>
   </div>
 
-  <!-- TTC ANALYSIS (full width) -->
-  <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:20px;margin-bottom:12px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)">⏱ TTC Analysis</div>
-      <span id="ttc-headline" style="font-size:11px;color:var(--text);font-weight:600"></span>
-    </div>
-    <div id="ttc-analysis-content"><div class="empty">No TTC data yet — add TTC when logging trades to see this analysis.</div></div>
-  </div>
-</div><!-- /atab-stats -->
 
   <!-- HISTORY TAB -->
   <div id="atab-history" style="display:none">
@@ -3031,7 +2866,7 @@ onAuthStateChanged(auth, async (user) => {
     // Show app
     loginScreen.style.display = 'none';
     appShell.style.display = 'flex';
-    go('today');
+    go('dashboard');
     updateProUI();
     // Auto-open upgrade modal if user clicked "Sign up for Pro"
 
@@ -3168,7 +3003,7 @@ function go(page) {
   if (pageEl) pageEl.classList.add('active');
   const navEl = document.getElementById('nav-'+page);
   if (navEl) navEl.classList.add('active');
-  if (page==='today')          { renderTodayPage(); return; }
+  if (page==='today')          { go('dashboard'); return; }
   if (page==='setups')         { renderSetupsPage(); return; }
   if (page==='propfirms')      renderPropFirmsPage();
   if (page==='dashboard')      renderDashboard();
