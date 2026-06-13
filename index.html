@@ -1119,6 +1119,15 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 .pd-rule-field input,.pd-rule-field select,.pd-rule-field textarea{background:var(--nm-bg);border:none;box-shadow:var(--nm-press-sm);border-radius:var(--r);padding:7px 9px;font-size:12px;font-family:var(--mono);color:var(--text);width:100%;}
 .pd-rule-field input:focus,.pd-rule-field select:focus,.pd-rule-field textarea:focus{outline:none;box-shadow:var(--nm-press),0 0 0 1.5px rgba(155,127,255,0.4);}
 .pd-dd-explain{font-size:11px;color:var(--muted);background:var(--nm-bg);border-radius:var(--r);padding:9px 12px;line-height:1.6;margin-bottom:12px;box-shadow:var(--nm-press-sm);}
+
+/* TODAY PAGE */
+.today-conf-item { display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);cursor:pointer;padding:2px 0 }
+.today-conf-item input[type=checkbox] { accent-color:var(--accent);width:14px;height:14px;cursor:pointer }
+.today-conf-item span { line-height:1.4 }
+.today-tag.active { background:rgba(155,127,255,0.2)!important;border-color:var(--accent)!important;color:var(--accent)!important }
+.today-grade-btn.active { background:rgba(155,127,255,0.2)!important;border-color:var(--accent)!important;color:var(--accent)!important }
+#conf-yes.active { background:rgba(0,208,132,0.15)!important;border-color:#00d084!important;color:#00d084!important }
+#conf-no.active { background:rgba(255,77,77,0.15)!important;border-color:#ff4d4d!important;color:#ff4d4d!important }
 </style>
 </head>
 <body>
@@ -1143,7 +1152,10 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
   <div class="logo">EDGE<span>.</span><span class="logo-sub">Trading OS</span></div>
 
   <!-- TODAY — always first, emotional center -->
-  <div class="nav-item active" id="nav-dashboard" onclick="go('dashboard')">
+  <div class="nav-item" id="nav-today" onclick="go('today')">
+    <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Today
+  </div>
+  <div class="nav-item" id="nav-dashboard" onclick="go('dashboard')">
     <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".4"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/></svg>Dashboard
   </div>
 
@@ -1206,6 +1218,200 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
 <div class="main">
 
 <!-- DASHBOARD -->
+<!-- TODAY PAGE -->
+<div class="page" id="page-today">
+  <div class="page-header" style="margin-bottom:0">
+    <div>
+      <div class="page-title" id="today-page-title">Today</div>
+      <div class="page-sub" id="today-page-date"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn" onclick="clearTodayData()" style="font-size:12px;padding:7px 14px;color:var(--muted)">Clear Day</button>
+      <button class="btn btn-green" onclick="saveTodayPage()" style="font-size:13px;padding:8px 18px">Save</button>
+    </div>
+  </div>
+
+  <!-- TWO COLUMN LAYOUT -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px">
+
+    <!-- LEFT: MORNING TRADE REVIEW -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- TRADE GRADE -->
+      <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Morning Trade Review</div>
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Trade Grade — grade execution, not P&L</div>
+          <div style="display:flex;gap:8px">
+            <button class="today-grade-btn" id="tg-A" onclick="setTodayGrade('A')" style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(155,127,255,0.3);background:transparent;color:var(--text);font-size:18px;font-weight:800;cursor:pointer;transition:all .15s">A</button>
+            <button class="today-grade-btn" id="tg-B" onclick="setTodayGrade('B')" style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.07);background:transparent;color:var(--text);font-size:18px;font-weight:800;cursor:pointer;transition:all .15s">B</button>
+            <button class="today-grade-btn" id="tg-C" onclick="setTodayGrade('C')" style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.07);background:transparent;color:var(--text);font-size:18px;font-weight:800;cursor:pointer;transition:all .15s">C</button>
+            <button class="today-grade-btn" id="tg-F" onclick="setTodayGrade('F')" style="flex:1;padding:12px;border-radius:10px;border:1px solid rgba(255,77,77,0.3);background:transparent;color:var(--text);font-size:18px;font-weight:800;cursor:pointer;transition:all .15s">F</button>
+          </div>
+        </div>
+
+        <!-- WHAT I DID WELL -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">✅ What I Did Well</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px" id="did-well-tags">
+            <button class="today-tag" onclick="toggleTodayTag('well','Waited for displacement')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Waited for displacement</button>
+            <button class="today-tag" onclick="toggleTodayTag('well','Followed HTF bias')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Followed HTF bias</button>
+            <button class="today-tag" onclick="toggleTodayTag('well','Good patience')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Good patience</button>
+            <button class="today-tag" onclick="toggleTodayTag('well','Proper sizing')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Proper sizing</button>
+            <button class="today-tag" onclick="toggleTodayTag('well','Didn\'t overtrade')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Didn't overtrade</button>
+          </div>
+          <textarea id="today-did-well-notes" placeholder="Add notes on what you did well..." style="width:100%;background:var(--bg3);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;font-size:13px;resize:vertical;min-height:60px;box-sizing:border-box"></textarea>
+        </div>
+
+        <!-- WHAT I DID WRONG -->
+        <div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">❌ What I Did Wrong</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px" id="did-wrong-tags">
+            <button class="today-tag" onclick="toggleTodayTag('wrong','Hesitated')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Hesitated</button>
+            <button class="today-tag" onclick="toggleTodayTag('wrong','Entered early')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Entered early</button>
+            <button class="today-tag" onclick="toggleTodayTag('wrong','Ignored liquidity')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Ignored liquidity</button>
+            <button class="today-tag" onclick="toggleTodayTag('wrong','Forced confirmation')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Forced confirmation</button>
+            <button class="today-tag" onclick="toggleTodayTag('wrong','Emotional management')" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s">Emotional management</button>
+          </div>
+          <textarea id="today-did-wrong-notes" placeholder="Add notes on what went wrong..." style="width:100%;background:var(--bg3);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;font-size:13px;resize:vertical;min-height:60px;box-sizing:border-box"></textarea>
+        </div>
+      </div>
+
+      <!-- CONFLUENCES -->
+      <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Confluences Breakdown</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div>
+            <div style="font-size:11px;color:#00d084;font-weight:600;margin-bottom:8px">✅ Positives</div>
+            <div style="display:flex;flex-direction:column;gap:5px" id="conf-pos-tags">
+              <label class="today-conf-item"><input type="checkbox" id="cp-htf" onchange="saveTodayAuto()"> <span>HTF aligned</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cp-ifvg" onchange="saveTodayAuto()"> <span>IFVG respected</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cp-session" onchange="saveTodayAuto()"> <span>Session timing</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cp-aligned" onchange="saveTodayAuto()"> <span>ES + NQ aligned</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cp-liq" onchange="saveTodayAuto()"> <span>Clean liquidity target</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cp-disp" onchange="saveTodayAuto()"> <span>Strong displacement</span></label>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#ff4d4d;font-weight:600;margin-bottom:8px">❌ Negatives</div>
+            <div style="display:flex;flex-direction:column;gap:5px" id="conf-neg-tags">
+              <label class="today-conf-item"><input type="checkbox" id="cn-choppy" onchange="saveTodayAuto()"> <span>Choppy conditions</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cn-volume" onchange="saveTodayAuto()"> <span>Weak volume</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cn-counter" onchange="saveTodayAuto()"> <span>Countertrend</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cn-news" onchange="saveTodayAuto()"> <span>News nearby</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cn-late" onchange="saveTodayAuto()"> <span>Late entry</span></label>
+              <label class="today-conf-item"><input type="checkbox" id="cn-rr" onchange="saveTodayAuto()"> <span>Poor RR</span></label>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Did positives outweigh negatives?</div>
+        <div style="display:flex;gap:8px">
+          <button id="conf-yes" onclick="setConfluenceVerdict('yes')" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(0,208,132,0.3);background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">YES</button>
+          <button id="conf-no" onclick="setConfluenceVerdict('no')" style="flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,77,77,0.3);background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s">NO</button>
+        </div>
+      </div>
+
+      <!-- PSYCHOLOGICAL REVIEW -->
+      <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Psychological Review</div>
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--muted)">Confidence before entry</span>
+            <span id="conf-before-val" style="font-size:13px;font-weight:700;color:var(--accent)">5</span>
+          </div>
+          <input type="range" id="conf-before" min="1" max="10" value="5" oninput="document.getElementById('conf-before-val').textContent=this.value;saveTodayAuto()" style="width:100%;accent-color:var(--accent)">
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--muted)">Confidence during trade</span>
+            <span id="conf-during-val" style="font-size:13px;font-weight:700;color:var(--accent)">5</span>
+          </div>
+          <input type="range" id="conf-during" min="1" max="10" value="5" oninput="document.getElementById('conf-during-val').textContent=this.value;saveTodayAuto()" style="width:100%;accent-color:var(--accent)">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+          <label class="today-conf-item"><input type="checkbox" id="psych-fear" onchange="saveTodayAuto()"> <span>Fear affected my execution</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="psych-pnl" onchange="saveTodayAuto()"> <span>I traded P&L, not the setup</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="psych-rules" onchange="saveTodayAuto()"> <span>I respected my rules</span></label>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Biggest emotional mistake today</div>
+          <input type="text" id="psych-mistake" placeholder="One sentence..." onchange="saveTodayAuto()" style="width:100%;background:var(--bg3);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;font-size:13px;box-sizing:border-box">
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: END OF DAY -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- NON NEGOTIABLES -->
+      <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Non-Negotiables</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="non-neg-list">
+          <label class="today-conf-item"><input type="checkbox" id="nn-workout" onchange="saveTodayAuto()"> <span>Workout</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-calories" onchange="saveTodayAuto()"> <span>Hit calorie goal (3500)</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-water" onchange="saveTodayAuto()"> <span>Water goal hit</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-sunlight" onchange="saveTodayAuto()"> <span>Morning sunlight</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-nodoom" onchange="saveTodayAuto()"> <span>No doomscrolling before market</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-learn" onchange="saveTodayAuto()"> <span>Read/watched something educational</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-journal" onchange="saveTodayAuto()"> <span>Journal completed</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-notrades" onchange="saveTodayAuto()"> <span>No emotional trades</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-risk" onchange="saveTodayAuto()"> <span>Stuck to risk rules</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-content" onchange="saveTodayAuto()"> <span>Posted content</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-discord" onchange="saveTodayAuto()"> <span>Discord/community contribution</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-clean" onchange="saveTodayAuto()"> <span>Clean room/workspace</span></label>
+          <label class="today-conf-item"><input type="checkbox" id="nn-sleep" onchange="saveTodayAuto()"> <span>Sleep prep before bed</span></label>
+        </div>
+      </div>
+
+      <!-- DAILY SCORECARD -->
+      <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Daily Scorecard</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--muted)">Trading Discipline</span><span id="sc-trading-val" style="font-size:12px;font-weight:700;color:var(--accent)">5</span></div>
+            <input type="range" id="sc-trading" min="1" max="10" value="5" oninput="document.getElementById('sc-trading-val').textContent=this.value;saveTodayAuto()" style="width:100%;accent-color:var(--accent)">
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--muted)">Mindset</span><span id="sc-mindset-val" style="font-size:12px;font-weight:700;color:var(--accent)">5</span></div>
+            <input type="range" id="sc-mindset" min="1" max="10" value="5" oninput="document.getElementById('sc-mindset-val').textContent=this.value;saveTodayAuto()" style="width:100%;accent-color:var(--accent)">
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--muted)">Health</span><span id="sc-health-val" style="font-size:12px;font-weight:700;color:var(--accent)">5</span></div>
+            <input type="range" id="sc-health" min="1" max="10" value="5" oninput="document.getElementById('sc-health-val').textContent=this.value;saveTodayAuto()" style="width:100%;accent-color:var(--accent)">
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--muted)">Productivity</span><span id="sc-prod-val" style="font-size:12px;font-weight:700;color:var(--accent)">5</span></div>
+            <input type="range" id="sc-prod" min="1" max="10" value="5" oninput="document.getElementById('sc-prod-val').textContent=this.value;saveTodayAuto()" style="width:100%;accent-color:var(--accent)">
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--muted)">Social / Content</span><span id="sc-social-val" style="font-size:12px;font-weight:700;color:var(--accent)">5</span></div>
+            <input type="range" id="sc-social" min="1" max="10" value="5" oninput="document.getElementById('sc-social-val').textContent=this.value;saveTodayAuto()" style="width:100%;accent-color:var(--accent)">
+          </div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:13px;color:var(--muted);font-weight:600">Overall Day Score</span>
+          <span id="sc-overall" style="font-size:28px;font-weight:800;color:var(--accent);font-family:var(--mono)">5.0</span>
+        </div>
+      </div>
+
+      <!-- PROOF I'M BECOMING HIM -->
+      <div style="background:var(--bg2);border:1px solid rgba(155,127,255,0.25);border-radius:14px;padding:20px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent)"></div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px">Proof I'm Becoming Him</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">1–3 pieces of evidence you lived like the person you're becoming today</div>
+        <textarea id="today-proof" placeholder="• Took only A+ setups&#10;• Ate even when not hungry&#10;• Posted content despite low views&#10;• Stopped trading after rule violation" onchange="saveTodayAuto()" style="width:100%;background:var(--bg3);border:1px solid rgba(155,127,255,0.2);border-radius:8px;padding:12px;color:var(--text);font-family:inherit;font-size:13px;resize:vertical;min-height:100px;line-height:1.6;box-sizing:border-box"></textarea>
+      </div>
+
+      <!-- TODAY'S TRADES SUMMARY -->
+      <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Today's Session</div>
+        <div id="today-trades-summary" style="color:var(--muted);font-size:13px">No trades logged today</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <div class="page active" id="page-dashboard">
   <div class="page-header">
     <div><div class="page-title">Dashboard</div><div class="page-sub" id="dash-date"></div></div>
@@ -2693,7 +2899,7 @@ onAuthStateChanged(auth, async (user) => {
     // Show app
     loginScreen.style.display = 'none';
     appShell.style.display = 'flex';
-    go('dashboard');
+    go('today');
     updateProUI();
     // Auto-open upgrade modal if user clicked "Sign up for Pro"
 
@@ -2820,7 +3026,7 @@ window._mergeCloudData = function(cloudData) {
 };
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
-const PAGE_ORDER = ['dashboard','log','history','propfirms','copilot','setups','insights','routine','risk','streaks','setuplibrary'];
+const PAGE_ORDER = ['today','dashboard','log','history','propfirms','copilot','setups','insights','routine','risk','streaks','setuplibrary'];
 function go(page) {
   if (ccCleanup) { ccCleanup(); ccCleanup = null; }
   if (_heroRaf) { cancelAnimationFrame(_heroRaf); _heroRaf = null; }
@@ -2830,7 +3036,7 @@ function go(page) {
   if (pageEl) pageEl.classList.add('active');
   const navEl = document.getElementById('nav-'+page);
   if (navEl) navEl.classList.add('active');
-  if (page==='today')          { go('dashboard'); return; }
+  if (page==='today')          { renderTodayPage(); return; }
   if (page==='setups')         { renderSetupsPage(); return; }
   if (page==='propfirms')      renderPropFirmsPage();
   if (page==='dashboard')      renderDashboard();
@@ -6254,200 +6460,6 @@ function _propPayoutEligibility(a) {
     issues.push('$'+Math.round(parseFloat(a.target)-totalPnL).toLocaleString()+' to hit profit target');
   }
   return { eligible, issues, wdc, wdReq, totalPnL, bestDay };
-}
-
-function renderTodayPage() {
-  const today = new Date().toISOString().slice(0,10);
-  const ts    = state.todayState || {};
-  const td    = state.todayState;
-
-  document.getElementById('today-page-title').textContent = 'Today';
-  document.getElementById('today-page-sub').textContent   = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-
-  // ── Stat chips ────────────────────────────────────
-  const todayTrades = (state.trades||[]).filter(t => t.datetime?.slice(0,10)===today);
-  const todayPnL    = todayTrades.reduce((s,t)=>s+calcPnL(t),0);
-  const todayWins   = todayTrades.filter(isWin).length;
-  const todayWR     = todayTrades.filter(isCountable).length ? Math.round(todayWins/todayTrades.filter(isCountable).length*100) : null;
-
-  const pnlEl = document.getElementById('today-pnl');
-  if(pnlEl){ pnlEl.textContent=(todayPnL>=0?'+':'-')+'$'+Math.abs(Math.round(todayPnL)).toLocaleString(); pnlEl.style.color=todayPnL>0?'var(--green)':todayPnL<0?'var(--red)':'var(--muted)'; }
-  const tcEl = document.getElementById('today-trade-count');
-  if(tcEl) tcEl.textContent = todayTrades.length;
-  const wrEl = document.getElementById('today-wr');
-  if(wrEl){ wrEl.textContent=todayWR!==null?todayWR+'%':'—'; wrEl.style.color=todayWR>=60?'var(--green)':todayWR>=40?'var(--amber)':'var(--muted)'; }
-
-  // Streak
-  const byDay={};
-  (state.trades||[]).forEach(t=>{const d=t.datetime?.slice(0,10);if(d)byDay[d]=(byDay[d]||0)+calcPnL(t);});
-  const dayKeys=Object.keys(byDay).sort().reverse();
-  let streak=0; for(const d of dayKeys){if(byDay[d]>0)streak++;else break;}
-  const strEl=document.getElementById('today-streak');
-  if(strEl){ strEl.textContent=streak>0?streak+'🔥':'0'; strEl.style.color=streak>=3?'var(--green)':streak>0?'var(--amber)':'var(--muted)'; }
-
-  // ── Session status ────────────────────────────────
-  const est=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
-  const h=est.getHours(),m=est.getMinutes(),hm=h*60+m;
-  let sLabel,sCol;
-  if(hm>=570&&hm<660){sLabel='🟢 NY AM Open';sCol='var(--green)';}
-  else if(hm>=660&&hm<780){sLabel='🟡 Mid-Session';sCol='var(--amber)';}
-  else if(hm>=780&&hm<900){sLabel='🟢 NY PM';sCol='var(--green)';}
-  else if(hm>=540&&hm<570){sLabel='⏳ Pre-Market';sCol='var(--muted)';}
-  else{sLabel='⚫ Closed';sCol='var(--dim)';}
-  const ssEl=document.getElementById('today-session-status');
-  if(ssEl) ssEl.innerHTML=`<div style="font-size:11px;font-weight:700;color:${sCol}">${sLabel}</div>`;
-
-  // ── Goal status under P&L ─────────────────────────
-  const gsEl=document.getElementById('today-goal-status');
-  if(gsEl){
-    const pg=parseFloat(td?.profitGoal)||0, ml=parseFloat(td?.maxLoss)||0;
-    if(ml&&todayPnL<=-ml){ gsEl.textContent='🛑 Max loss hit'; gsEl.style.color='var(--red)'; }
-    else if(pg&&todayPnL>=pg){ gsEl.textContent='✅ Goal reached'; gsEl.style.color='var(--green)'; }
-    else if(pg&&todayPnL>0){ gsEl.textContent=Math.round(todayPnL/pg*100)+'% of goal'; gsEl.style.color='var(--muted)'; }
-    else gsEl.textContent='';
-  }
-
-  // ── Prop rules ────────────────────────────────────
-  const propEl=document.getElementById('today-prop-rules');
-  const activeAccts=(state.propAccounts||[]).filter(a=>a.status!=='blown'&&a.status!=='inactive');
-  if(propEl){
-    if(!activeAccts.length){
-      propEl.innerHTML='<div style="font-size:12px;color:var(--dim)">No active accounts — <span style="color:var(--accent);cursor:pointer" onclick="go(&quot;propfirms&quot;)">add one →</span></div>';
-    } else {
-      propEl.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">'+activeAccts.map(a=>{
-        const dll=parseFloat(a.dll)||0;
-        const ac=(state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
-        const todayAcPnL=ac.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
-        const dllPct=dll&&todayAcPnL<0?Math.min(100,Math.abs(todayAcPnL)/dll*100):0;
-        const dllRem=dll?Math.max(0,dll+Math.min(0,todayAcPnL)):null;
-        const dllCol=dllPct<50?'var(--green)':dllPct<80?'var(--amber)':'var(--red)';
-        const wdMin=parseFloat(a.winDayMin)||200;
-        const wdReq=parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
-        const bd={};ac.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)bd[d]=(bd[d]||0)+calcPnL(t);});
-        const wdc=Object.values(bd).filter(p=>p>=wdMin).length;
-        const isWD=todayAcPnL>=wdMin;
-        const elig=_propPayoutEligibility(a);
-        return `<div style="box-shadow:var(--nm-press-sm);border-radius:12px;padding:12px 14px;background:var(--nm-bg)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <span style="font-size:12px;font-weight:700;color:var(--text)">${a.name||a.firm}</span>
-            <span style="font-size:10px;font-weight:700;color:${elig.eligible?'var(--green)':'var(--red)'};background:${elig.eligible?'var(--green-dim)':'rgba(255,77,77,0.1)'};padding:2px 7px;border-radius:10px">${elig.eligible?'✓ Eligible':'🚫 Not Eligible'}</span>
-          </div>
-          ${dll?`<div style="margin-bottom:6px">
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim);margin-bottom:4px"><span>Daily limit</span><span style="color:${dllCol};font-weight:700">${dllRem!==null?'$'+dllRem.toLocaleString()+' left':'$'+dll.toLocaleString()}</span></div>
-            <div class="nm-bar-track" style="height:6px"><div class="nm-bar-fill" style="width:${dllPct}%;background:${dllCol}"></div></div>
-          </div>`:''}
-          ${wdReq?`<div style="font-size:10px;color:var(--dim);margin-bottom:3px">${wdc} / ${wdReq} winning days</div>`:''}
-          ${!elig.eligible&&elig.issues.length?`<div style="font-size:10px;color:var(--red)">${elig.issues[0]}</div>`:''}
-        </div>`;
-      }).join('')+'</div>';
-    }
-  }
-
-  // ── Winning days section ──────────────────────────
-  const wdEl=document.getElementById('today-wd-section');
-  const wdAccts=activeAccts.filter(a=>(parseInt(a.winDaysReq)||(parseInt(a.minDays)||0))>0);
-  if(wdEl){
-    if(!wdAccts.length){wdEl.innerHTML='<div style="font-size:12px;color:var(--dim)">Set winning day targets on your prop accounts to track here</div>';}
-    else{wdEl.innerHTML=wdAccts.map(a=>{
-      const req=parseInt(a.winDaysReq)||(parseInt(a.minDays)||0);
-      const wdMin=parseFloat(a.winDayMin)||200;
-      const ac=(state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
-      const bd={};ac.forEach(t=>{const d=t.datetime?.slice(0,10);if(d)bd[d]=(bd[d]||0)+calcPnL(t);});
-      const wdc=Object.values(bd).filter(p=>p>=wdMin).length;
-      const todayAcPnL=bd[today]||0;
-      const daysToGo=Math.max(0,req-wdc);
-      const pct=Math.min(100,Math.round(wdc/req*100));
-      return `<div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
-          <span style="font-size:13px;font-weight:700;color:var(--text)">${a.name||a.firm}</span>
-          <span style="font-size:12px;font-weight:700;font-family:'Geist Mono',monospace;color:${wdc>=req?'var(--green)':daysToGo===1?'var(--amber)':'var(--text)'}">${wdc} / ${req} days</span>
-        </div>
-        <div class="nm-bar-track" style="height:8px;margin-bottom:8px">
-          <div class="nm-bar-fill" style="width:${pct}%;background:${wdc>=req?'var(--green)':'var(--accent)'}"></div>
-        </div>
-        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">
-          ${Array.from({length:req},(_,i)=>{const done=i<wdc;const isTd=i===wdc&&todayAcPnL>=wdMin;return `<div class="prop-wd-dot ${done?'wd-done':isTd?'wd-near':'wd-empty'}">${done?'✓':i+1}</div>`;}).join('')}
-        </div>
-        <div style="font-size:11px;color:${wdc>=req?'var(--green)':daysToGo===1?'var(--amber)':'var(--dim)'}">
-          ${(()=>{const el=_propPayoutEligibility(a);if(el.eligible)return '<span style="color:var(--green);font-weight:700">✅ Payout Eligible</span>';if(wdc>=req&&el.issues.length)return '<span style="color:var(--red)">🚫 '+el.issues[0]+'</span>';return daysToGo===1?'⚡ One more winning day to qualify':daysToGo+' more winning day'+(daysToGo!==1?'s':'')+' needed';})()}
-        </div>
-      </div>`;
-    }).join('');}
-  }
-
-  // ── Bias buttons ──────────────────────────────────
-  ['bull','neutral','bear'].forEach(b=>{
-    const btn=document.getElementById('bias-'+b);
-    if(btn){const on=td.bias===b;btn.style.boxShadow=on?'var(--nm-press-sm)':'var(--nm-raise-sm)';btn.style.color=on?'var(--accent)':'var(--muted)';}
-  });
-
-  // ── Mindset sliders ───────────────────────────────
-  const ms=td.mindset||{focus:5,discipline:5,force:3};
-  ['focus','discipline','force'].forEach(k=>{
-    const el=document.getElementById('slider-'+k);
-    if(el)el.value=ms[k]||5;
-    const vEl=document.getElementById(k+'-val');
-    if(vEl){vEl.textContent=ms[k]||'—';vEl.style.color=k==='force'?(ms[k]>=7?'var(--red)':ms[k]>=5?'var(--amber)':'var(--green)'):(ms[k]>=7?'var(--green)':ms[k]>=4?'var(--amber)':'var(--red)');}
-  });
-
-  // ── Checklist ─────────────────────────────────────
-  const items=['Reviewed trade plan','Checked economic calendar','Identified key S/R levels','Set max loss for today','Completed morning routine','Checked prop firm rules'];
-  const cl=document.getElementById('today-checklist');
-  if(cl){cl.innerHTML=items.map((item,i)=>{
-    const key='item_'+i,checked=td.checklist?.[key];
-    return `<div style="display:flex;align-items:center;gap:9px;cursor:pointer" onclick="toggleChecklist('${key}')">
-      <div style="width:18px;height:18px;border-radius:5px;flex-shrink:0;box-shadow:${checked?'var(--nm-press-sm)':'var(--nm-raise-sm)'};background:var(--nm-bg);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:11px;font-weight:800">${checked?'✓':''}</div>
-      <span style="font-size:12px;color:${checked?'var(--text)':'var(--muted)'}${checked?';text-decoration:line-through':''}">${item}</span>
-    </div>`;
-  }).join('');}
-
-  // ── Goals inputs ──────────────────────────────────
-  const pgEl=document.getElementById('today-profit-goal');
-  const mlEl=document.getElementById('today-max-loss');
-  if(pgEl&&td.profitGoal) pgEl.value=td.profitGoal;
-  if(mlEl&&td.maxLoss)    mlEl.value=td.maxLoss;
-
-  // ── Tilt detection ────────────────────────────────
-  const tiltEl=document.getElementById('today-tilt-body');
-  const recentLosses=todayTrades.slice(-5).filter(isLoss).length;
-  const isOT=todayTrades.length>=6;
-  const isDLL=activeAccts.some(a=>{
-    const dll=parseFloat(a.dll)||0;if(!dll)return false;
-    const ac=(state.trades||[]).filter(t=>(t.propAccounts||[]).includes(a.name)||(!t.propAccounts?.length&&t.propFirm===a.firm));
-    const p=ac.filter(t=>t.datetime?.slice(0,10)===today).reduce((s,t)=>s+calcPnL(t),0);
-    return p<0&&Math.abs(p)/dll>0.8;
-  });
-  const flags=[];
-  if(recentLosses>=3) flags.push({icon:'⚠️',label:'3 losses in last 5 trades',col:'var(--red)',sev:'high'});
-  if(isOT)            flags.push({icon:'📊',label:`${todayTrades.length} trades — watch overtrading`,col:'var(--amber)',sev:'med'});
-  if(isDLL)           flags.push({icon:'🛑',label:'Near daily loss limit',col:'var(--red)',sev:'high'});
-  if(ms.force>=7)     flags.push({icon:'🧠',label:'High urge to force trades',col:'var(--amber)',sev:'med'});
-  if(tiltEl){
-    if(!flags.length){
-      tiltEl.innerHTML='<div style="display:flex;align-items:center;gap:10px"><div style="width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 8px rgba(0,208,132,0.5)"></div><div style="font-size:13px;font-weight:600;color:var(--green)">All clear — good to trade</div></div>';
-    } else {
-      tiltEl.innerHTML=flags.map(f=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:10px;background:${f.sev==='high'?'rgba(255,77,77,0.08)':'rgba(245,166,35,0.08)'};margin-bottom:6px"><span>${f.icon}</span><span style="font-size:12px;font-weight:600;color:${f.col}">${f.label}</span></div>`).join('');
-      if(flags.some(f=>f.sev==='high')){
-        const sb=document.getElementById('today-stop-banner');
-        if(sb){sb.style.display='flex';document.getElementById('today-stop-reason').textContent=flags.filter(f=>f.sev==='high').map(f=>f.label).join(' · ');}
-      }
-    }
-  }
-
-  // ── Today's trades list ───────────────────────────
-  const tlist=document.getElementById('today-trades-list');
-  if(tlist){
-    if(!todayTrades.length){tlist.innerHTML='<div class="empty">No trades today yet</div>';}
-    else{tlist.innerHTML=[...todayTrades].reverse().slice(0,8).map(t=>{
-      const p=calcPnL(t);const col=p>0?'var(--green)':p<0?'var(--red)':'var(--muted)';
-      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-        <div style="width:6px;height:6px;border-radius:50%;background:${p>0?'var(--green)':'var(--red)'};flex-shrink:0"></div>
-        <div style="flex:1;font-size:12px;color:var(--text)">${t.ticker||'NQ'}${t.setup?' · '+t.setup:''} · ${t.datetime?.slice(11,16)||''}</div>
-        <div style="font-size:13px;font-weight:700;color:${col};font-family:'Geist Mono',monospace">${p>=0?'+':'-'}$${Math.abs(Math.round(p)).toLocaleString()}</div>
-        <div style="font-size:10px;padding:2px 7px;border-radius:8px;background:${p>0?'var(--green-dim)':p<0?'var(--red-dim)':'var(--bg3)'};color:${col};font-weight:600">${t.outcome||''}</div>
-      </div>`;
-    }).join('');}
-  }
 }
 
 function setTodayBias(b) {
@@ -10628,6 +10640,205 @@ function removeScalingStage(i) {
 
 function saveScalingPlan() { save(); closeScalingEditor(); renderPropScalingPlan(); }
 function closeScalingEditor() { const m=document.getElementById('scaling-editor-modal'); if(m)m.style.display='none'; }
+
+
+// ─── TODAY PAGE ───────────────────────────────────────────────────────────────
+let _todayData = {};
+const TODAY_KEY_PREFIX = 'edge_today_';
+
+function _todayKey() {
+  return TODAY_KEY_PREFIX + new Date().toISOString().slice(0, 10);
+}
+
+function loadTodayData() {
+  try {
+    const raw = localStorage.getItem(_todayKey());
+    _todayData = raw ? JSON.parse(raw) : {};
+  } catch(e) { _todayData = {}; }
+}
+
+function saveTodayAuto() {
+  _collectTodayData();
+  try { localStorage.setItem(_todayKey(), JSON.stringify(_todayData)); } catch(e) {}
+}
+
+function saveTodayPage() {
+  saveTodayAuto();
+  // Show saved toast
+  const btn = document.querySelector('#page-today .btn-green');
+  if (btn) { btn.textContent = 'Saved ✓'; btn.style.background = '#00d084'; setTimeout(() => { btn.textContent = 'Save'; btn.style.background = ''; }, 1500); }
+}
+
+function clearTodayData() {
+  if (!confirm('Clear all of today\'s data?')) return;
+  _todayData = {};
+  localStorage.removeItem(_todayKey());
+  renderTodayPage();
+}
+
+function _collectTodayData() {
+  const g = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const ch = (id) => { const el = document.getElementById(id); return el ? el.checked : false; };
+  _todayData = {
+    grade: _todayData.grade || null,
+    confluenceVerdict: _todayData.confluenceVerdict || null,
+    wellTags: _todayData.wellTags || [],
+    wrongTags: _todayData.wrongTags || [],
+    didWellNotes: g('today-did-well-notes'),
+    didWrongNotes: g('today-did-wrong-notes'),
+    confBefore: g('conf-before'),
+    confDuring: g('conf-during'),
+    psychFear: ch('psych-fear'),
+    psychPnl: ch('psych-pnl'),
+    psychRules: ch('psych-rules'),
+    psychMistake: g('psych-mistake'),
+    proof: g('today-proof'),
+    // confluences
+    cpHtf: ch('cp-htf'), cpIfvg: ch('cp-ifvg'), cpSession: ch('cp-session'),
+    cpAligned: ch('cp-aligned'), cpLiq: ch('cp-liq'), cpDisp: ch('cp-disp'),
+    cnChoppy: ch('cn-choppy'), cnVolume: ch('cn-volume'), cnCounter: ch('cn-counter'),
+    cnNews: ch('cn-news'), cnLate: ch('cn-late'), cnRr: ch('cn-rr'),
+    // non-negotiables
+    nnWorkout: ch('nn-workout'), nnCalories: ch('nn-calories'), nnWater: ch('nn-water'),
+    nnSunlight: ch('nn-sunlight'), nnNodoom: ch('nn-nodoom'), nnLearn: ch('nn-learn'),
+    nnJournal: ch('nn-journal'), nnNotrades: ch('nn-notrades'), nnRisk: ch('nn-risk'),
+    nnContent: ch('nn-content'), nnDiscord: ch('nn-discord'), nnClean: ch('nn-clean'),
+    nnSleep: ch('nn-sleep'),
+    // scorecard
+    scTrading: g('sc-trading'), scMindset: g('sc-mindset'), scHealth: g('sc-health'),
+    scProd: g('sc-prod'), scSocial: g('sc-social'),
+    savedAt: new Date().toISOString()
+  };
+}
+
+function renderTodayPage() {
+  loadTodayData();
+  const d = _todayData;
+
+  // Set date
+  const dateEl = document.getElementById('today-page-date');
+  if (dateEl) {
+    const now = new Date();
+    dateEl.textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  }
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || el.defaultValue || ''; };
+  const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+  const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  // Restore textareas and inputs
+  set('today-did-well-notes', d.didWellNotes);
+  set('today-did-wrong-notes', d.didWrongNotes);
+  set('psych-mistake', d.psychMistake);
+  set('today-proof', d.proof);
+  set('conf-before', d.confBefore || 5);
+  set('conf-during', d.confDuring || 5);
+  setTxt('conf-before-val', d.confBefore || 5);
+  setTxt('conf-during-val', d.confDuring || 5);
+
+  // Scorecard sliders
+  ['trading','mindset','health','prod','social'].forEach(k => {
+    const val = d['sc' + k.charAt(0).toUpperCase() + k.slice(1)] || 5;
+    set('sc-' + k, val);
+    setTxt('sc-' + k + '-val', val);
+  });
+  _updateOverallScore();
+
+  // Checkboxes
+  setChk('psych-fear', d.psychFear); setChk('psych-pnl', d.psychPnl); setChk('psych-rules', d.psychRules);
+  setChk('cp-htf', d.cpHtf); setChk('cp-ifvg', d.cpIfvg); setChk('cp-session', d.cpSession);
+  setChk('cp-aligned', d.cpAligned); setChk('cp-liq', d.cpLiq); setChk('cp-disp', d.cpDisp);
+  setChk('cn-choppy', d.cnChoppy); setChk('cn-volume', d.cnVolume); setChk('cn-counter', d.cnCounter);
+  setChk('cn-news', d.cnNews); setChk('cn-late', d.cnLate); setChk('cn-rr', d.cnRr);
+  setChk('nn-workout', d.nnWorkout); setChk('nn-calories', d.nnCalories); setChk('nn-water', d.nnWater);
+  setChk('nn-sunlight', d.nnSunlight); setChk('nn-nodoom', d.nnNodoom); setChk('nn-learn', d.nnLearn);
+  setChk('nn-journal', d.nnJournal); setChk('nn-notrades', d.nnNotrades); setChk('nn-risk', d.nnRisk);
+  setChk('nn-content', d.nnContent); setChk('nn-discord', d.nnDiscord); setChk('nn-clean', d.nnClean);
+  setChk('nn-sleep', d.nnSleep);
+
+  // Grade buttons
+  document.querySelectorAll('.today-grade-btn').forEach(b => b.classList.remove('active'));
+  if (d.grade) { const gb = document.getElementById('tg-' + d.grade); if (gb) gb.classList.add('active'); }
+
+  // Confluence verdict
+  const cy = document.getElementById('conf-yes'), cn2 = document.getElementById('conf-no');
+  if (cy) cy.classList.remove('active');
+  if (cn2) cn2.classList.remove('active');
+  if (d.confluenceVerdict === 'yes' && cy) cy.classList.add('active');
+  if (d.confluenceVerdict === 'no' && cn2) cn2.classList.add('active');
+
+  // Well/wrong tags
+  document.querySelectorAll('#did-well-tags .today-tag').forEach(b => {
+    b.classList.toggle('active', (d.wellTags || []).includes(b.textContent.trim()));
+  });
+  document.querySelectorAll('#did-wrong-tags .today-tag').forEach(b => {
+    b.classList.toggle('active', (d.wrongTags || []).includes(b.textContent.trim()));
+  });
+
+  // Today's trades
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayTrades = state.trades.filter(t => (t.date || '').slice(0, 10) === todayStr);
+  const summEl = document.getElementById('today-trades-summary');
+  if (summEl) {
+    if (!todayTrades.length) {
+      summEl.innerHTML = '<span style="color:var(--muted);font-size:13px">No trades logged today</span>';
+    } else {
+      const pnl = todayTrades.reduce((s, t) => s + calcPnL(t), 0);
+      const wins = todayTrades.filter(t => t.outcome === 'win').length;
+      const wr = Math.round(wins / todayTrades.length * 100);
+      const pnlColor = pnl >= 0 ? '#00d084' : '#ff4d4d';
+      summEl.innerHTML = '<div style="display:flex;gap:20px;flex-wrap:wrap">' +
+        '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">P&L</div><div style="font-size:22px;font-weight:800;color:' + pnlColor + ';font-family:var(--mono)">' + (pnl >= 0 ? '+' : '') + '$' + pnl.toFixed(2) + '</div></div>' +
+        '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Trades</div><div style="font-size:22px;font-weight:800;color:var(--text)">' + todayTrades.length + '</div></div>' +
+        '<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">Win Rate</div><div style="font-size:22px;font-weight:800;color:' + (wr >= 60 ? '#00d084' : wr >= 40 ? '#f5a623' : '#ff4d4d') + '">' + wr + '%</div></div>' +
+        '</div>';
+    }
+  }
+}
+
+function setTodayGrade(g) {
+  _todayData.grade = g;
+  document.querySelectorAll('.today-grade-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tg-' + g);
+  if (btn) btn.classList.add('active');
+  saveTodayAuto();
+}
+
+function setConfluenceVerdict(v) {
+  _todayData.confluenceVerdict = v;
+  const cy = document.getElementById('conf-yes'), cn2 = document.getElementById('conf-no');
+  if (cy) cy.classList.remove('active');
+  if (cn2) cn2.classList.remove('active');
+  if (v === 'yes' && cy) cy.classList.add('active');
+  if (v === 'no' && cn2) cn2.classList.add('active');
+  saveTodayAuto();
+}
+
+function toggleTodayTag(type, tag) {
+  const key = type === 'well' ? 'wellTags' : 'wrongTags';
+  const containerId = type === 'well' ? 'did-well-tags' : 'did-wrong-tags';
+  if (!_todayData[key]) _todayData[key] = [];
+  const idx = _todayData[key].indexOf(tag);
+  if (idx >= 0) _todayData[key].splice(idx, 1);
+  else _todayData[key].push(tag);
+  document.querySelectorAll('#' + containerId + ' .today-tag').forEach(b => {
+    b.classList.toggle('active', _todayData[key].includes(b.textContent.trim()));
+  });
+  saveTodayAuto();
+}
+
+function _updateOverallScore() {
+  const ids = ['sc-trading','sc-mindset','sc-health','sc-prod','sc-social'];
+  const vals = ids.map(id => { const el = document.getElementById(id); return el ? parseFloat(el.value) : 5; });
+  const avg = (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1);
+  const el = document.getElementById('sc-overall');
+  if (el) { el.textContent = avg; el.style.color = avg >= 7 ? '#00d084' : avg >= 5 ? 'var(--accent)' : '#ff4d4d'; }
+}
+
+// Hook score update to all scorecard sliders
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.id && e.target.id.startsWith('sc-')) _updateOverallScore();
+});
 
 </script>
 
