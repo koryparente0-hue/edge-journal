@@ -8759,14 +8759,8 @@ const MOODS      = ['😤','😐','😊','🔥','😴'];
 const MOOD_NAMES = ['Frustrated','Neutral','Focused','Confident','Tired'];
 
 function renderJournalPage() {
-  try {
-    switchJournalTab(journalTab);
-    updateJournalAddBtn();
-  } catch(e) {
-    console.error('renderJournalPage error:', e);
-    const pg = document.getElementById('page-journal');
-    if (pg) { const err=document.createElement('div'); err.style.cssText='color:red;padding:20px;font-family:monospace;font-size:12px;background:#1a0000;border-radius:8px;margin:20px'; err.textContent='Journal error: '+e.message+' | '+e.stack?.split("\n")[1]; pg.appendChild(err); }
-  }
+  switchJournalTab(journalTab);
+  updateJournalAddBtn();
 }
 function updateJournalAddBtn() {
   const btn = document.getElementById('journal-add-btn');
