@@ -1282,26 +1282,18 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
         <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Confluences Breakdown</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
           <div>
-            <div style="font-size:11px;color:#00d084;font-weight:600;margin-bottom:8px">✅ Positives</div>
-            <div style="display:flex;flex-direction:column;gap:5px" id="conf-pos-tags">
-              <label class="today-conf-item"><input type="checkbox" id="cp-htf" onchange="saveTodayAuto()"> <span>HTF aligned</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cp-ifvg" onchange="saveTodayAuto()"> <span>IFVG respected</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cp-session" onchange="saveTodayAuto()"> <span>Session timing</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cp-aligned" onchange="saveTodayAuto()"> <span>ES + NQ aligned</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cp-liq" onchange="saveTodayAuto()"> <span>Clean liquidity target</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cp-disp" onchange="saveTodayAuto()"> <span>Strong displacement</span></label>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div style="font-size:11px;color:#00d084;font-weight:600">✅ Positives</div>
+              <button onclick="addConfItem('pos')" style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid rgba(0,208,132,0.3);background:transparent;color:#00d084;cursor:pointer">+ Add</button>
             </div>
+            <div style="display:flex;flex-direction:column;gap:5px" id="conf-pos-tags"></div>
           </div>
           <div>
-            <div style="font-size:11px;color:#ff4d4d;font-weight:600;margin-bottom:8px">❌ Negatives</div>
-            <div style="display:flex;flex-direction:column;gap:5px" id="conf-neg-tags">
-              <label class="today-conf-item"><input type="checkbox" id="cn-choppy" onchange="saveTodayAuto()"> <span>Choppy conditions</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cn-volume" onchange="saveTodayAuto()"> <span>Weak volume</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cn-counter" onchange="saveTodayAuto()"> <span>Countertrend</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cn-news" onchange="saveTodayAuto()"> <span>News nearby</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cn-late" onchange="saveTodayAuto()"> <span>Late entry</span></label>
-              <label class="today-conf-item"><input type="checkbox" id="cn-rr" onchange="saveTodayAuto()"> <span>Poor RR</span></label>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div style="font-size:11px;color:#ff4d4d;font-weight:600">❌ Negatives</div>
+              <button onclick="addConfItem('neg')" style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid rgba(255,77,77,0.3);background:transparent;color:#ff4d4d;cursor:pointer">+ Add</button>
             </div>
+            <div style="display:flex;flex-direction:column;gap:5px" id="conf-neg-tags"></div>
           </div>
         </div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Did positives outweigh negatives?</div>
@@ -1346,21 +1338,8 @@ body.light-mode .pd-section{border-bottom-color:rgba(0,0,0,0.06);}
       <!-- NON NEGOTIABLES -->
       <div style="background:var(--bg2);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px">
         <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Non-Negotiables</div>
-        <div style="display:flex;flex-direction:column;gap:8px" id="non-neg-list">
-          <label class="today-conf-item"><input type="checkbox" id="nn-workout" onchange="saveTodayAuto()"> <span>Workout</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-calories" onchange="saveTodayAuto()"> <span>Hit calorie goal (3500)</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-water" onchange="saveTodayAuto()"> <span>Water goal hit</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-sunlight" onchange="saveTodayAuto()"> <span>Morning sunlight</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-nodoom" onchange="saveTodayAuto()"> <span>No doomscrolling before market</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-learn" onchange="saveTodayAuto()"> <span>Read/watched something educational</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-journal" onchange="saveTodayAuto()"> <span>Journal completed</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-notrades" onchange="saveTodayAuto()"> <span>No emotional trades</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-risk" onchange="saveTodayAuto()"> <span>Stuck to risk rules</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-content" onchange="saveTodayAuto()"> <span>Posted content</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-discord" onchange="saveTodayAuto()"> <span>Discord/community contribution</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-clean" onchange="saveTodayAuto()"> <span>Clean room/workspace</span></label>
-          <label class="today-conf-item"><input type="checkbox" id="nn-sleep" onchange="saveTodayAuto()"> <span>Sleep prep before bed</span></label>
-        </div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="non-neg-list"></div>
+        <button onclick="addNonNeg()" style="margin-top:10px;width:100%;padding:8px;border-radius:8px;border:1px dashed rgba(255,255,255,0.15);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='var(--muted)'">+ Add Non-Negotiable</button>
       </div>
 
       <!-- DAILY SCORECARD -->
@@ -10711,9 +10690,127 @@ function _collectTodayData() {
   };
 }
 
+
+// ─── DYNAMIC LISTS (confluences + non-negotiables) ────────────────────────────
+const CONF_POS_DEFAULT = ['HTF aligned','IFVG respected','Session timing','ES + NQ aligned','Clean liquidity target','Strong displacement'];
+const CONF_NEG_DEFAULT = ['Choppy conditions','Weak volume','Countertrend','News nearby','Late entry','Poor RR'];
+const NN_DEFAULT = ['Workout','Hit calorie goal (3500)','Water goal hit','Morning sunlight','No doomscrolling before market','Read/watched something educational','Journal completed','No emotional trades','Stuck to risk rules','Posted content','Discord/community contribution','Clean room/workspace','Sleep prep before bed'];
+const LISTS_KEY = 'edge_today_lists';
+
+function _getLists() {
+  try {
+    const raw = localStorage.getItem(LISTS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { confPos: [...CONF_POS_DEFAULT], confNeg: [...CONF_NEG_DEFAULT], nonNeg: [...NN_DEFAULT] };
+}
+
+function _saveLists(lists) {
+  try { localStorage.setItem(LISTS_KEY, JSON.stringify(lists)); } catch(e) {}
+}
+
+function renderConfList(type) {
+  const lists = _getLists();
+  const items = type === 'pos' ? lists.confPos : lists.confNeg;
+  const container = document.getElementById('conf-' + (type === 'pos' ? 'pos' : 'neg') + '-tags');
+  if (!container) return;
+  const checked = _todayData['conf' + (type === 'pos' ? 'Pos' : 'Neg') + 'Checked'] || [];
+  container.innerHTML = items.map((item, i) => {
+    const isChecked = checked.includes(item);
+    const chk = isChecked ? 'checked' : '';
+    return '<div style="display:flex;align-items:center;gap:6px">' +
+      '<label class="today-conf-item" style="flex:1"><input type="checkbox" ' + chk + ' data-type="' + type + '" data-idx="' + i + '" onchange="handleConfChk(this)"> <span>' + item + '</span></label>' +
+      '<button data-type="' + type + '" data-idx="' + i + '" onclick="handleConfRem(this)" style="opacity:0;background:transparent;border:none;color:#ff4d4d;cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:opacity .1s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">×</button>' +
+      '</div>';
+  }).join('');
+}
+
+function renderNonNegList() {
+  const lists = _getLists();
+  const container = document.getElementById('non-neg-list');
+  if (!container) return;
+  const checked = _todayData.nonNegChecked || [];
+  container.innerHTML = lists.nonNeg.map((item, i) => {
+    const isChecked = checked.includes(item);
+    const chk = isChecked ? 'checked' : '';
+    return '<div style="display:flex;align-items:center;gap:6px">' +
+      '<label class="today-conf-item" style="flex:1"><input type="checkbox" ' + chk + ' data-idx="' + i + '" onchange="handleNNChk(this)"> <span>' + item + '</span></label>' +
+      '<button data-idx="' + i + '" onclick="handleNNRem(this)" style="opacity:0;background:transparent;border:none;color:#ff4d4d;cursor:pointer;font-size:16px;padding:0 4px;line-height:1;transition:opacity .1s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">×</button>' +
+      '</div>';
+  }).join('');
+}
+
+function toggleConfItem(type, idx, checked) {
+  const lists = _getLists();
+  const item = type === 'pos' ? lists.confPos[idx] : lists.confNeg[idx];
+  const key = type === 'pos' ? 'confPosChecked' : 'confNegChecked';
+  if (!_todayData[key]) _todayData[key] = [];
+  if (checked) { if (!_todayData[key].includes(item)) _todayData[key].push(item); }
+  else { _todayData[key] = _todayData[key].filter(x => x !== item); }
+  saveTodayAuto();
+}
+
+function toggleNonNeg(idx, checked) {
+  const lists = _getLists();
+  const item = lists.nonNeg[idx];
+  if (!_todayData.nonNegChecked) _todayData.nonNegChecked = [];
+  if (checked) { if (!_todayData.nonNegChecked.includes(item)) _todayData.nonNegChecked.push(item); }
+  else { _todayData.nonNegChecked = _todayData.nonNegChecked.filter(x => x !== item); }
+  saveTodayAuto();
+}
+
+function addConfItem(type) {
+  const name = prompt('New ' + (type === 'pos' ? 'positive' : 'negative') + ' confluence:');
+  if (!name || !name.trim()) return;
+  const lists = _getLists();
+  if (type === 'pos') lists.confPos.push(name.trim());
+  else lists.confNeg.push(name.trim());
+  _saveLists(lists);
+  renderConfList(type);
+}
+
+function removeConfItem(type, idx) {
+  const lists = _getLists();
+  const removed = type === 'pos' ? lists.confPos.splice(idx, 1)[0] : lists.confNeg.splice(idx, 1)[0];
+  _saveLists(lists);
+  const key = type === 'pos' ? 'confPosChecked' : 'confNegChecked';
+  if (_todayData[key]) _todayData[key] = _todayData[key].filter(x => x !== removed);
+  saveTodayAuto();
+  renderConfList(type);
+}
+
+function addNonNeg() {
+  const name = prompt('New non-negotiable:');
+  if (!name || !name.trim()) return;
+  const lists = _getLists();
+  lists.nonNeg.push(name.trim());
+  _saveLists(lists);
+  renderNonNegList();
+}
+
+function removeNonNeg(idx) {
+  const lists = _getLists();
+  const removed = lists.nonNeg.splice(idx, 1)[0];
+  _saveLists(lists);
+  if (_todayData.nonNegChecked) _todayData.nonNegChecked = _todayData.nonNegChecked.filter(x => x !== removed);
+  saveTodayAuto();
+  renderNonNegList();
+}
+
+
+function handleConfChk(el) { toggleConfItem(el.dataset.type, parseInt(el.dataset.idx), el.checked); }
+function handleConfRem(el) { removeConfItem(el.dataset.type, parseInt(el.dataset.idx)); }
+function handleNNChk(el) { toggleNonNeg(parseInt(el.dataset.idx), el.checked); }
+function handleNNRem(el) { removeNonNeg(parseInt(el.dataset.idx)); }
+
 function renderTodayPage() {
   loadTodayData();
   const d = _todayData;
+
+  // Render dynamic lists
+  renderConfList('pos');
+  renderConfList('neg');
+  renderNonNegList();
 
   // Set date
   const dateEl = document.getElementById('today-page-date');
@@ -10744,17 +10841,8 @@ function renderTodayPage() {
   });
   _updateOverallScore();
 
-  // Checkboxes
+  // Psych checkboxes (static)
   setChk('psych-fear', d.psychFear); setChk('psych-pnl', d.psychPnl); setChk('psych-rules', d.psychRules);
-  setChk('cp-htf', d.cpHtf); setChk('cp-ifvg', d.cpIfvg); setChk('cp-session', d.cpSession);
-  setChk('cp-aligned', d.cpAligned); setChk('cp-liq', d.cpLiq); setChk('cp-disp', d.cpDisp);
-  setChk('cn-choppy', d.cnChoppy); setChk('cn-volume', d.cnVolume); setChk('cn-counter', d.cnCounter);
-  setChk('cn-news', d.cnNews); setChk('cn-late', d.cnLate); setChk('cn-rr', d.cnRr);
-  setChk('nn-workout', d.nnWorkout); setChk('nn-calories', d.nnCalories); setChk('nn-water', d.nnWater);
-  setChk('nn-sunlight', d.nnSunlight); setChk('nn-nodoom', d.nnNodoom); setChk('nn-learn', d.nnLearn);
-  setChk('nn-journal', d.nnJournal); setChk('nn-notrades', d.nnNotrades); setChk('nn-risk', d.nnRisk);
-  setChk('nn-content', d.nnContent); setChk('nn-discord', d.nnDiscord); setChk('nn-clean', d.nnClean);
-  setChk('nn-sleep', d.nnSleep);
 
   // Grade buttons
   document.querySelectorAll('.today-grade-btn').forEach(b => b.classList.remove('active'));
